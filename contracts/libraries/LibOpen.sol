@@ -291,7 +291,7 @@ library LibOpen {
 		uint256 _swappedAmount;
 		uint256 num = loan.id - 1;
 
-		_swappedAmount = _swap(_sender, _loanMarket, _swapMarket, loan.amount, 0);
+		_swappedAmount = _swap(_sender, _loanMarket, _swapMarket, loanState.currentAmount, 0);
 
 		/// Updating LoanRecord
 		loan.isSwapped = true;
