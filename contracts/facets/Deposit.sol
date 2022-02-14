@@ -96,8 +96,14 @@ contract Deposit is Pausable, IDeposit{
 
 		if (_commitment != LibOpen._getCommitment(0))	{
 			if (!deposit.isTimelockActivated)	{
+				
 				deposit.isTimelockActivated = true;
+				deposit.activationTime = block.timestamp;
+				deposit.lastUpdate = block.timestamp;
+
 				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
+				savingsAccount.deposits[deposit.id -1].activationTime = block.timestamp;
+				savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
 				
 				return false;
 			}
