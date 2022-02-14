@@ -18,10 +18,10 @@ contract TokenList is Pausable, ITokenList {
 		uint256 indexed _timestamp
 	);
   event Market2Updated(
-  bytes32 indexed _market,
-      uint256 _decimals,
-      address indexed _tokenAddress,
-      uint256 indexed _timestamp
+    bytes32 indexed _market,
+    uint256 _decimals,
+    address indexed _tokenAddress,
+    uint256 indexed _timestamp
   );
   event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
 

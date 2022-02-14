@@ -56,7 +56,7 @@ contract Loan is Pausable, ILoan {
 		bytes32 _commitment,
 		bytes32 _loanMarket
 	) external override nonReentrant() returns (bool success) {
-		LibOpen._swapToLoan(msg.sender, _commitment, _loanMarket);
+		LibOpen._swapToLoan(msg.sender, _loanMarket,_commitment);
 		return success = true;
 	}
 
