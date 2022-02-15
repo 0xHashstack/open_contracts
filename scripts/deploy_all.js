@@ -14,7 +14,8 @@ async function main() {
 async function deployDiamond() {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
-  mkdirSync("abis", { recursive: true });
+  mkdirSync("abi/frontend", { recursive: true });
+  mkdirSync("abi/backend", { recursive: true });
 
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
@@ -23,6 +24,7 @@ async function deployDiamond() {
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
   let diamondCutFacet = await DiamondCutFacet.deploy();
   await diamondCutFacet.deployed();
+  createAbiJSON(diamondCutFacet, "DiamondCutFacet");
 
   console.log("DiamondCutFacet deployed:", diamondCutFacet.address);
 
@@ -35,6 +37,7 @@ async function deployDiamond() {
     const Facet = await ethers.getContractFactory(FacetName);
     const facet = await Facet.deploy();
     await facet.deployed();
+    createAbiJSON(facet, FacetNames);
     console.log(`${FacetName} deployed: ${facet.address}`);
     cut.push({
       facetAddress: facet.address,
@@ -65,6 +68,9 @@ async function deployDiamond() {
     const Facet = await ethers.getContractFactory(FacetName);
     const facet = await Facet.deploy();
     await facet.deployed();
+    // Creating ABI's
+    console.log(`Creating ABI for ${FacetName}`)
+    createAbiJSON(facet, FacetName);
     console.log(`${FacetName} deployed: ${facet.address}`);
     opencut.push({
       facetAddress: facet.address,
@@ -84,6 +90,7 @@ async function deployDiamond() {
   const DiamondInit = await ethers.getContractFactory("DiamondInit");
   const diamondInit = await DiamondInit.deploy();
   await diamondInit.deployed();
+  createAbiJSON(diamondInit, "DiamondInit");
   console.log("DiamondInit deployed:", diamondInit.address);
 
   // deploy Diamond
@@ -93,12 +100,14 @@ async function deployDiamond() {
     diamondCutFacet.address
   );
   await diamond.deployed();
+  createAbiJSON(diamond, "OpenDiamond");
   console.log("Diamond deployed:", diamond.address);
 
   // upgrade diamond with facets
   console.log("");
   // console.log('Diamond Cut:', cut)
   const diamondCut = await ethers.getContractAt("IDiamondCut", diamond.address);
+  createAbiJSON(diamondCut, "IDiamondCut");
   let tx;
   let receipt;
   let args = [];
@@ -123,6 +132,7 @@ async function deployDiamond() {
     "DiamondCutFacet",
     diamond.address
   );
+  createAbiJSON(diamondCutFacet, "DiamondCutFacet");
 
   tx = await diamondCutFacet.diamondCut(
     opencut,
@@ -146,9 +156,7 @@ async function addMarkets(diamondAddress) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
-  createAbiJSON(diamond, "diamond");
-  createAbiJSON(tokenList, "tokenList");
-  createAbiJSON(comptroller, "comptroller");
+  createAbiJSON(diamond, "OpenDiamond");
 
   const symbolWBNB =
     "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
@@ -226,37 +234,31 @@ async function addMarkets(diamondAddress) {
   const Mockup = await ethers.getContractFactory("BEP20Token");
   const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000); // 21 million BTC
   await tbtc.deployed();
-  createAbiJSON(tbtc, "Bitcoin");
   const tBtcAddress = tbtc.address;
   console.log("tBTC deployed: ", tbtc.address);
 
   const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000);
   await tusdc.deployed();
-  createAbiJSON(tusdc, "USD-Coin");
   const tUsdcAddress = tusdc.address;
   console.log("tUSDC deployed: ", tusdc.address);
 
   const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000); // 10 billion USDT
   await tusdt.deployed();
-  createAbiJSON(tusdt, "USD-Tether");
   const tUsdtAddress = tusdt.address;
   console.log("tUSDT deployed: ", tusdt.address);
 
   const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000);
   await tsxp.deployed();
-  createAbiJSON(tsxp, "SXP");
   const tSxpAddress = tsxp.address;
   console.log("tSxp deployed: ", tsxp.address);
 
   const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000);
   await tcake.deployed();
-  createAbiJSON(tcake, "CAKE");
   const tCakeAddress = tcake.address;
   console.log("tCake deployed: ", tcake.address);
 
   const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000); // 90 million BNB
   await twbnb.deployed();
-  createAbiJSON(twbnb, "WBNB");
   const tWBNBAddress = twbnb.address;
   console.log("tWBNB deployed: ", twbnb.address);
 
@@ -435,7 +437,6 @@ async function provideLiquidity(rets) {
     "PancakeRouter",
     pancakeRouterAddr
   );
-  createAbiJSON(pancakeRouter, "PancakeRouter");
   // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
   await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
@@ -519,21 +520,25 @@ exports.provideLiquidity = provideLiquidity;
 
 function createAbiJSON(artifact, filename){
   const { chainId } = hre.network.config;
-  if(existsSync(`${__dirname}/../abis/${filename}.json`)){
-    const prevData = JSON.parse(readFileSync(`${__dirname}/../abis/${filename}.json`,"utf8"));
+  if(existsSync(`${__dirname}/../abi/frontend/${filename}.json`)){
+    const prevData = JSON.parse(readFileSync(`${__dirname}/../abi/frontend/${filename}.json`,"utf8"));
     const data = {
       abi: JSON.parse(artifact.interface.format("json")),
       networks: { ...prevData.networks }
     };
     data.networks[chainId] = { "address": artifact.address};
-    writeFileSync(`${__dirname}/../abis/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
+
   } else {
     const data = {
       abi: JSON.parse(artifact.interface.format("json")),
       networks: {}
     };
     data.networks[chainId] = { "address": artifact.address};
-    writeFileSync(`${__dirname}/../abis/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data)); 
+
   }
 
 }
