@@ -306,6 +306,7 @@ library LibOpen {
 		/// Updating LoanRecord
 		loan.isSwapped = true;
 		loan.lastUpdate = block.timestamp;
+		
 		/// Updating LoanState
 		loanState.currentMarket = _swapMarket;
 		loanState.currentAmount = _swappedAmount;
