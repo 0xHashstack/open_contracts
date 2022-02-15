@@ -3,6 +3,7 @@ const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
 const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
+const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -13,6 +14,7 @@ async function main() {
 async function deployDiamond() {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
+  mkdirSync("abis", { recursive: true });
 
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
@@ -144,6 +146,9 @@ async function addMarkets(diamondAddress) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+  createAbiJSON(diamond, "diamond");
+  createAbiJSON(tokenList, "tokenList");
+  createAbiJSON(comptroller, "comptroller");
 
   const symbolWBNB =
     "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
@@ -221,31 +226,37 @@ async function addMarkets(diamondAddress) {
   const Mockup = await ethers.getContractFactory("BEP20Token");
   const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000); // 21 million BTC
   await tbtc.deployed();
+  createAbiJSON(tbtc, "Bitcoin");
   const tBtcAddress = tbtc.address;
   console.log("tBTC deployed: ", tbtc.address);
 
   const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000);
   await tusdc.deployed();
+  createAbiJSON(tusdc, "USD-Coin");
   const tUsdcAddress = tusdc.address;
   console.log("tUSDC deployed: ", tusdc.address);
 
   const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000); // 10 billion USDT
   await tusdt.deployed();
+  createAbiJSON(tusdt, "USD-Tether");
   const tUsdtAddress = tusdt.address;
   console.log("tUSDT deployed: ", tusdt.address);
 
   const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000);
   await tsxp.deployed();
+  createAbiJSON(tsxp, "SXP");
   const tSxpAddress = tsxp.address;
   console.log("tSxp deployed: ", tsxp.address);
 
   const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000);
   await tcake.deployed();
+  createAbiJSON(tcake, "CAKE");
   const tCakeAddress = tcake.address;
   console.log("tCake deployed: ", tcake.address);
 
   const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000); // 90 million BNB
   await twbnb.deployed();
+  createAbiJSON(twbnb, "WBNB");
   const tWBNBAddress = twbnb.address;
   console.log("tWBNB deployed: ", twbnb.address);
 
@@ -341,6 +352,7 @@ async function addMarkets(diamondAddress) {
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await Faucet.deploy();
+  createAbiJSON(faucet, "Faucet");
   console.log("Faucet deployed at ", faucet.address);
 
   // Transferring funds to faucet
@@ -423,6 +435,7 @@ async function provideLiquidity(rets) {
     "PancakeRouter",
     pancakeRouterAddr
   );
+  createAbiJSON(pancakeRouter, "PancakeRouter");
   // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
   await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
@@ -504,25 +517,23 @@ exports.deployDiamond = deployDiamond;
 exports.addMarkets = addMarkets;
 exports.provideLiquidity = provideLiquidity;
 
-function createAbiJSON(artifact, filename, reciept){
+function createAbiJSON(artifact, filename){
   const { chainId } = hre.network.config;
-  if(existsSync(`${__dirname}/../frontend/src/abi/${filename}.json`)){
-    const prevData = JSON.parse(readFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,"utf8"));
+  if(existsSync(`${__dirname}/../abis/${filename}.json`)){
+    const prevData = JSON.parse(readFileSync(`${__dirname}/../abis/${filename}.json`,"utf8"));
     const data = {
       abi: JSON.parse(artifact.interface.format("json")),
       networks: { ...prevData.networks }
     };
-    data.networks[chainId] = { "address": artifact.address, blockNumber: reciept.blockNumber };
-    writeFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,JSON.stringify(data));
-    writeFileSync(`${__dirname}/../backend/abi/${filename}.json`,JSON.stringify(data));
+    data.networks[chainId] = { "address": artifact.address};
+    writeFileSync(`${__dirname}/../abis/${filename}.json`,JSON.stringify(data));
   } else {
     const data = {
       abi: JSON.parse(artifact.interface.format("json")),
       networks: {}
     };
-    data.networks[chainId] = { "address": artifact.address, blockNumber: reciept.blockNumber };
-    writeFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,JSON.stringify(data));
-    writeFileSync(`${__dirname}/../backend/abi/${filename}.json`,JSON.stringify(data));
+    data.networks[chainId] = { "address": artifact.address};
+    writeFileSync(`${__dirname}/../abis/${filename}.json`,JSON.stringify(data));
   }
 
 }
