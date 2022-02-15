@@ -173,7 +173,7 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 		
-	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, uint256 _amount) external nonReentrant()	returns (bool) {
+	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, uint256 _amount) external override nonReentrant()	returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);

@@ -512,6 +512,7 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
 exports.deployDiamond = deployDiamond;
 // exports.deployOpenFacets = deployOpenFacets
 exports.addMarkets = addMarkets;
