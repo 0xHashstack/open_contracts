@@ -503,3 +503,26 @@ exports.deployDiamond = deployDiamond;
 // exports.deployOpenFacets = deployOpenFacets
 exports.addMarkets = addMarkets;
 exports.provideLiquidity = provideLiquidity;
+
+function createAbiJSON(artifact, filename, reciept){
+  const { chainId } = hre.network.config;
+  if(existsSync(`${__dirname}/../frontend/src/abi/${filename}.json`)){
+    const prevData = JSON.parse(readFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,"utf8"));
+    const data = {
+      abi: JSON.parse(artifact.interface.format("json")),
+      networks: { ...prevData.networks }
+    };
+    data.networks[chainId] = { "address": artifact.address, blockNumber: reciept.blockNumber };
+    writeFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../backend/abi/${filename}.json`,JSON.stringify(data));
+  } else {
+    const data = {
+      abi: JSON.parse(artifact.interface.format("json")),
+      networks: {}
+    };
+    data.networks[chainId] = { "address": artifact.address, blockNumber: reciept.blockNumber };
+    writeFileSync(`${__dirname}/../frontend/src/abi/${filename}.json`,JSON.stringify(data));
+    writeFileSync(`${__dirname}/../backend/abi/${filename}.json`,JSON.stringify(data));
+  }
+
+}
