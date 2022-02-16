@@ -52,11 +52,21 @@ library LibOpen {
 		address indexed account,
 		bytes32 loanMarket,
 		bytes32 commmitment,
-		bytes32 indexed fromMarket,
-		bytes32 indexed toMarket,
-		uint256 toAmount,
+		bool isSwapped,
+		bytes32 indexed currentMarket,
+		uint256 indexed currentAmount,
 		uint256 timestamp
 	);
+
+	// event MarketSwapped(
+	// 	address indexed account,
+	// 	bytes32 loanMarket,
+	// 	bytes32 commmitment,
+	// 	bytes32 indexed fromMarket,
+	// 	bytes32 indexed toMarket,
+	// 	uint256 toAmount,
+	// 	uint256 timestamp
+	// );
 
 	// event MarketSwapped(
 	// 	address indexed account,
@@ -320,7 +330,7 @@ library LibOpen {
 		_accruedInterest(_sender, _loanMarket, _commitment);
 		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
 		
-		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.market, loanState.currentMarket, loanState.currentAmount, block.timestamp);
+		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
 	// =========== Liquidator Functions ===========
@@ -722,8 +732,6 @@ library LibOpen {
 		_isMarket2Supported(loanState.currentMarket);
 
 		uint256 num = loan.id - 1;
-		bytes32 secondaryMarket = loanState.currentMarket;
-
 		uint256 _swappedAmount = _swap(_account, loanState.currentMarket,loan.market,loanState.currentAmount, 1);
 
 		/// Updating LoanRecord
@@ -743,7 +751,7 @@ library LibOpen {
 		_accruedInterest(_account, _market, _commitment);
 		_accruedYield(ds.loanPassbook[_account], collateral, cYield);
 
-		emit MarketSwapped(_account,loan.market, loan.commitment, secondaryMarket, loanState.currentMarket, loanState.currentAmount, block.timestamp);
+		emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 	
 	function _avblReservesLoan(bytes32 _loanMarket) internal view returns (uint) {
