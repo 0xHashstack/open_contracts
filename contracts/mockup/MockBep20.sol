@@ -96,8 +96,8 @@ contract MockBep20 is Context{
     function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
 
-        require (_allowances[_from][_msgSender()] >= _value, "ERROR: Amount exceeds allowance");
         require (_balances[_from] >= _value, "ERROR: Insufficient balance at source");
+        require (_allowances[_from][_msgSender()] >= _value, "ERROR: Amount exceeds allowance");
         
         _allowances[_from][_msgSender()] -= _value;
 

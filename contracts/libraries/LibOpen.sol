@@ -485,9 +485,9 @@ library LibOpen {
 		}
 
 		/// FETCH USDT PRICES
-		usdCollateral = LibOpen._getLatestPrice(collateral.market);
-		usdLoan = LibOpen._getLatestPrice(loan.market);
-		usdLoanCurrent = LibOpen._getLatestPrice(loanState.currentMarket);
+		usdCollateral = _getLatestPrice(collateral.market);
+		usdLoan = _getLatestPrice(loan.market);
+		usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
 
 		/// Permissible withdrawal amount calculation in the loanMarket.
 		// permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
