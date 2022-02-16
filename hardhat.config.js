@@ -53,7 +53,8 @@ module.exports = {
       {
           mnemonic: process.env.MNEMONIC,
       },
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      url: 'https://nd-400-266-190.p2pify.com/1efac602169fba8d5bf0589315ec436a',
+      // url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
       timeout: 2000000,
       gas: 2100000, 
