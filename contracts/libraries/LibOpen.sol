@@ -896,8 +896,7 @@ library LibOpen {
 		require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
 		
-		uint priceCheck = uint256(price);
-
+		uint256 priceCheck = uint256(price);
 		require(priceCheck != 0, "ERROR: Latest Price Fetch Failure");
 		
 		return priceCheck;
