@@ -10,6 +10,7 @@ async function main() {
   const rets = await addMarkets(diamondAddress);
   await provideLiquidity(rets);
 }
+// Deploy Diamond
 
 async function deployDiamond() {
   const accounts = await ethers.getSigners();
@@ -229,6 +230,8 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
   console.log("updateAPR complete");
 
+/// DEPLOYING TEST TOKENS
+
   console.log("Deploy test tokens");
   const admin_ = upgradeAdmin.address;
   const Mockup = await ethers.getContractFactory("BEP20Token");
@@ -270,6 +273,8 @@ async function addMarkets(diamondAddress) {
         SXP: ${tSxpAddress}
         CAKE: ${tCakeAddress}`);
 
+  /// APPROVING TOKENS FOR DIAMOND
+
   console.log("Approval diamond");
   await tbtc.approve(diamondAddress, "500000000000000");
   await tusdc.approve(diamondAddress, "5000000000000000000000000");
@@ -279,6 +284,7 @@ async function addMarkets(diamondAddress) {
   await twbnb.approve(diamondAddress, "5000000000000000000000000");
 
   /// MARKET ADDRESSES ADDED
+
   // console.log("Add fairPrice addresses");
   // await diamond.addFairPriceAddress(symbolWBNB, tWBNBAddress);
   // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress);
@@ -420,6 +426,8 @@ async function addMarkets(diamondAddress) {
     tWBNBAddress,
   };
 }
+
+// Providing Liquidity
 
 async function provideLiquidity(rets) {
   console.log("Start LP making");
