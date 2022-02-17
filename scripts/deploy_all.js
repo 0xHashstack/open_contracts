@@ -10,6 +10,7 @@ async function main() {
   const rets = await addMarkets(diamondAddress);
   await provideLiquidity(rets);
 }
+// Deploy Diamond
 
 async function deployDiamond() {
   const accounts = await ethers.getSigners();
@@ -197,15 +198,15 @@ async function addMarkets(diamondAddress) {
   );
   await diamond.addFairPriceAddress(
     symbolBtc,
-    "0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf"
+    "0x5741306c21795FdCBb9b265Ea0255F499DFe515C"
   );
   await diamond.addFairPriceAddress(
     symbolSxp,
-    "0xE188A9875af525d25334d75F3327863B2b8cd0F1"
+    "0x678AC35ACbcE272651874E782DB5343F9B8a7D66"
   );
   await diamond.addFairPriceAddress(
     symbolCAKE,
-    "0xB6064eD41d4f67e353768aA239cA86f4F73665a1"
+    "0x81faeDDfeBc2F8Ac524327d70Cf913001732224C"
   );
 
   console.log("setCommitment begin");
@@ -228,6 +229,8 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPR(comit_ONEMONTH, 1500);
   await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
   console.log("updateAPR complete");
+
+/// DEPLOYING TEST TOKENS
 
   console.log("Deploy test tokens");
   const admin_ = upgradeAdmin.address;
@@ -270,6 +273,8 @@ async function addMarkets(diamondAddress) {
         SXP: ${tSxpAddress}
         CAKE: ${tCakeAddress}`);
 
+  /// APPROVING TOKENS FOR DIAMOND
+
   console.log("Approval diamond");
   await tbtc.approve(diamondAddress, "500000000000000");
   await tusdc.approve(diamondAddress, "5000000000000000000000000");
@@ -279,6 +284,7 @@ async function addMarkets(diamondAddress) {
   await twbnb.approve(diamondAddress, "5000000000000000000000000");
 
   /// MARKET ADDRESSES ADDED
+
   // console.log("Add fairPrice addresses");
   // await diamond.addFairPriceAddress(symbolWBNB, tWBNBAddress);
   // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress);
@@ -420,6 +426,8 @@ async function addMarkets(diamondAddress) {
     tWBNBAddress,
   };
 }
+
+// Providing Liquidity
 
 async function provideLiquidity(rets) {
   console.log("Start LP making");
