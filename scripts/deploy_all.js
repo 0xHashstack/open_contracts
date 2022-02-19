@@ -548,26 +548,7 @@ exports.provideLiquidity = provideLiquidity;
 
 /// CREATE ABI OF CONTRACTS
 function createAbiJSON(artifact, filename){
-  const { chainId } = hre.network.config;
-  if(existsSync(`${__dirname}/../abi/frontend/${filename}.json`)){
-    const prevData = JSON.parse(readFileSync(`${__dirname}/../abi/frontend/${filename}.json`,"utf8"));
-    const data = {
-      abi: JSON.parse(artifact.interface.format("json")),
-      networks: { ...prevData.networks }
-    };
-    data.networks[chainId] = { "address": artifact.address};
-    writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
-    writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
-
-  } else {
-    const data = {
-      abi: JSON.parse(artifact.interface.format("json")),
-      networks: {}
-    };
-    data.networks[chainId] = { "address": artifact.address};
-    writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
-    writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data)); 
-
-  }
-
+  const data = JSON.parse(artifact.interface.format("json"))
+  writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
+  writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
 }
