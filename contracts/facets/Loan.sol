@@ -8,8 +8,9 @@ contract Loan is Pausable, ILoan {
 	
 	event AddCollateral(address indexed account,uint256 indexed id,uint256 amount,uint256 timestamp);	
 	event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount, uint256 timestamp);
+	event CollateralReleased(address indexed account,bytes32 indexed market,uint256 indexed amount, uint256 id, uint256 timestamp);
+	// event CollateralReleased(address indexed account,uint256 indexed amount,bytes32 indexed market,uint256 timestamp);
 	// event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount,bytes32 market,uint256 timestamp);
-	event CollateralReleased(address indexed account,uint256 indexed amount,bytes32 indexed market,uint256 timestamp);
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoanAddress = msg.sender;
@@ -66,6 +67,9 @@ contract Loan is Pausable, ILoan {
 
 		bytes32 collateralMarket = collateral.market;
 		uint256 collateralAmount = collateral.amount;
+
+		emit CollateralReleased(msg.sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
+		// emit CollateralReleased(msg.sender, collateralAmount, collateralMarket, block.timestamp);
 		
 		/// UPDATING STORAGE RECORDS FOR LOAN
 		/// COLLATERAL RECORDS
@@ -92,8 +96,6 @@ contract Loan is Pausable, ILoan {
 		delete loanAccount.collaterals[loan.id - 1];
 		delete loanAccount.loanState[loan.id - 1];
 
-
-		emit CollateralReleased(msg.sender, collateralAmount, collateralMarket, block.timestamp);
         LibOpen._updateReservesLoan(collateralMarket, collateralAmount, 1);
 
 		return true;
