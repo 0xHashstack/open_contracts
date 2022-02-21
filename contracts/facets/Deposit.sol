@@ -11,7 +11,8 @@ contract Deposit is Pausable, IDeposit{
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
-	event DepositWithdrawal(address indexed account, bytes32 indexed market, bytes32 commitment,uint indexed amount,uint timestamp);
+	event DepositWithdrawal(address indexed account, uint256 depositId, uint256 indexed amount,uint timestamp);
+	// event DepositWithdrawal(address indexed account, bytes32 indexed market, bytes32 commitment,uint indexed amount,uint timestamp);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	
 	constructor() 
@@ -119,10 +120,9 @@ contract Deposit is Pausable, IDeposit{
 
 			LibOpen._updateReservesDeposit(_market, _amount, 1);
 		
-			emit DepositWithdrawal(msg.sender,_market,_commitment, _amount,  block.timestamp);
+			emit DepositWithdrawal(msg.sender,deposit.id, _amount,  block.timestamp);
 			return true;
 	}
-
 
     function _createNewDeposit(address _sender, bytes32 _market,bytes32 _commitment,uint256 _amount) private {
         AppStorageOpen storage ds = LibOpen.diamondStorage(); 
