@@ -7,7 +7,8 @@ import "../libraries/LibOpen.sol";
 contract Loan is Pausable, ILoan {
 	
 	event AddCollateral(address indexed account,uint256 indexed id,uint256 amount,uint256 timestamp);	
-	event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount,bytes32 market,uint256 timestamp);
+	event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount, uint256 timestamp);
+	// event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount,bytes32 market,uint256 timestamp);
 	event CollateralReleased(address indexed account,uint256 indexed amount,bytes32 indexed market,uint256 timestamp);
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
@@ -171,7 +172,8 @@ contract Loan is Pausable, ILoan {
 		ds.loanToken = IBEP20(LibOpen._connectMarket(loan.market));
 		ds.loanToken.transfer(msg.sender,_amount);
 
-		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loan.market, block.timestamp);
+		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, block.timestamp);
+		// emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loan.market, block.timestamp);
 		return true;
 	}
 
