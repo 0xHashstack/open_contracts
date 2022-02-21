@@ -5,28 +5,10 @@ import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
 
 contract Loan is Pausable, ILoan {
-
-	event AddCollateral(
-		address indexed account,
-		uint256 indexed id,
-		uint256 amount,
-		uint256 timestamp
-	);
 	
-	event WithdrawPartialLoan(
-		address indexed account,
-		uint256 indexed id,
-		uint256 indexed amount,
-		bytes32 market,
-		uint256 timestamp
-	);
-
-	event CollateralReleased(
-		address indexed account,
-		uint256 indexed amount,
-		bytes32 indexed market,
-		uint256 timestamp
-	);
+	event AddCollateral(address indexed account,uint256 indexed id,uint256 amount,uint256 timestamp);	
+	event WithdrawPartialLoan(address indexed account,uint256 indexed id,uint256 indexed amount,bytes32 market,uint256 timestamp);
+	event CollateralReleased(address indexed account,uint256 indexed amount,bytes32 indexed market,uint256 timestamp);
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoanAddress = msg.sender;

@@ -8,11 +8,11 @@ import "../libraries/LibOpen.sol";
 import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit{
-		
+
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
+	event DepositWithdrawal(address indexed account, bytes32 indexed market, bytes32 commitment,uint indexed amount,uint timestamp);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
-	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 	
 	constructor() 
 	{
@@ -119,7 +119,7 @@ contract Deposit is Pausable, IDeposit{
 
 			LibOpen._updateReservesDeposit(_market, _amount, 1);
 		
-			emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+			emit DepositWithdrawal(msg.sender,_market,_commitment, _amount,  block.timestamp);
 			return true;
 	}
 
@@ -351,7 +351,7 @@ contract Deposit is Pausable, IDeposit{
 
 	// 			LibOpen._updateReservesDeposit(_market, _amount, 1);
 			
-	// 			emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+	// 			emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 	// 			return true;
 	// 		}
 	// 	} else if  (_commitment == LibOpen._getCommitment(0))	{
@@ -364,7 +364,7 @@ contract Deposit is Pausable, IDeposit{
 
 	// 		LibOpen._updateReservesDeposit(_market, _amount, 1);
 
-	// 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+	// 		emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 	// 		return true;
 	// 	}
 	// }
@@ -405,7 +405,7 @@ contract Deposit is Pausable, IDeposit{
 
 	// 	LibOpen._updateReservesDeposit(_market, _amount, 1);
 		
-	// 	emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+	// 	emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 	// 	return true;	
 	// }
 
