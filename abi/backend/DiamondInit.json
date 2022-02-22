@@ -1,0 +1,1 @@
+[{"type":"function","name":"init","constant":false,"payable":false,"gas":29000000,"inputs":[{"type":"address","name":"account"},{"type":"address","name":"reserveAddr"},{"type":"address","name":"accessRegistry"}],"outputs":[]}]

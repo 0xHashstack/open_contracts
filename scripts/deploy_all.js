@@ -530,6 +530,81 @@ async function provideLiquidity(rets) {
       { gasLimit: 8000000 }
     );
   console.log("WBNB <-> CAKE LP done");
+
+ // LP FOR SXP
+
+  /// USDC-SXP LIQUIDITY
+  await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
+
+  await pancakeRouter.addLiquidity(
+    tusdc.address,
+    tsxp.address,
+    "10000000000000000000000000",
+    "1000000000000000000000000",
+    1,
+    1,
+    upgradeAdmin.address,
+    Date.now() + 60 * 30,
+    { gasLimit: 8000000 }
+  );
+
+  console.log("USDC <-> SXP LP done");
+
+  /// USDT-SXP LIQUIDITY
+  await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
+
+  await pancakeRouter.addLiquidity(
+    tusdt.address,
+    tsxp.address,
+    "10000000000000000000000000",
+    "1000000000000000000000000",
+    1,
+    1,
+    upgradeAdmin.address,
+    Date.now() + 60 * 30,
+    { gasLimit: 8000000 }
+  );
+  console.log("USDT <-> SXP LP done");
+
+  /// BTC-SXP LIQUIDITY
+  await tbtc.approve(pancakeRouterAddr, "120000000000");
+  await tsxp.approve(pancakeRouterAddr, "50000000000000000000000000");
+
+  await pancakeRouter
+    .connect(upgradeAdmin)
+    .addLiquidity(
+      tbtc.address,
+      tsxp.address,
+      "12000000000",
+      "5000000000000000000000000",
+      1,
+      1,
+      upgradeAdmin.address,
+      Date.now() + 60 * 30,
+      { gasLimit: 8000000 }
+    );
+  console.log("BTC <-> SXP LP done");
+
+  /// WBNB-SXP LIQUIDITY
+  await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "2500000000000000000000");
+  
+  await pancakeRouter
+    .connect(upgradeAdmin)
+    .addLiquidity(
+      twbnb.address,
+      tsxp.address,
+      "5000000000000000000",
+      "250000000000000000000",
+      1,
+      1,
+      upgradeAdmin.address,
+      Date.now() + 60 * 30,
+      { gasLimit: 8000000 }
+    );
+  console.log("WBNB <-> SXP LP done");
 }
 
 if (require.main === module) {
