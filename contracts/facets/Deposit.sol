@@ -209,7 +209,7 @@ contract Deposit is Pausable, IDeposit{
 
 		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibOpen._calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
 
-		aggregateYield *= deposit.amount;
+		aggregateYield += deposit.amount;
 
 		yield.accruedYield += aggregateYield;
 		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;

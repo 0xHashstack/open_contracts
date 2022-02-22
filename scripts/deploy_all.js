@@ -12,6 +12,7 @@ async function main() {
 }
 // Deploy Diamond
 
+/// DEPLOY ALL CONTRACTS
 async function deployDiamond() {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
@@ -21,7 +22,7 @@ async function deployDiamond() {
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
 
-  // deploy DiamondCutFacet
+  /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
   let diamondCutFacet = await DiamondCutFacet.deploy();
   await diamondCutFacet.deployed();
@@ -29,7 +30,7 @@ async function deployDiamond() {
 
   console.log("DiamondCutFacet deployed:", diamondCutFacet.address);
 
-  // deploy facets
+  /// DEPLOY FACETS OF DIAMOND
   console.log("");
   console.log("Deploying facets");
   const FacetNames = ["DiamondLoupeFacet"];
@@ -48,6 +49,7 @@ async function deployDiamond() {
     });
   }
 
+  /// DEPLOY ACCESS_REGISTRY
   const AccessRegistry = await ethers.getContractFactory("AccessRegistry");
   const accessRegistry = await AccessRegistry.deploy(upgradeAdmin.address);
   console.log("AccessRegistry deployed at ", accessRegistry.address);
@@ -65,12 +67,15 @@ async function deployDiamond() {
   ];
   const opencut = [];
   let facetId = 10;
+
+  /// DEPLOY FACETS OF DIAMOND
   for (const FacetName of OpenNames) {
     const Facet = await ethers.getContractFactory(FacetName);
     const facet = await Facet.deploy();
     await facet.deployed();
-    // Creating ABI's
-    console.log(`Creating ABI for ${FacetName}`)
+
+    /// Creating ABI's FOR FACETS
+    console.log(`Creating ABI for ${FacetName}`);
     createAbiJSON(facet, FacetName);
     console.log(`${FacetName} deployed: ${facet.address}`);
     opencut.push({
@@ -94,7 +99,7 @@ async function deployDiamond() {
   createAbiJSON(diamondInit, "DiamondInit");
   console.log("DiamondInit deployed:", diamondInit.address);
 
-  // deploy Diamond
+  ///DEPLOY DIAMOND
   const Diamond = await ethers.getContractFactory("OpenDiamond");
   const diamond = await Diamond.deploy(
     upgradeAdmin.address,
@@ -150,6 +155,7 @@ async function deployDiamond() {
   return diamond.address;
 }
 
+/// ADDMARKETS()
 async function addMarkets(diamondAddress) {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
@@ -159,6 +165,7 @@ async function addMarkets(diamondAddress) {
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
+  /// BYTES32 MARKET SYMBOL BYTES32
   const symbolWBNB =
     "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
   const symbolUsdt =
@@ -171,8 +178,8 @@ async function addMarkets(diamondAddress) {
     "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
   const symbolCAKE =
     "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
-  // const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
 
+  /// BYTES32 COMMINTMENT PERIOD
   const comit_NONE =
     "0x636f6d69745f4e4f4e4500000000000000000000000000000000000000000000";
   const comit_TWOWEEKS =
@@ -209,6 +216,7 @@ async function addMarkets(diamondAddress) {
     "0x81faeDDfeBc2F8Ac524327d70Cf913001732224C"
   );
 
+  /// SET COMMITMENT PERIOD
   console.log("setCommitment begin");
   await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
   await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
@@ -216,6 +224,7 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).setCommitment(comit_THREEMONTHS);
   console.log("setCommitment complete");
 
+  /// UPDATE APY
   console.log("updateAPY begin");
   await comptroller.connect(upgradeAdmin).updateAPY(comit_NONE, 780);
   await comptroller.connect(upgradeAdmin).updateAPY(comit_TWOWEEKS, 1000);
@@ -223,6 +232,7 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPY(comit_THREEMONTHS, 1800);
   console.log("updateAPY complete");
 
+  /// UPDATE APR
   console.log("updateAPR begin");
   await comptroller.connect(upgradeAdmin).updateAPR(comit_NONE, 1800);
   await comptroller.connect(upgradeAdmin).updateAPR(comit_TWOWEEKS, 1800);
@@ -230,37 +240,44 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
   console.log("updateAPR complete");
 
-/// DEPLOYING TEST TOKENS
 
+/// DEPLOYING TEST TOKENS
   console.log("Deploy test tokens");
   const admin_ = upgradeAdmin.address;
   const Mockup = await ethers.getContractFactory("BEP20Token");
+
+  /// DEPLOY BTC.T
   const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000); // 21 million BTC
   await tbtc.deployed();
   const tBtcAddress = tbtc.address;
   console.log("tBTC deployed: ", tbtc.address);
 
-  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000);
+  /// DEPLOY USDC.T
+  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000); // 10 billion USDC
   await tusdc.deployed();
   const tUsdcAddress = tusdc.address;
   console.log("tUSDC deployed: ", tusdc.address);
 
+  /// DEPLOY USDT.T
   const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000); // 10 billion USDT
   await tusdt.deployed();
   const tUsdtAddress = tusdt.address;
   console.log("tUSDT deployed: ", tusdt.address);
 
-  const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000);
+  /// DEPLOY SXP.T
+  const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000); // 1 billion SXP
   await tsxp.deployed();
   const tSxpAddress = tsxp.address;
   console.log("tSxp deployed: ", tsxp.address);
 
-  const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000);
+  /// DEPLOY CAKE.T
+  const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000); // 2.7 billion CAKE
   await tcake.deployed();
   const tCakeAddress = tcake.address;
   console.log("tCake deployed: ", tcake.address);
 
-  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000); // 90 million BNB
+  /// DEPLOY WBNB.T
+  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000); // 90 million WBNB
   await twbnb.deployed();
   const tWBNBAddress = twbnb.address;
   console.log("tWBNB deployed: ", twbnb.address);
@@ -274,7 +291,6 @@ async function addMarkets(diamondAddress) {
         CAKE: ${tCakeAddress}`);
 
   /// APPROVING TOKENS FOR DIAMOND
-
   console.log("Approval diamond");
   await tbtc.approve(diamondAddress, "500000000000000");
   await tusdc.approve(diamondAddress, "5000000000000000000000000");
@@ -293,12 +309,14 @@ async function addMarkets(diamondAddress) {
   // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
   // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
 
+  /// ADD PRIMARY MARKETS & MINAMOUNT()
   console.log("addMarket & minAmount");
   const minUSDT = BigNumber.from("100000000000000000000"); // 100 USDT, or 100 USDC
   const minUSDC = BigNumber.from("100000000000000000000"); // 100 USDT, or 100 USDC
   const minBTC = BigNumber.from("10000000"); // 0.1 BTC
   const minBNB = BigNumber.from("250000000000000000"); // 0.25
 
+  // 100 USDT [minAmount]
   await tokenList
     .connect(upgradeAdmin)
     .addMarketSupport(symbolUsdt, 18, tUsdtAddress, minUSDT, {
@@ -320,7 +338,7 @@ async function addMarkets(diamondAddress) {
     .addMarketSupport(symbolBtc, 8, tBtcAddress, minBTC, { gasLimit: 800000 });
   console.log(`tBTC added ${minBTC}`);
 
-  // 0.25 BNB
+  // 0.25 BNB [minAmount]
   await tokenList
     .connect(upgradeAdmin)
     .addMarketSupport(symbolWBNB, 18, tWBNBAddress, minBNB, {
@@ -330,6 +348,7 @@ async function addMarkets(diamondAddress) {
 
   console.log("primary markets added");
 
+  /// ADD SECONDARY MARKETS
   console.log("adding secondary markets");
   await tokenList
     .connect(upgradeAdmin)
@@ -344,26 +363,25 @@ async function addMarkets(diamondAddress) {
   console.log("secondary markets added");
   // console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
 
-  // Transferring Funds to Upgradeadmin
+  /// TRANSFERRING TOKENS TO UPGRADEADMIN
   await tusdt.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDT
   await tusdc.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDC
   await tbtc.transfer(upgradeAdmin.address, "420000000000000"); // 4.2 million BTC
   await twbnb.transfer(upgradeAdmin.address, "18000000000000000000000000"); // 18 million BNB
 
-  /// Transferring funds to diamond
+  /// TRANSFERRING TOKENS TO DIAMOND(RESERVES)
   await tusdt.transfer(diamondAddress, "2000000000000000000000000000");
   await tusdc.transfer(diamondAddress, "2000000000000000000000000000");
   await tbtc.transfer(diamondAddress, "420000000000000");
   await twbnb.transfer(diamondAddress, "18000000000000000000000000");
 
-  
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await Faucet.deploy();
   createAbiJSON(faucet, "Faucet");
   console.log("Faucet deployed at ", faucet.address);
 
-  // Transferring funds to faucet
+  /// TRANSFERRING TOKENS TO FAUCET
   await tusdt.transfer(faucet.address, "6000000000000000000000000000"); // 6 billion USDT
   console.log(
     "6000000000 tusdt transfered to faucet. Token being :",
@@ -389,7 +407,7 @@ async function addMarkets(diamondAddress) {
   );
   console.log(await twbnb.balanceOf(faucet.address));
 
-  // Updating Token Balance in faucet
+  /// UPADTING FAUCET BALANCE & FUNDS_LEAK
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdtAddress,
     "6000000000000000000000000000", // 6 billion USDT
@@ -401,21 +419,15 @@ async function addMarkets(diamondAddress) {
     "10000000000000000000000" // 10000 USDC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
-    tBtcAddress,    
+    tBtcAddress,
     "1260000000000000", // 12.6 million BTC
     "500000000" // 5 BTC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tWBNBAddress,
     "54000000000000000000000000", // 54 million BNB
-    "100000000000000000000", // 100 BNB
+    "100000000000000000000" // 100 BNB
   );
-  // Get tokens function call
-  // user = accounts[1];
-  // console.log("Initial Bal: ", await tusdt.balanceOf(user.address));
-  // await faucet.connect(user).getTokens(0);
-
-  // console.log("Final bal: ", await tusdt.balanceOf(user.address));
 
   return {
     tBtcAddress,
@@ -427,8 +439,7 @@ async function addMarkets(diamondAddress) {
   };
 }
 
-// Providing Liquidity
-
+/// CREATE LIQUIDITY POOL
 async function provideLiquidity(rets) {
   console.log("Start LP making");
   const accounts = await ethers.getSigners();
@@ -447,8 +458,10 @@ async function provideLiquidity(rets) {
   );
   // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
+  /// USDC-CAKE LIQUIDITY
   await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
   await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+
   await pancakeRouter.addLiquidity(
     tusdc.address,
     tcake.address,
@@ -463,8 +476,10 @@ async function provideLiquidity(rets) {
 
   console.log("USDC <-> CAKE LP done");
 
+  /// USDT-CAKE LIQUIDITY
   await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
   await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+
   await pancakeRouter.addLiquidity(
     tusdt.address,
     tcake.address,
@@ -478,8 +493,10 @@ async function provideLiquidity(rets) {
   );
   console.log("USDT <-> CAKE LP done");
 
+  /// BTC-CAKE LIQUIDITY
   await tbtc.approve(pancakeRouterAddr, "120000000000");
   await tcake.approve(pancakeRouterAddr, "50000000000000000000000000");
+
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -495,8 +512,10 @@ async function provideLiquidity(rets) {
     );
   console.log("BTC <-> CAKE LP done");
 
+  /// WBNB-CAKE LIQUIDITY
   await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
   await tcake.approve(pancakeRouterAddr, "2500000000000000000000");
+  
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -527,6 +546,7 @@ exports.deployDiamond = deployDiamond;
 exports.addMarkets = addMarkets;
 exports.provideLiquidity = provideLiquidity;
 
+/// CREATE ABI OF CONTRACTS
 function createAbiJSON(artifact, filename){
   const data = JSON.parse(artifact.interface.format("json"))
   writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
