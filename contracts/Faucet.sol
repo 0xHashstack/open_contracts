@@ -12,7 +12,7 @@ contract Faucet {
     address admin;
 
     bool isReentrant = false;
-    uint public waitTime = 4320 minutes;
+    uint public waitTime = 1440 minutes;
 
     struct TokenLedger    {
         BEP20 token;
