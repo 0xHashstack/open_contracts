@@ -30,24 +30,31 @@ contract Deposit is Pausable, IDeposit{
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
-	function hasAccount(address _account) external view override returns (bool)	{
+	function hasAccount(address _account) external view override returns(bool){
 		LibOpen._hasAccount(_account);
 		return true;
 	}
 
-	function hasDeposit(bytes32 _market, bytes32 _commitment) external view override returns (bool) {
+	function getDeposits(address account) external view returns(bytes32[] memory market, bytes32[] memory commitment, uint256 amount, uint256[] memory savingsInterest)	{
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
+
+		return (activeDeposits.market, activeDeposits.commitment, activeDeposits.amount, activeDeposits.savingsInterest);
+	}
+	
+	function hasDeposit(bytes32 _market, bytes32 _commitment) external view override returns(bool) {
 		LibOpen._hasDeposit(msg.sender,_market, _commitment);
 		return true;
 	}
 
-	function hasYield(bytes32 _market, bytes32 _commitment) external view override returns (bool) {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+	function hasYield(bytes32 _market, bytes32 _commitment) external view override returns(bool) {
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 		LibOpen._hasYield(yield);
 		return true;
 	}
  
-	function avblReservesDeposit(bytes32 _market) external view override returns (uint) {
+	function avblReservesDeposit(bytes32 _market) external view override returns(uint) {
 		return LibOpen._avblReservesDeposit(_market);
 	}
 
@@ -81,7 +88,7 @@ contract Deposit is Pausable, IDeposit{
 		bytes32 _market, 
 		bytes32 _commitment,
 		uint _amount
-	) external override nonReentrant() returns (bool) 
+	) external override nonReentrant() returns(bool) 
 	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
@@ -96,7 +103,7 @@ contract Deposit is Pausable, IDeposit{
 		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
 		if (_commitment != LibOpen._getCommitment(0))	{
-			if (!deposit.isTimelockActivated)	{
+			if (deposit.isTimelockActivated == false)	{
 				
 				deposit.isTimelockActivated = true;
 				deposit.activationTime = block.timestamp;
@@ -130,6 +137,7 @@ contract Deposit is Pausable, IDeposit{
         SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
         DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
         YieldLedger storage yield = ds.indYieldRecord[_sender][_market][_commitment];
+		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_sender];
 
         LibOpen._ensureSavingsAccount(_sender,savingsAccount);
 
@@ -137,7 +145,7 @@ contract Deposit is Pausable, IDeposit{
 
         ds.token.transferFrom(_sender, address(this), _amount);
 
-        _processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
+        _processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield, activeDeposits);
         LibOpen._updateReservesDeposit(_market, _amount, 0);
         emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id, block.timestamp);
     }
@@ -149,7 +157,8 @@ contract Deposit is Pausable, IDeposit{
 		uint256 _amount,
 		SavingsAccount storage savingsAccount,
 		DepositRecords storage deposit,
-		YieldLedger storage yield
+		YieldLedger storage yield,
+		ActiveDeposits storage activeDeposits
 	) private {
 		// SavingsAccount storage savingsAccount = savingsPassbook[_account];
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
@@ -194,6 +203,12 @@ contract Deposit is Pausable, IDeposit{
 
 		savingsAccount.deposits.push(deposit);
 		savingsAccount.yield.push(yield);
+
+		activeDeposits.market.push(_market);
+		activeDeposits.commitment.push(_commitment);
+		activeDeposits.amount = _amount;
+		activeDeposits.savingsInterest.push(yield.accruedYield);
+
 	}
 
 	function accruedYield(address _account,bytes32 _market,bytes32 _commitment) private {
@@ -209,7 +224,7 @@ contract Deposit is Pausable, IDeposit{
 
 		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibOpen._calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
 
-		aggregateYield += deposit.amount;
+		aggregateYield *= deposit.amount;
 
 		yield.accruedYield += aggregateYield;
 		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;
@@ -228,6 +243,7 @@ contract Deposit is Pausable, IDeposit{
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
 		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
+		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_account];
 
 		uint num = deposit.id - 1;
 
@@ -243,6 +259,11 @@ contract Deposit is Pausable, IDeposit{
 		savingsAccount.yield[num].oldLengthAccruedYield = yield.oldLengthAccruedYield;
 		savingsAccount.yield[num].oldTime = yield.oldTime;
 		savingsAccount.yield[num].accruedYield = yield.accruedYield;
+
+		activeDeposits.market.push(_market);
+		activeDeposits.commitment.push(_commitment);
+		activeDeposits.amount = _amount;
+		activeDeposits.savingsInterest.push(yield.accruedYield);
 	}
 
 	function preDepositProcess(bytes32 _market,uint256 _amount) private {
@@ -254,11 +275,11 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._minAmountCheck(_market, _amount);
 	}
 
-    function getFairPriceDeposit(uint _requestId) external view override returns (uint){
+    function getFairPriceDeposit(uint _requestId) external view override returns(uint){
 		return LibOpen._getFairPrice(_requestId);
 	}
 
-	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) private returns (bool) {
+	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) private returns(bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 		LibOpen._hasAccount(_account);
@@ -304,7 +325,7 @@ contract Deposit is Pausable, IDeposit{
 		_unpause();   
 	}
 
-	function isPausedDeposit() external view override virtual returns (bool) {
+	function isPausedDeposit() external view override virtual returns(bool) {
 		return _paused();
 	}
 
@@ -321,7 +342,7 @@ contract Deposit is Pausable, IDeposit{
 	// 	bytes32 _market, 
 	// 	bytes32 _commitment,
 	// 	uint _amount
-	// ) external override nonReentrant() returns (bool) 
+	// ) external override nonReentrant() returns(bool) 
 	// {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
@@ -377,7 +398,7 @@ contract Deposit is Pausable, IDeposit{
 	// 	bytes32 _commitment,
 	// 	uint _amount,
 	// 	SAVINGSTYPE _request
-	// ) external override nonReentrant() returns (bool) 
+	// ) external override nonReentrant() returns(bool) 
 	// {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
@@ -412,7 +433,7 @@ contract Deposit is Pausable, IDeposit{
 
 	/// SAVINGS BALANCE
 
-	// function savingsBalance(bytes32 _market, bytes32 _commitment, SAVINGSTYPE _request) private returns (uint) {
+	// function savingsBalance(bytes32 _market, bytes32 _commitment, SAVINGSTYPE _request) private returns(uint) {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 	// 	uint _savingsBalance;

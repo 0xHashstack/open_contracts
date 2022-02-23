@@ -314,7 +314,7 @@ library LibOpen {
 		loanAccount.loanState[num].currentAmount = loanState.currentAmount;
 
 		_accruedInterest(_sender, _loanMarket, _commitment);
-		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
+		if (collateral.isCollateralisedDeposit) _accruedYieldCollateral(loanAccount, collateral, cYield);
 		
 		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
@@ -436,7 +436,6 @@ library LibOpen {
 			ds.marketReservesDeposit[_loanMarket] -= _amount;
 		}
 	}
-
 	function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) internal {
 
 		if (savingsAccount.accOpenTime == 0) {
@@ -466,7 +465,7 @@ library LibOpen {
 		/// UPDATE collateralAvbl
 		collateralAvbl = collateral.amount - ds.indAccruedAPR[account][loan.market][loan.commitment].accruedInterest;
 		if (loan.commitment == _getCommitment(2)) {
-			_accruedYield(loanAccount, collateral, cYield);
+			_accruedYieldCollateral(loanAccount, collateral, cYield);
 			collateralAvbl += cYield.accruedYield;
 		}
 
@@ -735,7 +734,7 @@ library LibOpen {
 		ds.loanPassbook[_account].loanState[num].currentAmount = loanState.currentAmount;
 
 		_accruedInterest(_account, _market, _commitment);
-		_accruedYield(ds.loanPassbook[_account], collateral, cYield);
+		_accruedYieldCollateral(ds.loanPassbook[_account], collateral, cYield);
 
 		emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
@@ -789,7 +788,7 @@ library LibOpen {
 		return (collateralMarket, collateralAmount);
 	}
 
-	function _accruedYield(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
+	function _accruedYieldCollateral(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
 		bytes32 _commitment = cYield.commitment;
 		uint256 aggregateYield;
 		uint256 num = collateral.id-1;

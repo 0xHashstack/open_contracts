@@ -152,7 +152,7 @@ contract Loan is Pausable, ILoan {
 		loanAccount.collaterals[loan.id-1].amount += _collateralAmount;
 
 		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
-		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
+		if (collateral.isCollateralisedDeposit) LibOpen._accruedYieldCollateral(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
 		return true;

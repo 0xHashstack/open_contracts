@@ -59,6 +59,13 @@ struct YieldLedger    {
     uint timelockValidity; // timelock duration
     uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
 }
+
+struct ActiveDeposits {
+    bytes32[] market;
+    bytes32[] commitment;
+    uint256 amount;
+    uint256[] savingsInterest;
+}
 // =========== Loan structs ===========
 
 enum STATE {ACTIVE,REPAID}
@@ -180,6 +187,7 @@ struct AppStorageOpen {
     mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => YieldLedger))) indYieldRecord; // address =>_market => _commitment => depositRecord
+    mapping(address => ActiveDeposits) getActiveDeposits;
 
     //  Balance monitoring  - Deposits
     mapping(bytes32 => uint) marketReservesDeposit; // mapping(market => marketBalance)
