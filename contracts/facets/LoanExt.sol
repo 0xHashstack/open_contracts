@@ -37,8 +37,11 @@ contract LoanExt is Pausable, ILoanExt {
     	return LibOpen._utilisedReservesLoan(_loanMarket);
 	}
 
-	function getLoans(address account) external {
-		
+	function getLoans(address account) external view returns(bytes32[] memory loanMarket, bytes32[] memory loanCommitment,uint256[] memory loanAmount,bytes32[] memory collateralMarket,uint256[] memory collateralAmount,bool[] memory isSwapped,bytes32[] memory loanStateCurrentMarket,uint256[] memory loanStateCurrentAmount, uint256[] memory collateralYield,uint256[] memory borrowInterest) {
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		ActiveLoans storage activeLoans = ds.getActiveLoans[account];
+
+		return (activeLoans.loanMarket, activeLoans.loanCommitment, activeLoans.loanAmount, activeLoans.collateralMarket, activeLoans.collateralAmount, activeLoans.isSwapped, activeLoans.loanStateCurrentMarket, activeLoans.loanStateCurrentAmount, activeLoans.collateralYield, activeLoans.borrowInterest);
 	}
 
 	function loanRequest(
@@ -87,6 +90,7 @@ contract LoanExt is Pausable, ILoanExt {
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
+		ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 		
 		/// UPDATING LoanRecords
 		loan.id = loanAccount.loans.length + 1;
@@ -95,6 +99,19 @@ contract LoanExt is Pausable, ILoanExt {
 		loan.amount = _loanAmount;
 		loan.isSwapped = false;
 		loan.lastUpdate = block.timestamp;
+
+		
+		/// UPDATING ACTIVELOANS RECORDS
+		activeLoans.loanMarket.push(_loanMarket);
+		activeLoans.loanCommitment.push(_commitment);
+		activeLoans.loanAmount.push(_loanAmount);
+		activeLoans.collateralMarket.push(_collateralMarket);
+		activeLoans.collateralAmount.push(_collateralAmount);
+		activeLoans.isSwapped.push(false);
+		activeLoans.loanStateCurrentMarket.push(_loanMarket);
+		activeLoans.loanStateCurrentAmount.push(_loanAmount);
+		activeLoans.borrowInterest.push(0);
+		
 		
 		/// UPDATING DeductibleInterest
 		deductibleInterest.id = loan.id;
@@ -134,8 +151,9 @@ contract LoanExt is Pausable, ILoanExt {
 			/// UPDATING LoanAccount 
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPR.push(deductibleInterest);
-			// loanAccount.accruedAPY.push(accruedYield); - no yield because it is
-			// a flexible loan
+
+
+
 		} else if (_commitment == LibOpen._getCommitment(2)) {
 			
 			collateral.isCollateralisedDeposit = true;
@@ -153,12 +171,16 @@ contract LoanExt is Pausable, ILoanExt {
 			cYield.oldLengthAccruedYield = LibOpen._getApyTimeLength(_commitment);
 			cYield.oldTime = block.timestamp;
 			cYield.accruedYield =0;
+
+
+			activeLoans.collateralYield.push(0);
 			
 			/// UPDATING LoanAccount 
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPY.push(cYield);
 			loanAccount.accruedAPR.push(deductibleInterest);
 		}
+
 		LibOpen._updateUtilisationLoan(_loanMarket, _loanAmount, 0);
 	}
 
@@ -288,23 +310,6 @@ contract LoanExt is Pausable, ILoanExt {
 
 		return success=true;
 	}
-
-
-	// function liquidation(address account, uint256 id) external override authLoanExt() nonReentrant() returns (bool) {
-		
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-        
-	// 	bytes32 commitment = ds.loanPassbook[account].loans[id-1].commitment;
-	// 	bytes32 loanMarket = ds.loanPassbook[account].loans[id-1].market;
-
-	// 	LoanRecords storage loan = ds.indLoanRecords[account][loanMarket][commitment];
-		
-	// 	LibOpen._repayLoan(account, loanMarket, commitment, 0);
-
-	// 	emit Liquidation(account,loanMarket, commitment, loan.amount, block.timestamp);
-	// 	return true;
-	// }
-
 
 	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
 		LibOpen._repayLoan(msg.sender, _loanMarket, _commitment, _repayAmount);

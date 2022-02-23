@@ -138,6 +138,7 @@ contract Loan is Pausable, ILoan {
 		LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
+		ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
 		_preAddCollateralProcess(collateral.market, _collateralAmount, loan,loanState, collateral);
 
@@ -150,6 +151,7 @@ contract Loan is Pausable, ILoan {
 		/// UPDATE COLLATERAL IN STORAGE
 		collateral.amount += _collateralAmount;
 		loanAccount.collaterals[loan.id-1].amount += _collateralAmount;
+		activeLoans.collateralAmount[loan.id-1] = collateral.amount; // updating activeLoans
 
 		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYieldCollateral(loanAccount, collateral, cYield);

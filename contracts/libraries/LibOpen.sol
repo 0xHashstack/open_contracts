@@ -290,6 +290,7 @@ library LibOpen {
 		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
+		ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
 		require(loan.id != 0, "ERROR: No loan");
 		require(loan.isSwapped == false && loanState.currentMarket == _loanMarket, "ERROR: Already swapped");
@@ -306,6 +307,7 @@ library LibOpen {
 		/// Updating LoanState
 		loanState.currentMarket = _swapMarket;
 		loanState.currentAmount = _swappedAmount;
+		
 
 		/// Updating LoanAccount
 		loanAccount.loans[num].isSwapped = true;
@@ -314,7 +316,16 @@ library LibOpen {
 		loanAccount.loanState[num].currentAmount = loanState.currentAmount;
 
 		_accruedInterest(_sender, _loanMarket, _commitment);
-		if (collateral.isCollateralisedDeposit) _accruedYieldCollateral(loanAccount, collateral, cYield);
+		if (collateral.isCollateralisedDeposit) {
+			_accruedYieldCollateral(loanAccount, collateral, cYield);
+			activeLoans.collateralYield[num] = cYield.accruedYield;
+		} 
+
+		/// UPDATING ACTIVELOANS
+		activeLoans.isSwapped[num] = true;
+		activeLoans.loanStateCurrentMarket[num] = _swapMarket;
+		activeLoans.loanStateCurrentAmount[num] = _swappedAmount;
+		activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
 		
 		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
@@ -709,6 +720,7 @@ library LibOpen {
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
+		ActiveLoans storage activeLoans = ds.getActiveLoans[_account];
 
 		require(loan.id != 0, "ERROR: No loan");
 		require(loan.isSwapped == true && loanState.currentMarket != loan.market, "ERROR: Swapped market does not exist");
@@ -735,6 +747,13 @@ library LibOpen {
 
 		_accruedInterest(_account, _market, _commitment);
 		_accruedYieldCollateral(ds.loanPassbook[_account], collateral, cYield);
+
+		/// UPDATING ACTIVELOANS
+		activeLoans.isSwapped[num] = false;
+		activeLoans.loanStateCurrentMarket[num] = loan.market;
+		activeLoans.loanStateCurrentAmount[num] = _swappedAmount;
+		activeLoans.collateralYield[num] = cYield.accruedYield;
+		activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
 		emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
