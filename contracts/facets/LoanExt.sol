@@ -37,6 +37,10 @@ contract LoanExt is Pausable, ILoanExt {
     	return LibOpen._utilisedReservesLoan(_loanMarket);
 	}
 
+	function getLoans(address account) external {
+		
+	}
+
 	function loanRequest(
 		bytes32 _loanMarket,
 		bytes32 _commitment,

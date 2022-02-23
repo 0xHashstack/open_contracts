@@ -126,6 +126,19 @@ struct DeductibleInterest {
     uint256 accruedInterest;
 }
 
+struct ActiveLoans {
+    bytes32[] loanMarket;
+    bytes32[] loanCommitment;
+    uint256[] loanAmount;
+    bytes32[] collateralMarket;
+    uint256[] collateralAmount;
+    bool[] isSwapped;
+    bytes32[] loanStateCurrentMarket;
+    uint256[] loanStateCurrentAmount;
+    uint256[] collateralYield;
+    uint256[] borrowInterest;
+}
+
 // =========== OracleOpen structs =============
 struct PriceData {
     bytes32 market;
@@ -218,6 +231,7 @@ struct AppStorageOpen {
     mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indAccruedAPR;
     mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indAccruedAPY;
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
+    mapping(address => ActiveLoans) getActiveLoans;
 
     //  Balance monitoring  - Loan
     mapping(bytes32 => uint) marketReservesLoan; // mapping(market => marketBalance)
