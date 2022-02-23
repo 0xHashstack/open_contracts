@@ -61,6 +61,7 @@ struct YieldLedger    {
 }
 
 struct ActiveDeposits {
+    uint256[] id;
     bytes32[] market;
     bytes32[] commitment;
     uint256[] amount;

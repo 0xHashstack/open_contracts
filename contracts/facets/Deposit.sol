@@ -13,7 +13,6 @@ contract Deposit is Pausable, IDeposit{
 	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event DepositWithdrawal(address indexed account, uint256 depositId, uint256 indexed amount,uint timestamp);
 	// event DepositWithdrawal(address indexed account, bytes32 indexed market, bytes32 commitment,uint indexed amount,uint timestamp);
-	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	
 	constructor() 
 	{
@@ -98,7 +97,7 @@ contract Deposit is Pausable, IDeposit{
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
 		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
 
-		_convertYield(msg.sender, _market, _commitment, _amount);
+		_convertYield(msg.sender, _market, _commitment);
 
 		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
@@ -115,8 +114,8 @@ contract Deposit is Pausable, IDeposit{
 				
 				return false;
 			}
-			else if (deposit.isTimelockActivated)	{
-				require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Timelock Applicable");
+			else if (deposit.isTimelockActivated == true)	{
+				require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
 			}
 		} 
 			ds.token = IBEP20(LibOpen._connectMarket(_market));
@@ -204,6 +203,7 @@ contract Deposit is Pausable, IDeposit{
 		savingsAccount.deposits.push(deposit);
 		savingsAccount.yield.push(yield);
 
+		activeDeposits.id.push(id-1);
 		activeDeposits.market.push(_market);
 		activeDeposits.commitment.push(_commitment);
 		activeDeposits.amount.push(_amount);
@@ -260,10 +260,10 @@ contract Deposit is Pausable, IDeposit{
 		savingsAccount.yield[num].oldTime = yield.oldTime;
 		savingsAccount.yield[num].accruedYield = yield.accruedYield;
 
-		activeDeposits.market.push(_market);
-		activeDeposits.commitment.push(_commitment);
-		activeDeposits.amount.push(_amount);
-		activeDeposits.savingsInterest.push(yield.accruedYield);
+		activeDeposits.market[num] = _market;
+		activeDeposits.commitment[num] = _commitment;
+		activeDeposits.amount[num] = _amount;
+		activeDeposits.savingsInterest[num] = yield.accruedYield;
 	}
 
 	function preDepositProcess(bytes32 _market,uint256 _amount) private {
@@ -279,7 +279,7 @@ contract Deposit is Pausable, IDeposit{
 		return LibOpen._getFairPrice(_requestId);
 	}
 
-	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) private returns(bool) {
+	function _convertYield(address _account, bytes32 _market, bytes32 _commitment) private	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 		LibOpen._hasAccount(_account);
@@ -291,20 +291,17 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._hasYield(yield);
 		accruedYield(_account,_market,_commitment);
 
-		_amount = yield.accruedYield;
+	
 
+		deposit.amount += yield.accruedYield;
+		deposit.lastUpdate = block.timestamp;
+		
 		/// RESETTING THE YIELD.
 		yield.accruedYield = 0;
 
-		deposit.amount += _amount;
-		deposit.lastUpdate = block.timestamp;
-
-		savingsAccount.deposits[deposit.id -1].amount += _amount;
+		savingsAccount.deposits[deposit.id -1].amount = deposit.amount;
 		savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
 		savingsAccount.yield[deposit.id-1].accruedYield = 0;
-
-		emit YieldDeposited(_account, _market, _commitment, _amount);
-		return true;
 	}
 
 	function _updateUtilisation(bytes32 _market, uint _amount, uint _num) private 
@@ -335,164 +332,3 @@ contract Deposit is Pausable, IDeposit{
 		_;
 	}
 }
-
-
-/// FIXED v0.1 withdrawDeposi()
-	// function withdrawDeposit (
-	// 	bytes32 _market, 
-	// 	bytes32 _commitment,
-	// 	uint _amount
-	// ) external override nonReentrant() returns(bool) 
-	// {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		
-	// 	LibOpen._hasAccount(msg.sender);// checks if user has savings account 
-	// 	LibOpen._isMarketSupported(_market);
-		
-	// 	SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
-	// 	DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
-
-	// 	_convertYield(msg.sender, _market, _commitment, _amount);
-
-	// 	require(deposit.amount >= _amount, "ERROR: Insufficient balance");
-
-	// 	if (_commitment != LibOpen._getCommitment(0))	{
-	// 		if (!deposit.isTimelockActivated)	{
-	// 			deposit.isTimelockActivated = true;
-	// 			savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
-	// 		}
-	// 		else if (deposit.isTimelockActivated)	{
-	// 			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Timelock Applicable");
-
-	// 			ds.token = IBEP20(LibOpen._connectMarket(_market));
-	// 			ds.token.transfer(msg.sender, _amount);
-
-	// 			deposit.amount -= _amount;
-	// 			savingsAccount.deposits[deposit.id -1].amount -= _amount;
-
-	// 			LibOpen._updateReservesDeposit(_market, _amount, 1);
-			
-	// 			emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
-	// 			return true;
-	// 		}
-	// 	} else if  (_commitment == LibOpen._getCommitment(0))	{
-			
-	// 		ds.token = IBEP20(LibOpen._connectMarket(_market));
-	// 		ds.token.transfer(msg.sender, _amount);
-
-	// 		deposit.amount -= _amount;
-	// 		savingsAccount.deposits[deposit.id -1].amount -= _amount;
-
-	// 		LibOpen._updateReservesDeposit(_market, _amount, 1);
-
-	// 		emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
-	// 		return true;
-	// 	}
-	// }
-
-	
-	/// OLD withdrawDeposit()
-
-	// function withdrawDeposit (
-	// 	bytes32 _market, 
-	// 	bytes32 _commitment,
-	// 	uint _amount,
-	// 	SAVINGSTYPE _request
-	// ) external override nonReentrant() returns(bool) 
-	// {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		
-	// 	LibOpen._hasAccount(msg.sender);// checks if user has savings account 
-	// 	LibOpen._isMarketSupported(_market);
-
-	// 	// DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-
-	// 	// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
-	// 	// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
-
-	// 	accruedYield(msg.sender,_market,_commitment);
-
-	// 	uint _savingsBalance = savingsBalance(_market, _commitment, _request);
-	// 	require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
-		
-	// 	if (_commitment == LibOpen._getCommitment(0))	{
-	// 		updateSavingsBalance(msg.sender, _market, _commitment, _amount, _request);
-	// 	}
-	// 	/// Transfer funds to the user's wallet.
-	// 	ds.token = IBEP20(LibOpen._connectMarket(_market));
-	// 	// ds.token.approveFrom(ds.reserveAddress, address(this), _amount);
-	// 	// ds.token.transferFrom(ds.reserveAddress, msg.sender, _amount);
-	// 	ds.token.transfer(msg.sender, _amount);
-
-	// 	LibOpen._updateReservesDeposit(_market, _amount, 1);
-		
-	// 	emit DepositWithdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
-	// 	return true;	
-	// }
-
-
-	/// SAVINGS BALANCE
-
-	// function savingsBalance(bytes32 _market, bytes32 _commitment, SAVINGSTYPE _request) private returns(uint) {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-
-	// 	uint _savingsBalance;
-		
-	// 	DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
-	// 	YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
-
-	// 	if (_request == IDeposit.SAVINGSTYPE.DEPOSIT)	{
-	// 		_savingsBalance = deposit.amount;
-
-	// 	}	else if (_request == IDeposit.SAVINGSTYPE.YIELD)	{
-	// 		accruedYield(msg.sender,_market,_commitment);
-	// 		_savingsBalance =  yield.accruedYield;
-
-	// 	}	else if (_request == IDeposit.SAVINGSTYPE.BOTH)	{
-	// 		accruedYield(msg.sender,_market,_commitment);
-	// 		_savingsBalance = deposit.amount + yield.accruedYield;
-	// 	}
-	// 	return _savingsBalance;
-	// }
-
-
-
-/// UPDATE SAVINGS BALANCE - Not necessary
-	// function updateSavingsBalance(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) private {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-
-	// 	DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-	// 	YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-	// 	if (_request == IDeposit.SAVINGSTYPE.DEPOSIT)	{
-	// 		deposit.amount -= _amount;
-	// 		deposit.lastUpdate =  block.timestamp;
-
-	// 	}	else if (_request == IDeposit.SAVINGSTYPE.YIELD)	{
-
-	// 		if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
-				
-	// 			// _accruedYieldComit(_account,_market,_commitment);
-	// 			yield.accruedYield -= _amount;
-	// 			yield.oldTime = block.timestamp;
-	// 		}	else if (yield.isTimelockApplicable != false || block.timestamp < yield.activationTime+yield.timelockValidity)	{
-	// 			revert ('Withdrawal can not be processed');
-	// 		}
-
-	// 	}	else if (_request == IDeposit.SAVINGSTYPE.BOTH)	{
-
-	// 		// require (deposit.id == yield.id, "mapping error");
-
-	// 		if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
-	// 			// _accruedYieldComit(_account,_market,_commitment);
-	// 			yield.accruedYield -= _amount;
-	// 			yield.oldTime = block.timestamp;
-
-	// 		}	else if (yield.isTimelockApplicable != false || block.timestamp < yield.activationTime+yield.timelockValidity)	{
-	// 			revert ('Withdrawal can not be processed');
-	// 		}
-			
-	// 		deposit.amount -= _amount;
-	// 		deposit.lastUpdate =  block.timestamp;
-	// 	}
-	// }
