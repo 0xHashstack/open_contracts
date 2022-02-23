@@ -96,9 +96,9 @@ contract Deposit is Pausable, IDeposit{
 		
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
 		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
+		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
 
 		_convertYield(msg.sender, _market, _commitment);
-
 		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
 		if (_commitment != LibOpen._getCommitment(0))	{
@@ -124,8 +124,10 @@ contract Deposit is Pausable, IDeposit{
 			deposit.amount -= _amount;
 			savingsAccount.deposits[deposit.id -1].amount -= _amount;
 
+			activeDeposits.amount[deposit.id-1] -= _amount;
+			activeDeposits.savingsInterest[deposit.id-1] = 0;
+
 			LibOpen._updateReservesDeposit(_market, _amount, 1);
-		
 			emit DepositWithdrawal(msg.sender,deposit.id, _amount,  block.timestamp);
 			return true;
 	}
