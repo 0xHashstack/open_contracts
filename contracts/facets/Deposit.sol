@@ -35,7 +35,7 @@ contract Deposit is Pausable, IDeposit{
 		return true;
 	}
 
-	function getDeposits(address account) external view returns(bytes32[] memory market, bytes32[] memory commitment, uint256 amount, uint256[] memory savingsInterest)	{
+	function getDeposits(address account) external view returns(bytes32[] memory market, bytes32[] memory commitment, uint256[] memory amount, uint256[] memory savingsInterest)	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
 
@@ -206,7 +206,7 @@ contract Deposit is Pausable, IDeposit{
 
 		activeDeposits.market.push(_market);
 		activeDeposits.commitment.push(_commitment);
-		activeDeposits.amount = _amount;
+		activeDeposits.amount.push(_amount);
 		activeDeposits.savingsInterest.push(yield.accruedYield);
 
 	}
@@ -262,7 +262,7 @@ contract Deposit is Pausable, IDeposit{
 
 		activeDeposits.market.push(_market);
 		activeDeposits.commitment.push(_commitment);
-		activeDeposits.amount = _amount;
+		activeDeposits.amount.push(_amount);
 		activeDeposits.savingsInterest.push(yield.accruedYield);
 	}
 

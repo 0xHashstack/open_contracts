@@ -63,7 +63,7 @@ struct YieldLedger    {
 struct ActiveDeposits {
     bytes32[] market;
     bytes32[] commitment;
-    uint256 amount;
+    uint256[] amount;
     uint256[] savingsInterest;
 }
 // =========== Loan structs ===========
