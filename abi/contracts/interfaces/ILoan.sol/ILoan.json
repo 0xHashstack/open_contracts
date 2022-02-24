@@ -81,12 +81,12 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_commitment",
+        "name": "_loanMarket",
         "type": "bytes32"
       },
       {
         "internalType": "bytes32",
-        "name": "_loanMarket",
+        "name": "_commitment",
         "type": "bytes32"
       }
     ],
