@@ -262,7 +262,7 @@ contract Deposit is Pausable, IDeposit{
 
 		activeDeposits.market[num] = _market;
 		activeDeposits.commitment[num] = _commitment;
-		activeDeposits.amount[num] = _amount;
+		activeDeposits.amount[num] += _amount;
 		activeDeposits.savingsInterest[num] = yield.accruedYield;
 	}
 
