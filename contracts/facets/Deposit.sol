@@ -12,7 +12,6 @@ contract Deposit is Pausable, IDeposit{
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event DepositWithdrawal(address indexed account, uint256 depositId, uint256 indexed amount,uint timestamp);
-	// event DepositWithdrawal(address indexed account, bytes32 indexed market, bytes32 commitment,uint indexed amount,uint timestamp);
 	
 	constructor() 
 	{
@@ -214,8 +213,8 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	function accruedYield(address _account,bytes32 _market,bytes32 _commitment) private {
-        AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		
+        
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasDeposit(_account, _market, _commitment);
 
 		uint256 aggregateYield;
@@ -232,7 +231,6 @@ contract Deposit is Pausable, IDeposit{
 		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;
 
 	}
-
 
 /// DELEGATED CALL - PROCESS DEPOSIT
 	function _processDeposit(
@@ -293,7 +291,6 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._hasYield(yield);
 		accruedYield(_account,_market,_commitment);
 
-	
 
 		deposit.amount += yield.accruedYield;
 		deposit.lastUpdate = block.timestamp;

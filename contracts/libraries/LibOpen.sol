@@ -246,7 +246,7 @@ library LibOpen {
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/10000)*365/(100*1000);
+				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index]) / 10000)*365/(100*1000);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
@@ -510,12 +510,10 @@ library LibOpen {
 		collateral.isTimelockActivated = true;
 		collateral.activationTime = block.timestamp;
 
-		// delete cYield;
-		// delete deductibleInterest;
 		delete ds.indAccruedAPY[loanAccount.account][loan.market][loan.commitment];
 		delete ds.indAccruedAPR[loanAccount.account][loan.market][loan.commitment];
 
-		// Updating LoanPassbook
+		/// Updating LoanPassbook
 		loanAccount.loans[num].amount = 0;
 		loanAccount.loans[num].isSwapped = false;
 		loanAccount.loans[num].lastUpdate = block.timestamp;
@@ -557,15 +555,14 @@ library LibOpen {
 		_repayAmount += _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
 		console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
 		
-		if(_repayAmount >= loan.amount) _remnantAmount += (_repayAmount - loan.amount);
+		if(_repayAmount >= loan.amount) _remnantAmount = (_repayAmount - loan.amount);
 		else {
-			if (loanState.currentMarket == loanState.loanMarket)	_repayAmount += loanState.currentAmount;
+			if (loanState.currentMarket == loan.market)	_repayAmount += loanState.currentAmount;
 			else if (loanState.currentMarket != loanState.loanMarket)	_repayAmount += _swap(address(this), loanState.currentMarket, loanState.loanMarket, loanState.currentAmount, 2);
 			
-			_remnantAmount += (_repayAmount - loan.amount);
+			_remnantAmount = (_repayAmount - loan.amount);
 		}
-		
-		/// DELETING DeductibleInterest
+
 		delete deductibleInterest.id;
 		delete deductibleInterest.market;
 		delete deductibleInterest.oldLengthAccruedInterest;
@@ -676,7 +673,7 @@ library LibOpen {
 			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
 			ds.collateralToken.transfer(_sender, collateral.amount);
-			
+
 			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
 			
