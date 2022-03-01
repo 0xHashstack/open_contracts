@@ -236,9 +236,52 @@ library LibOpen {
 		APY storage apy = ds.indAPYRecords[_commitment];
 
 		require(oldLengthAccruedYield>0, "ERROR : oldLengthAccruedYield < 1");
+
+		aggregateYield =  _getDepositInterest(_commitment, oldLengthAccruedYield, oldTime);
 		
+		// uint256 index = oldLengthAccruedYield - 1;
+		// uint256 time = oldTime;
+		
+		// // 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+		// if (apy.time.length > oldLengthAccruedYield)  {
+
+		// 	if (apy.time[index] < time) {
+		// 		uint256 newIndex = index + 1;
+		// 		// Convert the aprChanges to the lowest unit value.
+		// 		aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index]) / 10000)*365/(100*1000);
+			
+		// 		for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
+		// 			uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+		// 			aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 10000)*365/(100*1000);
+		// 		}
+		// 	}
+		// 	else if (apy.time[index] == time) {
+		// 		for (uint256 i = index; i < apy.apyChanges.length; i++) {
+		// 			uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+		// 			aggregateYield += (timeDiff*apy.apyChanges[index] / 10000)*365/(100*1000);
+		// 		}
+		// 	}
+		// } else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+		// 	if (apy.time[index] < time || apy.time[index] == time) {
+		// 		aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
+		// 		// Convert the aprChanges to the lowest unit value.
+		// 		// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
+		// 	}
+		// }
+		oldLengthAccruedYield = apy.time.length;
+		oldTime = block.timestamp;
+
+		return (oldLengthAccruedYield, oldTime, aggregateYield);
+	}
+
+	function _getDepositInterest(bytes32 _commitment, uint256 oldLengthAccruedYield, uint256 oldTime) internal view returns (uint256 interestFactor) {
+
+		AppStorageOpen storage ds = diamondStorage(); 
+		APY storage apy = ds.indAPYRecords[_commitment];
+
 		uint256 index = oldLengthAccruedYield - 1;
 		uint256 time = oldTime;
+		uint256 aggregateYield;
 		
 		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
 		if (apy.time.length > oldLengthAccruedYield)  {
@@ -262,14 +305,10 @@ library LibOpen {
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apy.time[index] < time || apy.time[index] == time) {
 				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
-				// Convert the aprChanges to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
 			}
 		}
-		oldLengthAccruedYield = apy.time.length;
-		oldTime = block.timestamp;
 
-		return (oldLengthAccruedYield, oldTime, aggregateYield);
+		return interestFactor;
 	}
 
 	function _getReserveFactor() internal view returns (uint) {

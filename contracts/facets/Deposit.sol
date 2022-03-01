@@ -39,7 +39,30 @@ contract Deposit is Pausable, IDeposit{
 
 		return (activeDeposits.market, activeDeposits.commitment, activeDeposits.amount, activeDeposits.savingsInterest);
 	}
-	
+
+
+	function getDepositInterest(address account, uint256 id) external view returns(uint256 interest)	{
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		uint256 num = id -1;
+		
+		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
+		
+		bytes32 market = activeDeposits.market[num];
+		bytes32 commitment = activeDeposits.commitment[num];
+		uint256 interestFactor = 0;
+		uint256 depositInterest;
+
+		DepositRecords storage deposit = ds.indDepositRecord[account][market][commitment];
+		YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
+
+		interestFactor = LibOpen._getDepositInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
+
+		depositInterest = yield.accruedYield;
+		depositInterest += (interestFactor*deposit.amount);		
+
+		return depositInterest;
+
+	}
 	function hasDeposit(bytes32 _market, bytes32 _commitment) external view override returns(bool) {
 		LibOpen._hasDeposit(msg.sender,_market, _commitment);
 		return true;
