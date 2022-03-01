@@ -37,11 +37,11 @@ contract LoanExt is Pausable, ILoanExt {
     	return LibOpen._utilisedReservesLoan(_loanMarket);
 	}
 
-	function getLoans(address account) external view returns(bytes32[] memory loanMarket, bytes32[] memory loanCommitment,uint256[] memory loanAmount,bytes32[] memory collateralMarket,uint256[] memory collateralAmount,bool[] memory isSwapped,bytes32[] memory loanStateCurrentMarket,uint256[] memory loanStateCurrentAmount, uint256[] memory collateralYield,uint256[] memory borrowInterest) {
+	function getLoans(address account) external view returns(bytes32[] memory loanMarket, bytes32[] memory loanCommitment,uint256[] memory loanAmount,bytes32[] memory collateralMarket,uint256[] memory collateralAmount,bool[] memory isSwapped,bytes32[] memory loanCurrentMarket,uint256[] memory loanCurrentAmount, uint256[] memory collateralYield,uint256[] memory borrowInterest) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		ActiveLoans storage activeLoans = ds.getActiveLoans[account];
 
-		return (activeLoans.loanMarket, activeLoans.loanCommitment, activeLoans.loanAmount, activeLoans.collateralMarket, activeLoans.collateralAmount, activeLoans.isSwapped, activeLoans.loanStateCurrentMarket, activeLoans.loanStateCurrentAmount, activeLoans.collateralYield, activeLoans.borrowInterest);
+		return (activeLoans.loanMarket, activeLoans.loanCommitment, activeLoans.loanAmount, activeLoans.collateralMarket, activeLoans.collateralAmount, activeLoans.isSwapped, activeLoans.loanCurrentMarket, activeLoans.loanCurrentAmount, activeLoans.collateralYield, activeLoans.borrowInterest);
 	}
 
 	function loanRequest(
@@ -108,8 +108,8 @@ contract LoanExt is Pausable, ILoanExt {
 		activeLoans.collateralMarket.push(_collateralMarket);
 		activeLoans.collateralAmount.push(_collateralAmount);
 		activeLoans.isSwapped.push(false);
-		activeLoans.loanStateCurrentMarket.push(_loanMarket);
-		activeLoans.loanStateCurrentAmount.push(_loanAmount);
+		activeLoans.loanCurrentMarket.push(_loanMarket);
+		activeLoans.loanCurrentAmount.push(_loanAmount);
 		activeLoans.borrowInterest.push(0);
 		
 		

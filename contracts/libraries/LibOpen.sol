@@ -362,8 +362,8 @@ library LibOpen {
 
 		/// UPDATING ACTIVELOANS
 		activeLoans.isSwapped[num] = true;
-		activeLoans.loanStateCurrentMarket[num] = _swapMarket;
-		activeLoans.loanStateCurrentAmount[num] = _swappedAmount;
+		activeLoans.loanCurrentMarket[num] = _swapMarket;
+		activeLoans.loanCurrentAmount[num] = _swappedAmount;
 		activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
 		
 		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
@@ -641,6 +641,7 @@ library LibOpen {
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];
+		ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
 
 		uint256 remnantAmount= _repaymentProcess(
 			loan.id - 1,
@@ -677,6 +678,16 @@ library LibOpen {
 			delete loanAccount.loanState[loan.id-1].actualLoanAmount;
 			delete loanAccount.loanState[loan.id-1].currentMarket;
 			delete loanAccount.loanState[loan.id-1].currentAmount;
+
+
+		/// UPDATING ACTIVELOANS
+			delete activeLoans.loanMarket;
+			delete activeLoans.loanCommitment;
+			delete activeLoans.loanAmount;
+			delete activeLoans.loanCurrentMarket;
+			delete activeLoans.loanCurrentAmount;
+			delete activeLoans.collateralYield;
+			delete activeLoans.borrowInterest;
 
 		if (_commitment == _getCommitment(2)) {
 			
@@ -739,6 +750,12 @@ library LibOpen {
 			delete loanAccount.loans[loan.id - 1];
 			delete loanAccount.collaterals[loan.id - 1];
 			delete loanAccount.loanState[loan.id - 1];
+
+
+			/// ACTIVELOANS
+			delete activeLoans.collateralMarket;
+			delete activeLoans.collateralAmount;
+			delete activeLoans.isSwapped;
 		}
     }
 
@@ -786,8 +803,8 @@ library LibOpen {
 
 		/// UPDATING ACTIVELOANS
 		activeLoans.isSwapped[num] = false;
-		activeLoans.loanStateCurrentMarket[num] = loan.market;
-		activeLoans.loanStateCurrentAmount[num] = _swappedAmount;
+		activeLoans.loanCurrentMarket[num] = loan.market;
+		activeLoans.loanCurrentAmount[num] = _swappedAmount;
 		activeLoans.collateralYield[num] = cYield.accruedYield;
 		activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 

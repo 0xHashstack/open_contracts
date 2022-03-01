@@ -133,8 +133,8 @@ struct ActiveLoans {
     bytes32[] collateralMarket;
     uint256[] collateralAmount;
     bool[] isSwapped;
-    bytes32[] loanStateCurrentMarket;
-    uint256[] loanStateCurrentAmount;
+    bytes32[] loanCurrentMarket;
+    uint256[] loanCurrentAmount;
     uint256[] collateralYield;
     uint256[] borrowInterest;
 }
