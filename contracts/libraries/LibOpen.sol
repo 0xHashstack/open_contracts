@@ -761,7 +761,7 @@ library LibOpen {
 		else {
 			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
-			ds.collateralToken.transfer(_sender, collateral.amount);
+			ds.collateralToken.transferFrom(address(this),msg.sender, collateral.amount);
 
 			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
