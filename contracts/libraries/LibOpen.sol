@@ -308,7 +308,7 @@ library LibOpen {
 				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
 			}
 		}
-
+		aggregateYield = interestFactor;
 		return interestFactor;
 	}
 
@@ -403,7 +403,7 @@ library LibOpen {
 				aggregateYield += (block.timestamp - time)*apr.aprChanges[index]/10000;
 			}
 		}
-
+		aggregateYield = interestFactor;
 		return interestFactor;
 	}
 	
