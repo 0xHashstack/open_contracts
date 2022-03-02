@@ -4,6 +4,7 @@ const { ethers } = require("hardhat");
 const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
+const fs = require('fs');
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -21,6 +22,13 @@ async function deployDiamond() {
 
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
+  fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+
+    console.log("The file was saved!");
+}); ;
 
   /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
@@ -428,6 +436,32 @@ async function addMarkets(diamondAddress) {
     "54000000000000000000000000", // 54 million BNB
     "100000000000000000000" // 100 BNB
   );
+
+  console.log('ALL ENV USED IN UI');
+
+  console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
+  
+  console.log("REACT_APP_FAUCET_ADDRESS = ", faucet.address);
+  
+  console.log("REACT_APP_T_BTC_ADDRESS = ", tBtcAddress);
+  
+  console.log("REACT_APP_T_USDC_ADDRESS = ", tUsdcAddress);
+  
+  console.log("REACT_APP_T_USDT_ADDRESS = ", tUsdtAddress);
+ 
+  console.log("REACT_APP_T_SXP_ADDRESS = ", tSxpAddress);
+
+  console.log("REACT_APP_T_CAKE_ADDRESS = ", tCakeAddress);
+  
+  console.log("REACT_APP_T_WBNB_ADDRESS = ", tWBNBAddress);
+  fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/addr.js',("REACT_APP_DIAMOND_ADDRESS = "+ diamond.address+ '\r\n'+ "REACT_APP_FAUCET_ADDRESS = "+ faucet.address+ '\r\n'+ "REACT_APP_T_USDC_ADDRESS = "+ tUsdcAddress+ '\r\n'+ "REACT_APP_T_USDT_ADDRESS = "+ tUsdtAddress+ '\r\n'+ "REACT_APP_T_SXP_ADDRESS = "+ tSxpAddress+ '\r\n'+ "REACT_APP_T_CAKE_ADDRESS = "+ tCakeAddress+ '\r\n'+ "REACT_APP_T_WBNB_ADDRESS = "+tWBNBAddress), function(err) {
+    if(err) {
+        return console.log(err);
+    }
+
+    console.log("The addresses are saved!");
+}); ;
+
 
   return {
     tBtcAddress,
