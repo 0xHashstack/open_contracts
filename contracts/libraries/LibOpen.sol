@@ -290,22 +290,22 @@ library LibOpen {
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index]) / 10000)*365/(100*1000);
+				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index]))/(365*86400*1000);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 10000)*365/(100*1000);
+					aggregateYield += ((timeDiff*apy.apyChanges[newIndex])/(365*86400*1000));
 				}
 			}
 			else if (apy.time[index] == time) {
 				for (uint256 i = index; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChanges[index] / 10000)*365/(100*1000);
+					aggregateYield += ((timeDiff*apy.apyChanges[index])/(365*86400*1000));
 				}
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apy.time[index] < time || apy.time[index] == time) {
-				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
+				aggregateYield += ((block.timestamp - time)*apy.apyChanges[index]/(365*86400*1000));
 			}
 		}
 		interestFactor = aggregateYield ;
@@ -385,22 +385,22 @@ library LibOpen {
 			if (apr.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index]) / 10000)*365/(100*1000);
+				aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index]) / (365*86400*1000));
 			
 				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateYield += (timeDiff*apr.aprChanges[newIndex] / 10000)*365/(100*1000);
+					aggregateYield += ((timeDiff*apr.aprChanges[newIndex])/ (365*86400*1000));
 				}
 			}
 			else if (apr.time[index] == time) {
 				for (uint256 i = index; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateYield += (timeDiff*apr.aprChanges[index] / 10000)*365/(100*1000);
+					aggregateYield += ((timeDiff*apr.aprChanges[index]) / (365*86400*1000));
 				}
 			}
 		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apr.time[index] < time || apr.time[index] == time) {
-				aggregateYield += (block.timestamp - time)*apr.aprChanges[index]/10000;
+				aggregateYield += (((block.timestamp - time)*apr.aprChanges[index])/(365*86400*1000));
 			}
 		}
 		interestFactor = aggregateYield ;
