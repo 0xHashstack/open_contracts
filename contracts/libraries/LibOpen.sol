@@ -290,7 +290,7 @@ library LibOpen {
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index]))/(365*86400*1000);
+				aggregateYield = ((apy.time[newIndex] - time) *apy.apyChanges[index])/(365*86400*1000);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
@@ -305,7 +305,7 @@ library LibOpen {
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apy.time[index] < time || apy.time[index] == time) {
-				aggregateYield += ((block.timestamp - time)*apy.apyChanges[index]/(365*86400*1000));
+				aggregateYield += (((block.timestamp - time)*apy.apyChanges[index])/(365*86400*1000));
 			}
 		}
 		interestFactor = aggregateYield ;
