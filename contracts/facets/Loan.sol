@@ -238,6 +238,32 @@ contract Loan is Pausable, ILoan {
         return true;
     }
 
+    function getLoanInterest(address account, uint256 id) external view returns(uint256 loanInterest, uint collateralInterest)	{
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		uint256 num = id -1;
+		
+        ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
+		
+		bytes32 market = activeLoans.loanMarket[num];
+		bytes32 commitment = activeLoans.loanCommitment[num];
+		uint256 interestFactor = 0;
+
+		LoanRecords storage loan = ds.indLoanRecords[account][market][commitment];
+		YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
+        CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][market][commitment];
+        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][market][commitment];
+        
+		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
+
+		loanInterest = yield.accruedYield;
+		loanInterest += (interestFactor*loan.amount);	
+        collateralInterest = cYield.accruedYield;
+        collateralInterest += (interestFactor*collateral.amount);
+
+		return (loanInterest, collateralInterest);
+
+	}
+
     function pauseLoan() external override authLoan nonReentrant {
         _pause();
     }

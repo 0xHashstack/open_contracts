@@ -195,37 +195,38 @@ library LibOpen {
 		APR storage apr = ds.indAPRRecords[_commitment];
 
 		require(oldLengthAccruedInterest > 0, "oldLengthAccruedInterest is 0");
-
-		uint256 index = oldLengthAccruedInterest - 1;
-		uint256 time = oldTime;
+		
+		aggregateInterest =  _getLoanInterest(_commitment, oldLengthAccruedInterest, oldTime);
+		// uint256 index = oldLengthAccruedInterest - 1;
+		// uint256 time = oldTime;
 
 		// // 1. apr.time.length > oldLengthAccruedInterest => there is some change.
 
-		if (apr.time.length > oldLengthAccruedInterest)  {
+		// if (apr.time.length > oldLengthAccruedInterest)  {
 
-			if (apr.time[index] < time) {
-				uint256 newIndex = index + 1;
-				// Convert the aprChanges to the lowest unit value.
-				aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
+		// 	if (apr.time[index] < time) {
+		// 		uint256 newIndex = index + 1;
+		// 		// Convert the aprChanges to the lowest unit value.
+		// 		aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
 			
-				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
-					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 10000)*365/(100*1000);
-				}
-			}
-			else if (apr.time[index] == time) {
-				for (uint256 i = index; i < apr.aprChanges.length; i++) {
-					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChanges[index] / 10000)*365/(100*1000);
-				}
-			}
-		} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
-			if (apr.time[index] < time || apr.time[index] == time) {
-				aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/10000;
-				// Convert the aprChanges to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
-			}
-		}
+		// 		for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
+		// 			uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+		// 			aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 10000)*365/(100*1000);
+		// 		}
+		// 	}
+		// 	else if (apr.time[index] == time) {
+		// 		for (uint256 i = index; i < apr.aprChanges.length; i++) {
+		// 			uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+		// 			aggregateInterest += (timeDiff*apr.aprChanges[index] / 10000)*365/(100*1000);
+		// 		}
+		// 	}
+		// } else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
+		// 	if (apr.time[index] < time || apr.time[index] == time) {
+		// 		aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/10000;
+		// 		// Convert the aprChanges to the lowest unit value.
+		// 		// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
+		// 	}
+		// }
 		oldLengthAccruedInterest = apr.time.length;
 		oldTime = block.timestamp;
 		return (oldLengthAccruedInterest, oldTime, aggregateInterest);
@@ -307,7 +308,7 @@ library LibOpen {
 				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
 			}
 		}
-
+		interestFactor = aggregateYield ;
 		return interestFactor;
 	}
 
@@ -368,6 +369,44 @@ library LibOpen {
 		
 		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
+
+	function _getLoanInterest(bytes32 _commitment, uint256 oldLengthAccruedYield, uint256 oldTime) internal view returns (uint256 interestFactor) {
+		
+		AppStorageOpen storage ds = diamondStorage(); 
+		APR storage apr = ds.indAPRRecords[_commitment];
+
+		uint256 index = oldLengthAccruedYield - 1;
+		uint256 time = oldTime;
+		uint256 aggregateYield;
+		
+		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+		if (apr.time.length > oldLengthAccruedYield)  {
+
+			if (apr.time[index] < time) {
+				uint256 newIndex = index + 1;
+				// Convert the aprChanges to the lowest unit value.
+				aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index]) / 10000)*365/(100*1000);
+			
+				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
+					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+					aggregateYield += (timeDiff*apr.aprChanges[newIndex] / 10000)*365/(100*1000);
+				}
+			}
+			else if (apr.time[index] == time) {
+				for (uint256 i = index; i < apr.aprChanges.length; i++) {
+					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+					aggregateYield += (timeDiff*apr.aprChanges[index] / 10000)*365/(100*1000);
+				}
+			}
+		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+			if (apr.time[index] < time || apr.time[index] == time) {
+				aggregateYield += (block.timestamp - time)*apr.aprChanges[index]/10000;
+			}
+		}
+		interestFactor = aggregateYield ;
+		return interestFactor;
+	}
+	
 
 	// =========== Liquidator Functions ===========
 	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256) {
@@ -722,7 +761,7 @@ library LibOpen {
 		else {
 			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
-			ds.collateralToken.transfer(_sender, collateral.amount);
+			ds.collateralToken.transferFrom(address(this),msg.sender, collateral.amount);
 
 			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
