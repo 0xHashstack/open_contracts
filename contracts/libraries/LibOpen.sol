@@ -619,7 +619,7 @@ library LibOpen {
 		CollateralRecords storage collateral,
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
-	) internal authContract(LOANEXT_ID) returns(uint256) {
+	) internal returns(uint256) {
         // AppStorageOpen storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
