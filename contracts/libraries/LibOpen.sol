@@ -667,7 +667,7 @@ library LibOpen {
 		return _remnantAmount;
 	}
 
-	function _repayLoan(address _sender, bytes32 _market, bytes32 _commitment,uint256 _repayAmount) internal authContract(LOANEXT_ID) {
+	function _repayLoan(address _sender, bytes32 _market, bytes32 _commitment,uint256 _repayAmount) internal /*authContract(LOANEXT_ID)*/ {
 		
 		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
 		_accruedInterest(_sender, _market, _commitment);
