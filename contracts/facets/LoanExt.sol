@@ -255,8 +255,8 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanState storage loanState = ds.indLoanState[account][_market][_commitment];
 		LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
-		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
+		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
+		// CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
 		uint num = loan.id;
 
@@ -266,9 +266,9 @@ contract LoanExt is Pausable, ILoanExt {
 			loanAccount,
 			loan,
 			loanState,
-			collateral,
+			collateral/*
 			deductibleInterest,
-			cYield
+			cYield*/
 		);
 
 		/// UPDATING THE RESERVES
