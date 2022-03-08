@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "../libraries/AppStorageOpen.sol";
+
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
+
+import "hardhat/console.sol";
+
 
 contract Loan is Pausable, ILoan {
     event AddCollateral(
@@ -57,6 +62,9 @@ contract Loan is Pausable, ILoan {
         returns (bool success)
     {
         LibOpen._swapToLoan(msg.sender, _loanMarket, _commitment);
+        // AppStorageOpen storage ds = diamondStorage(); 
+        // LoanState storage loanState = ds.indLoanState[_loanMarket][_commitment];
+        // console.log('Secondary amount is : ', loanState.currentAmount);
         return success = true;
     }
 
