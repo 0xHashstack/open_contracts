@@ -414,7 +414,10 @@ library LibOpen {
 		if(_fromMarket == _toMarket) return 0;
 		address addrFromMarket;
 		address addrToMarket;
-
+		// bytes32 cake;
+		address addrCake;
+		bytes32 cake = 0x43414b4500000000000000000000000000000000000000000000000000000000 ;
+		
 		if(_mode == 0){
 			addrFromMarket = _getMarketAddress(_fromMarket);
 			addrToMarket = _getMarket2Address(_toMarket);
@@ -424,6 +427,7 @@ library LibOpen {
 		} else if(_mode == 2) {
 			addrFromMarket = _getMarketAddress(_toMarket);
 			addrToMarket = _getMarketAddress(_fromMarket);
+			addrCake = _getMarket2Address(cake);
 		}
 
 		require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
@@ -448,15 +452,16 @@ library LibOpen {
 		//WBNB as other test tokens
 		address[] memory path;
 		// if (addrFromMarket == WBNB || addrToMarket == WBNB) {
+			if (_mode != 2) {
 			path = new address[](2);
 			path[0] = addrFromMarket;
 			path[1] = addrToMarket;
-		// } else {
-		//     path = new address[](3);
-		//     path[0] = addrFromMarket;
-		//     path[1] = WBNB;
-		//     path[2] = addrToMarket;
-		// }
+		} else {
+		    path = new address[](3);
+		    path[0] = addrFromMarket;
+		    path[1] = addrCake;
+		    path[2] = addrToMarket;
+		}
 
 // https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens
 		uint[] memory ret;
@@ -469,17 +474,24 @@ library LibOpen {
 		address _tokenOut,
 		uint _amountIn
 	) private view returns (uint) {
+		bytes32 cake;
+		address addrCake;
+		uint _mode;
+		cake = 0x43414b4500000000000000000000000000000000000000000000000000000000 ;
+		addrCake = _getMarket2Address(cake);
+
 		address[] memory path;
 		//if (_tokenIn == WBNB || _tokenOut == WBNB) {
+			if (_mode != 2) {
 			path = new address[](2);
 			path[0] = _tokenIn;
 			path[1] = _tokenOut;
-		// } else {
-		//     path = new address[](3);
-		//     path[0] = _tokenIn;
-		//     path[1] = WBNB;
-		//     path[2] = _tokenOut;
-		// }
+		} else {
+		    path = new address[](3);
+		    path[0] = _tokenIn;
+		    path[1] = addrCake;
+		    path[2] = _tokenOut;
+		}
 
 		// same length as path
 		uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
