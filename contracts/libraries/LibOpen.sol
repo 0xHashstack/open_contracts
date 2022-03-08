@@ -442,7 +442,7 @@ library LibOpen {
 		
 
 		//PancakeSwap
-		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
+		// IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
 		//WBNB as other test tokens
@@ -769,7 +769,7 @@ library LibOpen {
 		else {
 			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
-			ds.collateralToken.transferFrom(address(this),msg.sender, collateral.amount);
+			ds.collateralToken.transfer(_sender, collateral.amount);
 
 			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
