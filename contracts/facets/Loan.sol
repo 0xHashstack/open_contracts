@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "../libraries/AppStorageOpen.sol";
+
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
+
+import "hardhat/console.sol";
+
 
 contract Loan is Pausable, ILoan {
     event AddCollateral(
@@ -24,6 +29,7 @@ contract Loan is Pausable, ILoan {
         uint256 id,
         uint256 timestamp
     );
+    event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed currentAmount,uint256 timestamp);
 
     constructor() {
         // AppStorage storage ds = LibOpen.diamondStorage();
@@ -45,7 +51,15 @@ contract Loan is Pausable, ILoan {
         bytes32 _commitment,
         bytes32 _swapMarket
     ) external override nonReentrant returns (bool) {
+        
+        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        
+        LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+        LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+        
         LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
+        
+        emit MarketSwapped(msg.sender, loanState.loanMarket, _commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
         return true;
     }
 
@@ -57,6 +71,12 @@ contract Loan is Pausable, ILoan {
         returns (bool success)
     {
         LibOpen._swapToLoan(msg.sender, _loanMarket, _commitment);
+        
+        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+        LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+        
+        emit MarketSwapped(msg.sender, loanState.loanMarket, _commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
         return success = true;
     }
 
