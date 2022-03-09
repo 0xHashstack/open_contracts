@@ -637,7 +637,7 @@ library LibOpen {
 		// DeductibleInterest storage deductibleInterest,
 		// CollateralYield storage cYield
 	) internal returns(uint256) {
-        AppStorageOpen storage ds = diamondStorage();
+        // AppStorageOpen storage ds = diamondStorage();
 		
 		bytes32 _commitment ;
 		uint256 _remnantAmount;
