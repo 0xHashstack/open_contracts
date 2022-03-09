@@ -431,7 +431,6 @@ library LibOpen {
 		}
 
 		require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
-		require(addrCake != address(0), "Cake Address can not be zero.");
 
 		/// PARASSWAP
 		// address[] memory callee = new address[](2);
@@ -493,9 +492,6 @@ library LibOpen {
 		    path[1] = addrCake;
 		    path[2] = _tokenOut;
 		}
-		
-		require(_tokenIn != address(0) && _tokenOut != address(0), "Swap Address can not be zero.");
-		require(addrCake != address(0), "Cake Address can not be zero.");
 
 		// same length as path
 		uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
