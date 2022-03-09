@@ -367,7 +367,7 @@ library LibOpen {
 		activeLoans.loanCurrentAmount[num] = _swappedAmount;
 		// activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
 		
-		emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
+		// emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
 	function _getLoanInterest(bytes32 _commitment, uint256 oldLengthAccruedYield, uint256 oldTime) internal view returns (uint256 interestFactor) {
@@ -625,10 +625,10 @@ library LibOpen {
 	function _repaymentProcess(
 		uint256 num,
 		uint256 _repayAmount,
-		ds.loanPassbook[_sender],
-		ds.indLoanState[_sender][_market][_commitment],
-ds.indLoanRecords[_sender][_market][_commitment],
-ds.indCollateralRecords[_sender][_market][_commitment]
+		LoanAccount storage loanAccount,
+		LoanRecords storage loan,
+		LoanState storage loanState,
+		CollateralRecords storage collateral
 		
 		/*loanAccount,
 		loan,
@@ -714,11 +714,11 @@ ds.indCollateralRecords[_sender][_market][_commitment]
 		/// CALCULATE REMNANT AMOUNT 
 		remnantAmount = _repaymentProcess(
 			loan.id - 1,
-			_repayAmount
-			/*loanAccount,
+			_repayAmount,
+			loanAccount,
 			loan,
 			loanState,
-			collateral	*/
+			collateral
 		);
 		/*deductibleInterest,
 			cYield*/ ///These 2 variables will go back inside remnantAmount above after work on calcAPR
@@ -876,7 +876,7 @@ ds.indCollateralRecords[_sender][_market][_commitment]
 		// activeLoans.collateralYield[num] = cYield.accruedYield;
 		// activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
-		emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
+		// emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 	
 	function _avblReservesLoan(bytes32 _loanMarket) internal view returns (uint) {
