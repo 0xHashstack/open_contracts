@@ -416,7 +416,7 @@ library LibOpen {
 		address addrToMarket;
 		// bytes32 cake;
 		address addrCake;
-		bytes32 cake = 0x43414b4500000000000000000000000000000000000000000000000000000000 ;
+		// bytes32 cake =  ;
 		
 		if(_mode == 0){
 			addrFromMarket = _getMarketAddress(_fromMarket);
@@ -427,7 +427,7 @@ library LibOpen {
 		} else if(_mode == 2) {
 			addrFromMarket = _getMarketAddress(_toMarket);
 			addrToMarket = _getMarketAddress(_fromMarket);
-			addrCake = _getMarket2Address(cake);
+			addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
 		}
 
 		require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
@@ -475,11 +475,11 @@ library LibOpen {
 		address _tokenOut,
 		uint _amountIn
 	) private view returns (uint) {
-		bytes32 cake;
+		// bytes32 cake;
 		address addrCake;
 		uint _mode;
-		cake = 0x43414b4500000000000000000000000000000000000000000000000000000000 ;
-		addrCake = _getMarket2Address(cake);
+		// cake =  ;
+		addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
 
 		address[] memory path;
 		//if (_tokenIn == WBNB || _tokenOut == WBNB) {
@@ -629,18 +629,28 @@ library LibOpen {
 	function _repaymentProcess(
 		uint256 num,
 		uint256 _repayAmount,
-		LoanAccount storage loanAccount,
-		LoanRecords storage loan,
-		LoanState storage loanState,
-		CollateralRecords storage collateral
+		ds.loanPassbook[_sender],
+		ds.indLoanState[_sender][_market][_commitment],
+ds.indLoanRecords[_sender][_market][_commitment],
+ds.indCollateralRecords[_sender][_market][_commitment]
+		
+		/*loanAccount,
+		loan,
+		loanState,
+		collateral*/
 		// DeductibleInterest storage deductibleInterest,
 		// CollateralYield storage cYield
 	) internal returns(uint256) {
-        // AppStorageOpen storage ds = diamondStorage(); 
+        AppStorageOpen storage ds = diamondStorage();
 		
-		bytes32 _commitment = loan.commitment;
-		uint256 _remnantAmount = 0;
-		uint256 _collateralAmount = 0;
+		bytes32 _commitment ;
+		uint256 _remnantAmount;
+		uint256 _collateralAmount;
+
+		
+		_commitment = loan.commitment;
+		_remnantAmount = 0;
+		_collateralAmount = 0;
 		
 		/// convert collateral into loan market to add to the repayAmount
 		_collateralAmount = collateral.amount /*- deductibleInterest.accruedInterest*/;
@@ -708,11 +718,11 @@ library LibOpen {
 		/// CALCULATE REMNANT AMOUNT 
 		remnantAmount = _repaymentProcess(
 			loan.id - 1,
-			_repayAmount, 
-			loanAccount,
+			_repayAmount
+			/*loanAccount,
 			loan,
 			loanState,
-			collateral	
+			collateral	*/
 		);
 		/*deductibleInterest,
 			cYield*/ ///These 2 variables will go back inside remnantAmount above after work on calcAPR
