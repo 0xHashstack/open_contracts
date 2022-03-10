@@ -849,7 +849,9 @@ library LibOpen {
 		ds.loanPassbook[_account].loanState[num].currentAmount = loanState.currentAmount;
 
 		_accruedInterest(_account, _market, _commitment);
-		_accruedYieldCollateral(ds.loanPassbook[_account], collateral, cYield);
+		if (collateral.isCollateralisedDeposit) {
+			_accruedYieldCollateral(ds.loanPassbook[_account], collateral, cYield);
+		}
 
 		/// UPDATING ACTIVELOANS
 		activeLoans.isSwapped[num] = false;
