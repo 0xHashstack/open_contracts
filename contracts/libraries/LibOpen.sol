@@ -307,7 +307,7 @@ library LibOpen {
 					aggregateYield += (timeDiff*apy.apyChanges[index]);
 				}
 			}
-		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > time) {
 			if (apy.time[index] < time || apy.time[index] == time) {
 				uint256 timeDiff = block.timestamp - time;
 				if(timeDiff > 600)
@@ -407,7 +407,7 @@ library LibOpen {
 					aggregateYield += (timeDiff*apr.aprChanges[index]);
 				}
 			}
-		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > time) {
 			if (apr.time[index] < time || apr.time[index] == time) {
 				uint timeDiff = (block.timestamp - time);
 				if(timeDiff > 600)
