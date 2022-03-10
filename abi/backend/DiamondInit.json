@@ -1,1 +1,1 @@
-[{"type":"function","name":"init","constant":false,"payable":false,"gas":1100000,"inputs":[{"type":"address","name":"account"},{"type":"address","name":"reserveAddr"},{"type":"address","name":"accessRegistry"}],"outputs":[]}]
+[{"type":"function","name":"init","constant":false,"payable":false,"inputs":[{"type":"address","name":"account"},{"type":"address","name":"reserveAddr"},{"type":"address","name":"accessRegistry"}],"outputs":[]}]

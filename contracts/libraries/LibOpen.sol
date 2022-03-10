@@ -428,6 +428,8 @@ library LibOpen {
 			addrFromMarket = _getMarketAddress(_toMarket);
 			addrToMarket = _getMarketAddress(_fromMarket);
 			addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
+			console.log("address cake is ", addrCake);
+			require(addrCake != address(0), "CAKE Address can not be zero.");
 		}
 
 		require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
@@ -479,7 +481,9 @@ library LibOpen {
 		uint _mode;
 		// cake =  ;
 		addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
-
+		console.log("address cake is ", addrCake);
+		require(addrCake != address(0), "CAKE Address can not be zero.");
+		
 		address[] memory path;
 		//if (_tokenIn == WBNB || _tokenOut == WBNB) {
 			if (_mode != 2) {
@@ -720,44 +724,56 @@ library LibOpen {
 			loanState,
 			collateral
 		);
+		console.log("Remnant Amount is ", remnantAmount);
 		return remnantAmount;
 		/*deductibleInterest,
 			cYield*/ ///These 2 variables will go back inside remnantAmount above after work on calcAPR
 		/// CONVERT remnantAmount into collateralAmount
-		// collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
-		
+		console.log("Collateral Preswap ",collateral.amount);
+		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
+		console.log("Collateral Postswap ",collateral.amount);
 		// /// RESETTING STORAGE VALUES COMMON FOR commitment(0) & commitment(2)
 
-		// /// UPDATING LoanRecords
-		// 	delete loan.market;
-		// 	delete loan.commitment;
-		// 	delete loan.amount;
-
-		// /// UPDATING LoanState
-		// 	delete loanState.loanMarket;
-		// 	delete loanState.actualLoanAmount;
-		// 	delete loanState.currentMarket;
-		// 	delete loanState.currentAmount;
-
-		// /// UPDATING RECORDS IN LOANACCOUNT
-		// 	delete loanAccount.loans[loan.id-1].market;
-		// 	delete loanAccount.loans[loan.id-1].commitment;
-		// 	delete loanAccount.loans[loan.id-1].amount;
-
-		// 	delete loanAccount.loanState[loan.id-1].loanMarket;
-		// 	delete loanAccount.loanState[loan.id-1].actualLoanAmount;
-		// 	delete loanAccount.loanState[loan.id-1].currentMarket;
-		// 	delete loanAccount.loanState[loan.id-1].currentAmount;
+		/// UPDATING LoanRecords
+		console.log("Updating LoanRecords");
+			delete loan.market;
+			delete loan.commitment;
+			delete loan.amount;
+		console.log("Deleted LoanRecords");
 
 
-		// /// UPDATING ACTIVELOANS
-		// 	delete activeLoans.loanMarket;
-		// 	delete activeLoans.loanCommitment;
-		// 	delete activeLoans.loanAmount;
-		// 	delete activeLoans.loanCurrentMarket;
-		// 	delete activeLoans.loanCurrentAmount;
-		// 	// delete activeLoans.collateralYield;
-		// 	// delete activeLoans.borrowInterest;
+		/// UPDATING LoanState
+			delete loanState.loanMarket;
+			delete loanState.actualLoanAmount;
+			delete loanState.currentMarket;
+			delete loanState.currentAmount;
+		console.log("Deleted LoanState");
+
+
+		/// UPDATING RECORDS IN LOANACCOUNT
+			delete loanAccount.loans[loan.id-1].market;
+			delete loanAccount.loans[loan.id-1].commitment;
+			delete loanAccount.loans[loan.id-1].amount;
+		console.log("Deleted LOANACCOUNT from loans struct");
+
+
+			delete loanAccount.loanState[loan.id-1].loanMarket;
+			delete loanAccount.loanState[loan.id-1].actualLoanAmount;
+			delete loanAccount.loanState[loan.id-1].currentMarket;
+			delete loanAccount.loanState[loan.id-1].currentAmount;
+		console.log("Deleted LoanRecords from loanstate struct");
+
+
+		/// UPDATING ACTIVELOANS
+			delete activeLoans.loanMarket;
+			delete activeLoans.loanCommitment;
+			delete activeLoans.loanAmount;
+			delete activeLoans.loanCurrentMarket;
+			delete activeLoans.loanCurrentAmount;
+		console.log("Deleted ACTIVELOANS");
+
+			// delete activeLoans.collateralYield;
+			// delete activeLoans.borrowInterest;
 
 		// if (_commitment == _getCommitment(2)) {
 			
