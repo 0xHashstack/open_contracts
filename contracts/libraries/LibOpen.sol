@@ -42,6 +42,13 @@ library LibOpen {
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
 	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 amount,uint256 timestamp);
 	// event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
+	  event WithdrawCollateral(
+        address indexed account,
+        bytes32 indexed market,
+        uint256 indexed amount,
+        uint256 id,
+        uint256 timestamp
+    );
 	event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed currentAmount,uint256 timestamp);
 
 	// event MarketSwapped(
@@ -815,7 +822,16 @@ library LibOpen {
 			ds.collateralToken.transfer(_sender, collateral.amount);
 			// console.log("sender balance is ", .balanceOf(_sender)}`);
 			console.log("Amount ", collateral.amount);
-
+			
+			bytes32 collateralMarket = collateral.market;
+      		uint256 collateralAmount = collateral.amount;
+			emit WithdrawCollateral(
+            msg.sender,
+            collateralMarket,
+            collateralAmount,
+            loan.id,
+            block.timestamp
+        );
 
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
 			console.log("Utilisation updated ",loan.amount);
