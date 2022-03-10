@@ -243,8 +243,8 @@ contract Loan is Pausable, ILoan {
             loanAccount,
             loan,
             loanState,
-            collateral,
-            cYield
+            collateral
+            // cYield
         );
 
 		loanState.currentAmount -= _amount;

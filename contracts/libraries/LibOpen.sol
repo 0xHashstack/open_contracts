@@ -560,13 +560,13 @@ library LibOpen {
 // =========== Loan Functions ===========
 
 /// CHECKING PERMISSIBLE WITHDRAWAL
-	function _checkPermissibleWithdrawal(address account, uint256 amount, LoanAccount storage loanAccount, LoanRecords storage loan, LoanState storage loanState,CollateralRecords storage collateral, CollateralYield storage cYield) internal authContract(LOAN_ID) {
+	function _checkPermissibleWithdrawal(address account, uint256 amount, LoanAccount storage loanAccount, LoanRecords storage loan, LoanState storage loanState,CollateralRecords storage collateral /*CollateralYield storage cYield*/) internal authContract(LOAN_ID) {
 		AppStorageOpen storage ds = diamondStorage();
 
 		require(amount <= loanState.currentAmount, "ERROR: Amount > Loan value");
 		require(loanState.currentMarket == loan.market, "ERROR: Can not withdraw secondary markets");
 
-		_accruedInterest(account, loan.market, loan.commitment);
+		// _accruedInterest(account, loan.market, loan.commitment);
 
 		uint256 collateralAvbl;
 		uint256 usdCollateral;
@@ -574,12 +574,12 @@ library LibOpen {
 		uint256 usdLoanCurrent;
 
 
-		/// UPDATE collateralAvbl
-		collateralAvbl = collateral.amount - ds.indAccruedAPR[account][loan.market][loan.commitment].accruedInterest;
-		if (loan.commitment == _getCommitment(2)) {
-			_accruedYieldCollateral(loanAccount, collateral, cYield);
-			collateralAvbl += cYield.accruedYield;
-		}
+		// /// UPDATE collateralAvbl
+		// collateralAvbl = collateral.amount - ds.indAccruedAPR[account][loan.market][loan.commitment].accruedInterest;
+		// if (loan.commitment == _getCommitment(2)) {
+			// _accruedYieldCollateral(loanAccount, collateral, cYield);
+		// 	collateralAvbl += cYield.accruedYield;
+		// }
 
 		/// FETCH USDT PRICES
 		usdCollateral = _getLatestPrice(collateral.market);
