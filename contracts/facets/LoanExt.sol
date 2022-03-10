@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 contract LoanExt is Pausable, ILoanExt {
 
 	event NewLoan(address indexed account,bytes32 loanMarket,bytes32 commitment,uint256 loanAmount,bytes32 collateralMarket,uint256 collateralAmount,uint256 indexed loanId,uint256 time);
-	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
+	// event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
 	event Liquidation(address indexed account,bytes32 indexed market,bytes32 indexed commitment,uint256 amount,uint256 time);
 	constructor() {
 		
