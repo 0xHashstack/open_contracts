@@ -289,23 +289,29 @@ library LibOpen {
 
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
+				uint256 timeDiff = apy.time[newIndex] - time;
+				if(timeDiff > 600)
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = ((apy.time[newIndex] - time) *apy.apyChanges[index])/(365*86400*1000);
+				aggregateYield = (timeDiff * apy.apyChanges[index]);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
-					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += ((timeDiff*apy.apyChanges[newIndex])/(365*86400*1000));
+					timeDiff = apy.time[i + 1] - apy.time[i];
+					if(timeDiff > 600)
+					aggregateYield += (timeDiff*apy.apyChanges[newIndex]);
 				}
 			}
 			else if (apy.time[index] == time) {
 				for (uint256 i = index; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += ((timeDiff*apy.apyChanges[index])/(365*86400*1000));
+					if(timeDiff > 600)
+					aggregateYield += (timeDiff*apy.apyChanges[index]);
 				}
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apy.time[index] < time || apy.time[index] == time) {
-				aggregateYield += (((block.timestamp - time)*apy.apyChanges[index])/(365*86400*1000));
+				uint256 timeDiff = block.timestamp - time;
+				if(timeDiff > 600)
+				aggregateYield += (timeDiff*apy.apyChanges[index]);
 			}
 		}
 		interestFactor = aggregateYield ;
@@ -384,23 +390,28 @@ library LibOpen {
 
 			if (apr.time[index] < time) {
 				uint256 newIndex = index + 1;
-				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index]) / (365*86400*1000));
+				uint timeDiff = apr.time[newIndex] - time;
+				if(timeDiff > 600)
+				aggregateYield = (timeDiff *apr.aprChanges[index]);
 			
 				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
-					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateYield += ((timeDiff*apr.aprChanges[newIndex])/ (365*86400*1000));
+					timeDiff = apr.time[i + 1] - apr.time[i];
+					if(timeDiff > 600)
+					aggregateYield += (timeDiff*apr.aprChanges[newIndex]);
 				}
 			}
 			else if (apr.time[index] == time) {
 				for (uint256 i = index; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateYield += ((timeDiff*apr.aprChanges[index]) / (365*86400*1000));
+					if(timeDiff > 600)
+					aggregateYield += (timeDiff*apr.aprChanges[index]);
 				}
 			}
 		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apr.time[index] < time || apr.time[index] == time) {
-				aggregateYield += (((block.timestamp - time)*apr.aprChanges[index])/(365*86400*1000));
+				uint timeDiff = (block.timestamp - time);
+				if(timeDiff > 600)
+				aggregateYield += (timeDiff*apr.aprChanges[index]);
 			}
 		}
 		interestFactor = aggregateYield ;
@@ -906,7 +917,7 @@ library LibOpen {
 		
 		(cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield) = _calcAPY(_commitment, cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield);
 
-		aggregateYield *= collateral.amount;
+		aggregateYield = (collateral.amount*aggregateYield)/(365*86400*10000);
 
 		cYield.accruedYield += aggregateYield;
 		loanAccount.accruedAPY[num].accruedYield += aggregateYield;
@@ -936,7 +947,7 @@ library LibOpen {
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime, 
 			aggregateYield);
 
-		deductibleUSDValue = ((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getLatestPrice(_loanMarket)) * aggregateYield;
+		deductibleUSDValue = (((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getLatestPrice(_loanMarket)) * aggregateYield)/(365*86400*10000);
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest += deductibleUSDValue / _getLatestPrice(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest = oldLengthAccruedInterest;
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime = oldTime;
