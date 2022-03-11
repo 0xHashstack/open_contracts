@@ -141,6 +141,7 @@ contract Deposit is Pausable, IDeposit{
 			}
 		} 
 			ds.token = IBEP20(LibOpen._connectMarket(_market));
+			require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
 			ds.token.transfer(msg.sender, _amount);
 
 			deposit.amount -= _amount;
