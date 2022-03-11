@@ -259,6 +259,8 @@ contract LoanExt is Pausable, ILoanExt {
 		// CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
 		uint num = loan.id;
+		require(loan.id != 0, "ERROR: Loan does not exist");
+
 
 		uint256 remnantAmount= LibOpen._repaymentProcess(
 			loan.id - 1,
