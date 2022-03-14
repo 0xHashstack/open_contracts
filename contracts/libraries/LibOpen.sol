@@ -928,13 +928,13 @@ library LibOpen {
 		_accruedInterest(_account, _market, _commitment);
 		if (collateral.isCollateralisedDeposit) {
 			_accruedYieldCollateral(ds.loanPassbook[_account], collateral, cYield);
+			activeLoans.collateralYield[num] = cYield.accruedYield;
 		}
 
 		/// UPDATING ACTIVELOANS
 		activeLoans.isSwapped[num] = false;
 		activeLoans.loanCurrentMarket[num] = loan.market;
 		activeLoans.loanCurrentAmount[num] = _swappedAmount;
-		activeLoans.collateralYield[num] = cYield.accruedYield;
 		activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
 		// emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
