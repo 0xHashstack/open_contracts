@@ -261,31 +261,31 @@ async function addMarkets(diamondAddress) {
   console.log("tBTC deployed: ", tbtc.address);
 
   /// DEPLOY USDC.T
-  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000); // 10 billion USDC
+  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 8, 10000000000); // 10 billion USDC
   await tusdc.deployed();
   const tUsdcAddress = tusdc.address;
   console.log("tUSDC deployed: ", tusdc.address);
 
   /// DEPLOY USDT.T
-  const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000); // 10 billion USDT
+  const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 8, 10000000000); // 10 billion USDT
   await tusdt.deployed();
   const tUsdtAddress = tusdt.address;
   console.log("tUSDT deployed: ", tusdt.address);
 
   /// DEPLOY SXP.T
-  const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000); // 1 billion SXP
+  const tsxp = await Mockup.deploy("SXP", "SXP.t", 8, 1000000000); // 1 billion SXP
   await tsxp.deployed();
   const tSxpAddress = tsxp.address;
   console.log("tSxp deployed: ", tsxp.address);
 
   /// DEPLOY CAKE.T
-  const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000); // 2.7 billion CAKE
+  const tcake = await Mockup.deploy("CAKE", "CAKE.t", 8, 2700000000); // 2.7 billion CAKE
   await tcake.deployed();
   const tCakeAddress = tcake.address;
   console.log("tCake deployed: ", tcake.address);
 
   /// DEPLOY WBNB.T
-  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000); // 90 million WBNB
+  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 8, 90000000); // 90 million WBNB
   await twbnb.deployed();
   const tWBNBAddress = twbnb.address;
   console.log("tWBNB deployed: ", twbnb.address);
@@ -301,11 +301,11 @@ async function addMarkets(diamondAddress) {
   /// APPROVING TOKENS FOR DIAMOND
   console.log("Approval diamond");
   await tbtc.approve(diamondAddress, "500000000000000");
-  await tusdc.approve(diamondAddress, "5000000000000000000000000");
-  await tusdt.approve(diamondAddress, "5000000000000000000000000");
-  await tsxp.approve(diamondAddress, "5000000000000000000000000");
-  await tcake.approve(diamondAddress, "5000000000000000000000000");
-  await twbnb.approve(diamondAddress, "5000000000000000000000000");
+  await tusdc.approve(diamondAddress, "500000000000000");
+  await tusdt.approve(diamondAddress, "500000000000000");
+  await tsxp.approve(diamondAddress, "500000000000000");
+  await tcake.approve(diamondAddress, "500000000000000");
+  await twbnb.approve(diamondAddress, "500000000000000");
 
   /// MARKET ADDRESSES ADDED
 
@@ -319,15 +319,15 @@ async function addMarkets(diamondAddress) {
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from("100000000000000000000"); // 100 USDT, or 100 USDC
-  const minUSDC = BigNumber.from("100000000000000000000"); // 100 USDT, or 100 USDC
+  const minUSDT = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
+  const minUSDC = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
   const minBTC = BigNumber.from("10000000"); // 0.1 BTC
-  const minBNB = BigNumber.from("250000000000000000"); // 0.25
+  const minBNB = BigNumber.from("25000000"); // 0.25
 
   // 100 USDT [minAmount]
   await tokenList
     .connect(upgradeAdmin)
-    .addMarketSupport(symbolUsdt, 18, tUsdtAddress, minUSDT, {
+    .addMarketSupport(symbolUsdt, 8, tUsdtAddress, minUSDT, {
       gasLimit: 800000,
     });
   console.log(`tUSDT added ${minUSDT}`);
@@ -335,7 +335,7 @@ async function addMarkets(diamondAddress) {
   // 100 USDC [minAmount]
   await tokenList
     .connect(upgradeAdmin)
-    .addMarketSupport(symbolUsdc, 18, tUsdcAddress, minUSDC, {
+    .addMarketSupport(symbolUsdc, 8, tUsdcAddress, minUSDC, {
       gasLimit: 800000,
     });
   console.log(`tUSDC added ${minUSDC}`);
@@ -349,7 +349,7 @@ async function addMarkets(diamondAddress) {
   // 0.25 BNB [minAmount]
   await tokenList
     .connect(upgradeAdmin)
-    .addMarketSupport(symbolWBNB, 18, tWBNBAddress, minBNB, {
+    .addMarketSupport(symbolWBNB, 8, tWBNBAddress, minBNB, {
       gasLimit: 800000,
     });
   console.log(`twBNB added ${minBNB}`);
@@ -363,7 +363,7 @@ async function addMarkets(diamondAddress) {
     .addMarket2Support(symbolSxp, 8, tSxpAddress, { gasLimit: 800000 });
   await tokenList
     .connect(upgradeAdmin)
-    .addMarket2Support(symbolCAKE, 18, tCakeAddress, { gasLimit: 800000 });
+    .addMarket2Support(symbolCAKE, 8, tCakeAddress, { gasLimit: 800000 });
 
   console.log(`Secondary markets
         SXP: ${symbolSxp}: ${tSxpAddress}
@@ -372,16 +372,16 @@ async function addMarkets(diamondAddress) {
   // console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
 
   /// TRANSFERRING TOKENS TO UPGRADEADMIN
-  await tusdt.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDT
-  await tusdc.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDC
+  await tusdt.transfer(upgradeAdmin.address, "200000000000000000"); // 2 billion USDT
+  await tusdc.transfer(upgradeAdmin.address, "200000000000000000"); // 2 billion USDC
   await tbtc.transfer(upgradeAdmin.address, "420000000000000"); // 4.2 million BTC
-  await twbnb.transfer(upgradeAdmin.address, "18000000000000000000000000"); // 18 million BNB
+  await twbnb.transfer(upgradeAdmin.address, "1800000000000000"); // 18 million BNB
 
   /// TRANSFERRING TOKENS TO DIAMOND(RESERVES)
-  await tusdt.transfer(diamondAddress, "2000000000000000000000000000");
-  await tusdc.transfer(diamondAddress, "2000000000000000000000000000");
+  await tusdt.transfer(diamondAddress, "200000000000000000");
+  await tusdc.transfer(diamondAddress, "200000000000000000");
   await tbtc.transfer(diamondAddress, "420000000000000");
-  await twbnb.transfer(diamondAddress, "18000000000000000000000000");
+  await twbnb.transfer(diamondAddress, "1800000000000000");
 
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
@@ -390,14 +390,14 @@ async function addMarkets(diamondAddress) {
   console.log("Faucet deployed at ", faucet.address);
 
   /// TRANSFERRING TOKENS TO FAUCET
-  await tusdt.transfer(faucet.address, "6000000000000000000000000000"); // 6 billion USDT
+  await tusdt.transfer(faucet.address, "600000000000000000"); // 6 billion USDT
   console.log(
     "6000000000 tusdt transfered to faucet. Token being :",
     tUsdtAddress
   );
   console.log(await tusdt.balanceOf(faucet.address));
 
-  await tusdc.transfer(faucet.address, "6000000000000000000000000000"); // 6 billion USDC
+  await tusdc.transfer(faucet.address, "600000000000000000"); // 6 billion USDC
   console.log(
     "6000000000 tusdc transfered to faucet. Token being :",
     tUsdcAddress
@@ -408,7 +408,7 @@ async function addMarkets(diamondAddress) {
   console.log("12600000 tbtc transfered to faucet. Token being :", tBtcAddress); // 12.6 million BTC
   console.log(await tbtc.balanceOf(faucet.address));
 
-  await twbnb.transfer(faucet.address, "54000000000000000000000000"); // 54 million BNB
+  await twbnb.transfer(faucet.address, "5400000000000000"); // 54 million BNB
   console.log(
     "54000000 twbnb transfered to faucet. Token being :",
     tWBNBAddress
@@ -418,13 +418,13 @@ async function addMarkets(diamondAddress) {
   /// UPADTING FAUCET BALANCE & FUNDS_LEAK
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdtAddress,
-    "6000000000000000000000000000", // 6 billion USDT
-    "10000000000000000000000" // 10000 USDT
+    "600000000000000000", // 6 billion USDT
+    "1000000000000" // 10000 USDT
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdcAddress,
-    "6000000000000000000000000000", // 6 billion USDC
-    "10000000000000000000000" // 10000 USDC
+    "600000000000000000", // 6 billion USDC
+    "1000000000000" // 10000 USDC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tBtcAddress,
@@ -433,8 +433,8 @@ async function addMarkets(diamondAddress) {
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tWBNBAddress,
-    "54000000000000000000000000", // 54 million BNB
-    "100000000000000000000" // 100 BNB
+    "5400000000000000", // 54 million BNB
+    "10000000000" // 100 BNB
   );
 
   console.log('ALL ENV USED IN UI');
@@ -454,7 +454,7 @@ async function addMarkets(diamondAddress) {
   console.log("REACT_APP_T_CAKE_ADDRESS = ", tCakeAddress);
   
   console.log("REACT_APP_T_WBNB_ADDRESS = ", tWBNBAddress);
-  fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/addr.js',("REACT_APP_DIAMOND_ADDRESS = "+ diamond.address+ '\r\n'+ "REACT_APP_FAUCET_ADDRESS = "+ faucet.address+ '\r\n'+ "REACT_APP_T_USDC_ADDRESS = "+ tUsdcAddress+ '\r\n'+ "REACT_APP_T_USDT_ADDRESS = "+ tUsdtAddress+ '\r\n'+ "REACT_APP_T_SXP_ADDRESS = "+ tSxpAddress+ '\r\n'+ "REACT_APP_T_CAKE_ADDRESS = "+ tCakeAddress+ '\r\n'+ "REACT_APP_T_WBNB_ADDRESS = "+tWBNBAddress), function(err) {
+  fs.writeFile('addr.js',("REACT_APP_DIAMOND_ADDRESS = "+ diamond.address+ '\r\n'+ "REACT_APP_FAUCET_ADDRESS = "+ faucet.address+ '\r\n'+ "REACT_APP_T_USDC_ADDRESS = "+ tUsdcAddress+ '\r\n'+ "REACT_APP_T_USDT_ADDRESS = "+ tUsdtAddress+ '\r\n'+ "REACT_APP_T_SXP_ADDRESS = "+ tSxpAddress+ '\r\n'+ "REACT_APP_T_CAKE_ADDRESS = "+ tCakeAddress+ '\r\n'+ "REACT_APP_T_WBNB_ADDRESS = "+tWBNBAddress), function(err) {
     if(err) {
         return console.log(err);
     }
@@ -493,14 +493,14 @@ async function provideLiquidity(rets) {
   // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
   /// USDC-CAKE LIQUIDITY
-  await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+  await tusdc.approve(pancakeRouterAddr, "10000000000000000");
+  await tcake.approve(pancakeRouterAddr, "1000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdc.address,
     tcake.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
+    "1000000000000000",
+    "100000000000000",
     1,
     1,
     upgradeAdmin.address,
@@ -511,14 +511,14 @@ async function provideLiquidity(rets) {
   console.log("USDC <-> CAKE LP done");
 
   /// USDT-CAKE LIQUIDITY
-  await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+  await tusdt.approve(pancakeRouterAddr, "10000000000000000");
+  await tcake.approve(pancakeRouterAddr, "1000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdt.address,
     tcake.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
+    "1000000000000000",
+    "100000000000000",
     1,
     1,
     upgradeAdmin.address,
@@ -529,7 +529,7 @@ async function provideLiquidity(rets) {
 
   /// BTC-CAKE LIQUIDITY
   await tbtc.approve(pancakeRouterAddr, "120000000000");
-  await tcake.approve(pancakeRouterAddr, "50000000000000000000000000");
+  await tcake.approve(pancakeRouterAddr, "5000000000000000");
 
   await pancakeRouter
     .connect(upgradeAdmin)
@@ -537,7 +537,7 @@ async function provideLiquidity(rets) {
       tbtc.address,
       tcake.address,
       "12000000000",
-      "5000000000000000000000000",
+      "500000000000000",
       1,
       1,
       upgradeAdmin.address,
@@ -547,16 +547,16 @@ async function provideLiquidity(rets) {
   console.log("BTC <-> CAKE LP done");
 
   /// WBNB-CAKE LIQUIDITY
-  await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "2500000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "5000000000");
+  await tcake.approve(pancakeRouterAddr, "250000000000");
   
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       twbnb.address,
       tcake.address,
-      "5000000000000000000",
-      "250000000000000000000",
+      "500000000",
+      "25000000000",
       1,
       1,
       upgradeAdmin.address,
@@ -568,14 +568,14 @@ async function provideLiquidity(rets) {
  // LP FOR SXP
 
   /// USDC-SXP LIQUIDITY
-  await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
+  await tusdc.approve(pancakeRouterAddr, "10000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "1000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdc.address,
     tsxp.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
+    "1000000000000000",
+    "100000000000000",
     1,
     1,
     upgradeAdmin.address,
@@ -586,14 +586,14 @@ async function provideLiquidity(rets) {
   console.log("USDC <-> SXP LP done");
 
   /// USDT-SXP LIQUIDITY
-  await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
+  await tusdt.approve(pancakeRouterAddr, "10000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "1000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdt.address,
     tsxp.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
+    "1000000000000000",
+    "100000000000000",
     1,
     1,
     upgradeAdmin.address,
@@ -604,7 +604,7 @@ async function provideLiquidity(rets) {
 
   /// BTC-SXP LIQUIDITY
   await tbtc.approve(pancakeRouterAddr, "120000000000");
-  await tsxp.approve(pancakeRouterAddr, "50000000000000000000000000");
+  await tsxp.approve(pancakeRouterAddr, "5000000000000000");
 
   await pancakeRouter
     .connect(upgradeAdmin)
@@ -612,7 +612,7 @@ async function provideLiquidity(rets) {
       tbtc.address,
       tsxp.address,
       "12000000000",
-      "5000000000000000000000000",
+      "500000000000000",
       1,
       1,
       upgradeAdmin.address,
@@ -622,16 +622,16 @@ async function provideLiquidity(rets) {
   console.log("BTC <-> SXP LP done");
 
   /// WBNB-SXP LIQUIDITY
-  await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "2500000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "5000000000");
+  await tsxp.approve(pancakeRouterAddr, "250000000000");
   
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       twbnb.address,
       tsxp.address,
-      "5000000000000000000",
-      "250000000000000000000",
+      "500000000",
+      "25000000000",
       1,
       1,
       upgradeAdmin.address,
