@@ -152,7 +152,8 @@ contract LoanExt is Pausable, ILoanExt {
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPR.push(deductibleInterest);
 
-
+			loanAccount.accruedAPY.push(cYield);
+			activeLoans.collateralYield.push(0);
 
 		} else if (_commitment == LibOpen._getCommitment(2)) {
 			

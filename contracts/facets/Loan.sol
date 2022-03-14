@@ -130,10 +130,6 @@ contract Loan is Pausable, ILoan {
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;
 
-        /// LOAN RECORDS
-        delete loan.id;
-        delete loan.isSwapped;
-        delete loan.lastUpdate;
 
         /// LOAN STATE
         delete loanState.id;
@@ -146,9 +142,24 @@ contract Loan is Pausable, ILoan {
 
 
 		/// UPDATING ACTIVELOANS
-		delete activeLoans.collateralMarket;
-		delete activeLoans.collateralAmount;
-		delete activeLoans.isSwapped;
+		delete activeLoans.collateralMarket[loan.id - 1];
+		delete activeLoans.collateralAmount[loan.id - 1];
+		delete activeLoans.isSwapped[loan.id - 1];
+
+        if (_commitment == LibOpen._getCommitment(2)) {
+            /// UPDATING ACTIVELOANS
+            delete activeLoans.loanMarket[loan.id - 1];
+            delete activeLoans.loanCommitment[loan.id - 1];
+            delete activeLoans.loanAmount[loan.id - 1];
+            delete activeLoans.loanCurrentMarket[loan.id - 1];
+            delete activeLoans.loanCurrentAmount[loan.id - 1];
+            delete activeLoans.collateralYield[loan.id - 1];
+            delete activeLoans.borrowInterest[loan.id - 1];
+        }
+        /// LOAN RECORDS
+        delete loan.id;
+        delete loan.isSwapped;
+        delete loan.lastUpdate;
 
         LibOpen._updateReservesLoan(collateralMarket, collateralAmount, 1);
 
