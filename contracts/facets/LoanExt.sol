@@ -255,22 +255,23 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanState storage loanState = ds.indLoanState[account][_market][_commitment];
 		LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
-		// CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
+		uint256 remnantAmount;
 		uint num = loan.id;
 		require(loan.id != 0, "ERROR: Loan does not exist");
 
 
-		uint256 remnantAmount= LibOpen._repaymentProcess(
+			remnantAmount= LibOpen._repaymentProcess(
 			loan.id - 1,
 			0, 
 			loanAccount,
 			loan,
 			loanState,
-			collateral/*
+			collateral,
 			deductibleInterest,
-			cYield*/
+			cYield
 		);
 
 		/// UPDATING THE RESERVES

@@ -570,13 +570,13 @@ library LibOpen {
 // =========== Loan Functions ===========
 
 /// CHECKING PERMISSIBLE WITHDRAWAL
-	function _checkPermissibleWithdrawal(address account, uint256 amount, LoanAccount storage loanAccount, LoanRecords storage loan, LoanState storage loanState,CollateralRecords storage collateral /*CollateralYield storage cYield*/) internal authContract(LOAN_ID) {
+	function _checkPermissibleWithdrawal(address account, uint256 amount, LoanAccount storage loanAccount, LoanRecords storage loan, LoanState storage loanState,CollateralRecords storage collateral,CollateralYield storage cYield) internal authContract(LOAN_ID) {
 		AppStorageOpen storage ds = diamondStorage();
 
 		require(amount <= loanState.currentAmount, "ERROR: Amount > Loan value");
 		require(loanState.currentMarket == loan.market, "ERROR: Can not withdraw secondary markets");
 
-		// _accruedInterest(account, loan.market, loan.commitment);
+		_accruedInterest(account, loan.market, loan.commitment);
 
 		uint256 collateralAvbl;
 		uint256 usdCollateral;
@@ -597,7 +597,7 @@ library LibOpen {
 		usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
 
 		/// Permissible withdrawal amount calculation in the loanMarket.
-		permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
+		// permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
 		require(((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent) >= (amount), "ERROR: Request exceeds funds");
 		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (amount*usdLoanCurrent)) >= (15*(usdLoan*ds.indLoanRecords[account][loan.market][loan.commitment].amount)/10), "ERROR: Liquidation risk");
 	}
@@ -725,8 +725,8 @@ library LibOpen {
 		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_loanMarket][_commitment];
-		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
 		ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
 		/// TRANSFER FUNDS TO PROTOCOL FROM USER
 		if (_repayAmount!= 0)
