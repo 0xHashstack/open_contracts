@@ -749,7 +749,7 @@ library LibOpen {
 		// return remnantAmount;
 		/// CONVERT remnantAmount into collateralAmount
 		console.log("Collateral Preswap ",collateral.amount);
-		// collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
+		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
 		console.log("Collateral Postswap ",collateral.amount);
 		// /// RESETTING STORAGE VALUES COMMON FOR commitment(0) & commitment(2)
 
@@ -1012,7 +1012,7 @@ library LibOpen {
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_loanMarket][_commitment];
 
-		require(ds.indLoanState[_account][_loanMarket][_commitment].state == STATE.ACTIVE, "ERROR: Inactive Loan");
+		// require(ds.indLoanState[_account][_loanMarket][_commitment].state == STATE.ACTIVE, "ERROR: Inactive Loan");
 		// require(ds.indAccruedAPR[_account][_loanMarket][_commitment].id != 0, "ERROR: APR does not exist");
 
 		uint256 aggregateYield;
