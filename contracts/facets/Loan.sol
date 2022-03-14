@@ -276,9 +276,9 @@ contract Loan is Pausable, ILoan {
 		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
 
 		loanInterest = yield.accruedYield;
-		loanInterest += (interestFactor*loan.amount);	
+		loanInterest += ((interestFactor*loan.amount)/(365*86400*10000));	
         collateralInterest = cYield.accruedYield;
-        collateralInterest += (interestFactor*collateral.amount);
+        collateralInterest += ((interestFactor*collateral.amount)/(365*86400*10000));
 
 		return (loanInterest, collateralInterest);
 

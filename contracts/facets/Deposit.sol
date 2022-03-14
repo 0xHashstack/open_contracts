@@ -58,7 +58,7 @@ contract Deposit is Pausable, IDeposit{
 		interestFactor = LibOpen._getDepositInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
 
 		depositInterest = yield.accruedYield;
-		depositInterest += (interestFactor*deposit.amount);		
+		depositInterest += ((interestFactor*deposit.amount)/(365*86400*10000));		
 
 		return depositInterest;
 
@@ -249,7 +249,7 @@ contract Deposit is Pausable, IDeposit{
 
 		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibOpen._calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
 
-		aggregateYield *= deposit.amount;
+		aggregateYield = (aggregateYield*deposit.amount)/(365*86400*10000);
 
 		yield.accruedYield += aggregateYield;
 		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;
