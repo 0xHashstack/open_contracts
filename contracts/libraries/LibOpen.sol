@@ -289,21 +289,21 @@ library LibOpen {
 
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
-				uint256 timeDiff = apy.time[newIndex] - time;
+				uint256 timeDiff = block.timestamp - apy.time[apy.time.length - 1];
 				if(timeDiff > 600)
 					aggregateYield = (timeDiff * apy.apyChanges[index]);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
 					timeDiff = apy.time[i + 1] - apy.time[i];
 					if(timeDiff > 600)
-						aggregateYield += (timeDiff*apy.apyChanges[newIndex]);
+						aggregateYield += (timeDiff*apy.apyChanges[i]);
 				}
 			}
 			else if (apy.time[index] == time) {
 				for (uint256 i = index; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
 					if(timeDiff > 600)
-						aggregateYield += (timeDiff*apy.apyChanges[index]);
+						aggregateYield += (timeDiff*apy.apyChanges[i]);
 				}
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > time) {
@@ -389,21 +389,21 @@ library LibOpen {
 
 			if (apr.time[index] < time) {
 				uint256 newIndex = index + 1;
-				uint timeDiff = apr.time[newIndex] - time;
+				uint timeDiff = block.timestamp - apr.time[apr.time.length-1];
 				if(timeDiff > 600)
 					aggregateYield = (timeDiff *apr.aprChanges[index]);
 			
 				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
 					timeDiff = apr.time[i + 1] - apr.time[i];
 					if(timeDiff > 600)
-						aggregateYield += (timeDiff*apr.aprChanges[newIndex]);
+						aggregateYield += (timeDiff*apr.aprChanges[i]);
 				}
 			}
 			else if (apr.time[index] == time) {
 				for (uint256 i = index; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
 					if(timeDiff > 600)
-						aggregateYield += (timeDiff*apr.aprChanges[index]);
+						aggregateYield += (timeDiff*apr.aprChanges[i]);
 				}
 			}
 		} else if (apr.time.length == oldLengthAccruedYield && block.timestamp > time) {
