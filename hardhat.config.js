@@ -21,10 +21,10 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      // forking: {
-      //   url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-      //   blockNumber: 13327183,
-      // }
+      forking: {
+        url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      },
+      chainId: 1337
     },
     ropsten: {
       chainId: 3,

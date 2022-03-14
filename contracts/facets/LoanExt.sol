@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 contract LoanExt is Pausable, ILoanExt {
 
 	event NewLoan(address indexed account,bytes32 loanMarket,bytes32 commitment,uint256 loanAmount,bytes32 collateralMarket,uint256 collateralAmount,uint256 indexed loanId,uint256 time);
-	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
+	// event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
 	event Liquidation(address indexed account,bytes32 indexed market,bytes32 indexed commitment,uint256 amount,uint256 time);
 	constructor() {
 		
@@ -152,7 +152,8 @@ contract LoanExt is Pausable, ILoanExt {
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPR.push(deductibleInterest);
 
-
+			loanAccount.accruedAPY.push(cYield);
+			activeLoans.collateralYield.push(0);
 
 		} else if (_commitment == LibOpen._getCommitment(2)) {
 			
@@ -255,20 +256,23 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanState storage loanState = ds.indLoanState[account][_market][_commitment];
 		LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
-		// CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
+		uint256 remnantAmount;
 		uint num = loan.id;
+		require(loan.id != 0, "ERROR: Loan does not exist");
 
-		uint256 remnantAmount= LibOpen._repaymentProcess(
+
+			remnantAmount= LibOpen._repaymentProcess(
 			loan.id - 1,
 			0, 
 			loanAccount,
 			loan,
 			loanState,
-			collateral/*
+			collateral,
 			deductibleInterest,
-			cYield*/
+			cYield
 		);
 
 		/// UPDATING THE RESERVES
