@@ -781,7 +781,6 @@ library LibOpen {
 		console.log("Deleted LoanRecords from loanstate struct");
 
 		/// ACTIVELOANS
-		activeLoans.collateralAmount[loan.id - 1] = collateral.amount;
 		activeLoans.isSwapped[loan.id - 1] = false;
 		activeLoans.state[loan.id - 1] = STATE.REPAID;
 		delete activeLoans.loanCurrentAmount[loan.id - 1];
@@ -813,6 +812,8 @@ library LibOpen {
 			loanAccount.collaterals[loan.id-1].isCollateralisedDeposit = false;
 			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
 			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
+
+			activeLoans.collateralAmount[loan.id - 1] = collateral.amount;
 
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
 		}
@@ -858,6 +859,8 @@ library LibOpen {
 			delete loanAccount.loans[loan.id - 1];
 			delete loanAccount.collaterals[loan.id - 1];
 			delete loanAccount.loanState[loan.id - 1];
+
+			delete activeLoans.collateralAmount[loan.id - 1];
 
 			/// LOAN RECORDS
 			delete loan.id;
