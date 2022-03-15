@@ -181,7 +181,7 @@ contract Loan is Pausable, ILoan {
         );
 
         LibOpen._isMarketSupported(_collateralMarket);
-        LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
+        // LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
     }
 
     function addCollateral(
