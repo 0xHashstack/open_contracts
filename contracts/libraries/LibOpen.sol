@@ -40,7 +40,7 @@ library LibOpen {
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
-	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 amount,uint256 timestamp);
+	event LoanRepaid(address indexed account,uint256 id,bytes32 indexed market,uint256 indexed amount,uint256 timestamp);
 	// event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
 	  event WithdrawCollateral(
         address indexed account,
