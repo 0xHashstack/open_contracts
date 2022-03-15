@@ -22,13 +22,13 @@ async function deployDiamond() {
 
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
-  fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
-    if(err) {
-        return console.log(err);
-    }
+//   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
+//     if(err) {
+//         return console.log(err);
+//     }
 
-    console.log("The file was saved!");
-}); ;
+//     console.log("The file was saved!");
+// }); ;
 
   /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
