@@ -781,8 +781,8 @@ library LibOpen {
 		console.log("Deleted LoanRecords from loanstate struct");
 
 		/// ACTIVELOANS
-		activeLoans.isSwapped[loan.id - 1] = false;
 		activeLoans.state[loan.id - 1] = STATE.REPAID;
+		delete activeLoans.isSwapped[loan.id - 1];
 		delete activeLoans.loanCurrentAmount[loan.id - 1];
 		delete activeLoans.collateralYield[loan.id - 1];
 		delete activeLoans.borrowInterest[loan.id - 1];
@@ -860,7 +860,13 @@ library LibOpen {
 			delete loanAccount.collaterals[loan.id - 1];
 			delete loanAccount.loanState[loan.id - 1];
 
+			delete activeLoans.collateralMarket[loan.id - 1];
 			delete activeLoans.collateralAmount[loan.id - 1];
+ 			delete activeLoans.loanMarket[loan.id - 1];
+ 			delete activeLoans.loanCommitment[loan.id - 1];
+ 			delete activeLoans.loanAmount[loan.id - 1];
+ 			delete activeLoans.loanCurrentMarket[loan.id - 1];
+ 			console.log("activeLoans.id deleted");
 
 			/// LOAN RECORDS
 			delete loan.id;
