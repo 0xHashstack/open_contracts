@@ -478,6 +478,8 @@ library LibOpen {
 		    path[0] = addrFromMarket;
 		    path[1] = addrCake;
 		    path[2] = addrToMarket;
+			console.log("address cake is ", addrCake);
+			require(addrCake != address(0), "CAKE Address can not be zero while declaring path .");
 		}
 
 // https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens

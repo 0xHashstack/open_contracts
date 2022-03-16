@@ -84,7 +84,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	// SETTERS
-	function updateAPY(bytes32 _commitment, uint _apy) external override nonReentrant() authComptroller() nonReentrant() returns (bool) {
+	function updateAPY(bytes32 _commitment, uint _apy) external override nonReentrant() authComptroller() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
@@ -96,7 +96,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateAPR(bytes32 _commitment, uint _apr) external override nonReentrant() authComptroller() nonReentrant() returns (bool ) {
+	function updateAPR(bytes32 _commitment, uint _apr) external override nonReentrant() authComptroller() returns (bool ) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		APR storage aprUpdate = ds.indAPRRecords[_commitment];
 
@@ -228,11 +228,11 @@ contract Comptroller is Pausable, IComptroller {
 		_;
 	}
 
-	function pauseComptroller() external override nonReentrant() authComptroller() nonReentrant() {
+	function pauseComptroller() external override nonReentrant() authComptroller() {
 		_pause();
 	}
 	
-	function unpauseComptroller() external override nonReentrant() authComptroller() nonReentrant() {
+	function unpauseComptroller() external override nonReentrant() authComptroller() {
 		_unpause(); 
 	}
 
