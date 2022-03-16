@@ -137,6 +137,7 @@ struct ActiveLoans {
     uint256[] loanCurrentAmount;
     uint256[] collateralYield;
     uint256[] borrowInterest;
+    STATE[] state;
 }
 
 // =========== OracleOpen structs =============

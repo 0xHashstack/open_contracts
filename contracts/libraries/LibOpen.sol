@@ -40,9 +40,7 @@ library LibOpen {
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
-	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 amount,uint256 timestamp);
-	// event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 timestamp);
-	  event WithdrawCollateral(
+  	event WithdrawCollateral(
         address indexed account,
         bytes32 indexed market,
         uint256 indexed amount,
@@ -428,7 +426,7 @@ library LibOpen {
 	// =========== Liquidator Functions ===========
 	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256) {
 
-		if(_fromMarket == _toMarket) return 0;
+		if(_fromMarket == _toMarket) return _fromAmount;
 		address addrFromMarket;
 		address addrToMarket;
 		// bytes32 cake;
@@ -745,7 +743,7 @@ library LibOpen {
 			deductibleInterest,
 			cYield
 		);
-		console.log("Remnant Amount is ", remnantAmount);
+
 		// return remnantAmount;
 		/// CONVERT remnantAmount into collateralAmount
 		console.log("Collateral Preswap ",collateral.amount);
@@ -782,6 +780,13 @@ library LibOpen {
 		delete loanAccount.loanState[loan.id-1].currentAmount;
 		console.log("Deleted LoanRecords from loanstate struct");
 
+		/// ACTIVELOANS
+		activeLoans.state[loan.id - 1] = STATE.REPAID;
+		delete activeLoans.isSwapped[loan.id - 1];
+		delete activeLoans.loanCurrentAmount[loan.id - 1];
+		delete activeLoans.collateralYield[loan.id - 1];
+		delete activeLoans.borrowInterest[loan.id - 1];
+
 		if (_commitment == _getCommitment(2)) {
 			
 			/// UPDATING COLLATERAL AMOUNT IN STORAGE
@@ -808,7 +813,8 @@ library LibOpen {
 			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
 			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
 
-			// emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
+			activeLoans.collateralAmount[loan.id - 1] = collateral.amount;
+
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
 		}
 
@@ -854,26 +860,20 @@ library LibOpen {
 			delete loanAccount.collaterals[loan.id - 1];
 			delete loanAccount.loanState[loan.id - 1];
 
-			/// ACTIVELOANS
 			delete activeLoans.collateralMarket[loan.id - 1];
 			delete activeLoans.collateralAmount[loan.id - 1];
-			delete activeLoans.isSwapped[loan.id - 1];
-			delete activeLoans.loanMarket[loan.id - 1];
-			delete activeLoans.loanCommitment[loan.id - 1];
-			delete activeLoans.loanAmount[loan.id - 1];
-			delete activeLoans.loanCurrentMarket[loan.id - 1];
-			delete activeLoans.loanCurrentAmount[loan.id - 1];
-			delete activeLoans.collateralYield[loan.id - 1];
-			delete activeLoans.borrowInterest[loan.id - 1];
-			console.log("activeLoans.id deleted");
+ 			delete activeLoans.loanMarket[loan.id - 1];
+ 			delete activeLoans.loanCommitment[loan.id - 1];
+ 			delete activeLoans.loanAmount[loan.id - 1];
+ 			delete activeLoans.loanCurrentMarket[loan.id - 1];
+ 			console.log("activeLoans.id deleted");
 
 			/// LOAN RECORDS
 			delete loan.id;
 			delete loan.isSwapped;
 			delete loan.lastUpdate;
 		}
-		emit LoanRepaid(_sender, loan.id, loan.market, _repayAmount, block.timestamp);
-
+		return _repayAmount;
     }
 
 	function _swapToLoan(
