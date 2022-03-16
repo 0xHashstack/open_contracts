@@ -50,7 +50,7 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external override nonReentrant() returns (bool) {
+	) external override nonReentrant()returns (bool) {
 		
 		require(LibOpen._avblMarketReserves(_loanMarket) >= _loanAmount, "ERROR: Borrow amount exceeds reserves");		
 		_preLoanRequestProcess(_loanMarket,_loanAmount,_collateralMarket,_collateralAmount);
@@ -249,7 +249,7 @@ contract LoanExt is Pausable, ILoanExt {
 		require (usdLoan/usdCollateral <= loanToCollateral, "ERROR: Loan exceeds permissible CDR");
 	}
 
-	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override authLoanExt() nonReentrant() returns (bool success) {
+	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override nonReentrant() authLoanExt() nonReentrant() returns (bool success) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
@@ -316,18 +316,18 @@ contract LoanExt is Pausable, ILoanExt {
 		return success=true;
 	}
 
-	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
+	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant()returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		uint256 repaymentAmount = LibOpen._repayLoan(msg.sender, _loanMarket, _commitment, _repayAmount);
 		emit LoanRepaid(msg.sender, loan.id, loan.market, repaymentAmount, block.timestamp);
 		return true;
 	}
-	function pauseLoanExt() external override authLoanExt() nonReentrant() {
+	function pauseLoanExt() external override nonReentrant() authLoanExt() nonReentrant() {
 		_pause();
 	}
 		
-	function unpauseLoanExt() external override authLoanExt() nonReentrant() {
+	function unpauseLoanExt() external override nonReentrant() authLoanExt() nonReentrant() {
 		_unpause();   
 	}
 

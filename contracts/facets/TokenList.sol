@@ -70,7 +70,7 @@ contract TokenList is Pausable, ITokenList {
     LibOpen._minAmountCheck(_market, _amount);
   }
 
-  function removeMarketSupport(bytes32 _market) external override authTokenList() returns(bool) {
+  function removeMarketSupport(bytes32 _market) external override  authTokenList() returns(bool) {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
     ds.tokenSupportCheck[_market] = false;
@@ -91,7 +91,7 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
   
-  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_) external override authTokenList()  returns(bool){
+  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_) external override  authTokenList()  returns(bool){
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
     MarketData storage marketData = ds.indMarketData[_market];
@@ -105,7 +105,7 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
 
-  // function quantifyAmount(bytes32 _market, uint _amount) external override view returns (uint amount) {
+  // function quantifyAmount(bytes32 _market, uint _amount) external override  view returns (uint amount) {
   //   // return LibOpen._quantifyAmount(_market, _amount);
   // }
 
@@ -125,7 +125,7 @@ contract TokenList is Pausable, ITokenList {
   
   // ADD A NEW TOKEN SUPPORT
   function addMarket2Support(bytes32 _market,uint256 _decimals,address tokenAddress_) 
-    external override authTokenList returns (bool) 
+    external override  authTokenList returns (bool) 
   {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     MarketData storage marketData = ds.indMarket2Data[_market];
@@ -141,7 +141,7 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
 
-  function removeMarket2Support(bytes32 _market) external override authTokenList returns(bool) {
+  function removeMarket2Support(bytes32 _market) external override  authTokenList returns(bool) {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     ds.token2SupportCheck[_market] = false;
     delete ds.indMarket2Data[_market];
@@ -161,7 +161,7 @@ contract TokenList is Pausable, ITokenList {
   }
   
   function updateMarket2Support(bytes32 _market, uint256 _decimals,address tokenAddress_) 
-    external override authTokenList returns(bool)
+    external override  authTokenList returns(bool)
   { 
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     MarketData storage marketData = ds.indMarket2Data[_market];
@@ -175,11 +175,11 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
 
-  function pauseTokenList() external override authTokenList() nonReentrant() {
+  function pauseTokenList() external override  authTokenList()  {
        _pause();
 	}
 	
-	function unpauseTokenList() external override authTokenList() nonReentrant() {
+	function unpauseTokenList() external override  authTokenList()  {
        _unpause();   
 	}
 
