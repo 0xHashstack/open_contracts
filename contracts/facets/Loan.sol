@@ -102,7 +102,7 @@ contract Loan is Pausable, ILoan {
         /// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
         require(loan.id != 0, "ERROR: Loan does not exist");
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-        require((collateral.timelockValidity + collateral.activationTime) >=block.timestamp,"ERROR: Active Timelock");
+        require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
 
         ds.collateralToken = IBEP20(LibOpen._connectMarket(collateral.market));
         ds.collateralToken.transfer(msg.sender, collateral.amount);
@@ -181,7 +181,7 @@ contract Loan is Pausable, ILoan {
         );
 
         LibOpen._isMarketSupported(_collateralMarket);
-        LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
+        // LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
     }
 
     function addCollateral(
@@ -218,7 +218,7 @@ contract Loan is Pausable, ILoan {
         /// UPDATE COLLATERAL IN STORAGE
         collateral.amount += _collateralAmount;
         loanAccount.collaterals[loan.id - 1].amount += _collateralAmount;
-        activeLoans.collateralAmount[loan.id - 1] += collateral.amount; // updating activeLoans
+        activeLoans.collateralAmount[loan.id - 1] += _collateralAmount; // updating activeLoans
 
         LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
         if (collateral.isCollateralisedDeposit)
