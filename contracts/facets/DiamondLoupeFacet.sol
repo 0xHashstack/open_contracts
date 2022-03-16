@@ -27,7 +27,9 @@ contract DiamondLoupeFacet is Pausable,IDiamondLoupe {
                 if (facets_[facetIndex].facetAddress == facetAddress_) {
                     facets_[facetIndex].functionSelectors[numFacetSelectors[facetIndex]] = selector;
                     // probably will never have more than 256 functions from one facet contract
-                    require(numFacetSelectors[facetIndex] < 255);
+                    // require(numFacetSelectors[facetIndex] < 255,"numFacetSelectors cannot be less than 2^8");
+                    /*THIS REQUIRE STATEMENT WOULD NOT BE NEEDED AS THE numFacetSelectors IS OF SIZE UINT 8 AND WOULD REVERT 
+                        THE FUNCTION CALL BEFORE REACHING INSIDE THE LOOP*/
                     numFacetSelectors[facetIndex]++;
                     continueLoop = true;
                     break;
