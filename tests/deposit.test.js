@@ -50,7 +50,7 @@ describe("Testing Deposit", async () => {
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
       bepBtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
       bepUsdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
-      bepWbnb = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+      bepWbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
     });
 
     it("Faucet Testing", async () => {
@@ -414,7 +414,7 @@ describe("Testing Deposit", async () => {
     });
 
     it("BNB Add to Deposit", async () => {
-      const depositAmount = 28000000; // 28 (6-0's) 0.28 BTC
+      const depositAmount = 28000000; // 28 (6-0's) 0.28 BNB
 
       const reserveBalance = BigNumber.from(
         await bepWbnb.balanceOf(diamondAddress)
@@ -422,10 +422,12 @@ describe("Testing Deposit", async () => {
 
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
+      
+
       await expect(
         deposit
           .connect(accounts[1])
-          .depositRequest(symbolBtc, comit_NONE, depositAmount)
+          .depositRequest(symbolWBNB, comit_NONE, depositAmount)
       ).emit(deposit, "DepositAdded");
 
       expect(
@@ -596,8 +598,7 @@ describe("Testing Deposit", async () => {
         deposit
           .connect(accounts[1])
           .withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount)
-          .emit(deposit, "DepositWithdrawal")
-      );
+      ).to.be.reverted;
 
       expect(
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
@@ -835,9 +836,12 @@ describe("Testing Deposit", async () => {
       const reserveBalance = BigNumber.from(
         await bepWbnb.balanceOf(diamondAddress)
       );
-
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
-
+        console.log("Pre Approval Allowance: ", await bepWbnb.allowance(accounts[1].address, diamondAddress));
+      await bepWbnb.connect(accounts[1]).approve(diamondAddress, 300000000);
+        console.log(
+          "Post Approval Allowance: ",
+          await bepWbnb.allowance(accounts[1].address, diamondAddress)
+        );
       await expect(
         deposit
           .connect(accounts[1])
@@ -851,7 +855,7 @@ describe("Testing Deposit", async () => {
     });
 
     it("BNB Add to Deposit", async () => {
-      const depositAmount = 28000000; // 28 (6-0's) 0.28 BTC
+      const depositAmount = 28000000; // 28 (6-0's)  0.28 BNB
 
       const reserveBalance = BigNumber.from(
         await bepWbnb.balanceOf(diamondAddress)
@@ -862,7 +866,7 @@ describe("Testing Deposit", async () => {
       await expect(
         deposit
           .connect(accounts[1])
-          .depositRequest(symbolBtc, comit_TWOWEEKS, depositAmount)
+          .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
       ).emit(deposit, "DepositAdded");
 
       expect(
@@ -871,7 +875,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
     });
 
-    it("BTC Minimum Deposit", async () => {
+    it("BNB Minimum Deposit", async () => {
       const depositAmount = 5000000; // 5 (6-0's) 0.05 BNB
 
       const reserveBalance = BigNumber.from(
@@ -921,7 +925,7 @@ describe("Testing Deposit", async () => {
       await expect(
         deposit
           .connect(accounts[1])
-          .withdrawDeposit(symbolBtc, comit_TWOWEEKS, withdrawAmount)
+          .withdrawDeposit(symbolWBNB, comit_TWOWEEKS, withdrawAmount)
       ).to.be.reverted;
 
       expect(
@@ -1033,8 +1037,7 @@ describe("Testing Deposit", async () => {
         deposit
           .connect(accounts[1])
           .withdrawDeposit(symbolUsdt, comit_ONEMONTH, withdrawAmount)
-          .emit(deposit, "DepositWithdrawal")
-      );
+      ).emit(deposit, "DepositWithdrawal");
 
       expect(
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
@@ -1299,7 +1302,7 @@ describe("Testing Deposit", async () => {
       await expect(
         deposit
           .connect(accounts[1])
-          .depositRequest(symbolBtc, comit_ONEMONTH, depositAmount)
+          .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
       ).emit(deposit, "DepositAdded");
 
       expect(
