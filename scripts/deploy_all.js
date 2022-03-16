@@ -389,6 +389,7 @@ async function addMarkets(diamondAddress) {
   createAbiJSON(faucet, "Faucet");
   console.log("Faucet deployed at ", faucet.address);
 
+  const faucetAddress = faucet.address;
   /// TRANSFERRING TOKENS TO FAUCET
   await tusdt.transfer(faucet.address, "600000000000000000"); // 6 billion USDT
   console.log(
@@ -470,6 +471,7 @@ async function addMarkets(diamondAddress) {
     tSxpAddress,
     tCakeAddress,
     tWBNBAddress,
+    faucetAddress,
   };
 }
 

@@ -9,11 +9,25 @@ const { addMarkets } = require("../scripts/deploy_all.js");
 
 let diamondAddress;
 let rets;
-let accounts = await ethers.getSigners();
+let accounts;
 
-diamondAddress = await deployDiamond();
-rets = await addMarkets(diamondAddress);
+let loan;
+let loanExt;
+let faucet;
+let library;
+let tokenList;
+let bepBtc;
+let bepUsdc;
+let bepUsdt;
+let bepWbnb;
+let bepCake;
+let bepSxp;
 
+async function x(){
+  diamondAddress = await deployDiamond();
+  rets = await addMarkets(diamondAddress);
+  accounts = await ethers.getSigners();
+}
 
 describe("USDT Test: Loan (Commit None)", async () => {
   const symbolWBNB =
@@ -37,6 +51,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
     tokenList = await ethers.getContractAt("TokenList", diamondAddress);
     loan = await ethers.getContractAt("Loan", diamondAddress);
     loanExt = await ethers.getContractAt("LoanExt", diamondAddress);
+    faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
 
     // deploying tokens
     bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
@@ -47,11 +62,43 @@ describe("USDT Test: Loan (Commit None)", async () => {
     bepSxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
   });
 
+  it("Faucet Testing", async () => {
+    await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
+      faucet,
+      "TokensIssued"
+    );
+  });
+
+  it("Faucet Testing (Timelock-Check)", async () => {
+    await expect(faucet.connect(accounts[1]).getTokens(0)).to.be.reverted;
+
+    await expect(faucet.connect(accounts[1]).getTokens(1)).to.be.reverted;
+
+    await expect(faucet.connect(accounts[1]).getTokens(2)).to.be.reverted;
+
+    await expect(faucet.connect(accounts[1]).getTokens(3)).to.be.reverted;
+  });  
+
   it("USDT New Loan (1:4 CDR)", async () => {
     const loanAmount = 40000000000;
     const collateralAmount = 10000000000;
 
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await bepUsdt
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -76,7 +123,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
     const loanAmount = 30000000000;
     const collateralAmount = 20000000000;
 
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await bepUsdt
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -94,7 +141,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
@@ -102,7 +149,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
     const loanAmount = 30000000000;
     const collateralAmount = 20000000000;
 
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await bepUsdt
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -126,7 +173,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
   it("USDT Add Collateral", async () => {
     const collateralAmount = 20000000000;
 
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await bepUsdt
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -138,13 +185,13 @@ describe("USDT Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
   it("USDT Withdraw Loan (Trying more than permissible)", async () => {
     const withdrawAmount = 35000000000;
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
     await expect(
       loan
@@ -158,7 +205,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
   });
 
   it("Swap Loan", async () => {
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await expect(
       loan
         .connect(accounts[1])
@@ -172,7 +219,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
   });
 
   it("Swap to Loan", async () => {
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
     await expect(
       loan
         .connect(accounts[1])
@@ -187,7 +234,7 @@ describe("USDT Test: Loan (Commit None)", async () => {
 
   it("USDT Withdraw Loan", async () => {
     const withdrawAmount = 25000000000;
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
     await expect(
       loan
@@ -197,13 +244,13 @@ describe("USDT Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance - withdrawAmount)
+      reserveBalance.sub(BigNumber.from(withdrawAmount))
     );
   });
 
   it("Repay Loan", async () => {
     const repayAmount = 50000000000;
-    const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
     await bepUsdt
       .connect(accounts[1])
@@ -257,7 +304,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
     const loanAmount = 40000000000;
     const collateralAmount = 10000000000;
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
       loanExt
@@ -280,7 +327,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
     const loanAmount = 15000000; // 0.15 Btc
     const collateralAmount = 20000000; // 0.2 BTC
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
       loanExt
@@ -296,7 +343,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
@@ -304,7 +351,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
     const loanAmount = 300000000;
     const collateralAmount = 200000000;
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
       loanExt
@@ -326,7 +373,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
   it("Btc Add Collateral", async () => {
     const collateralAmount = 15000000; // 0.15 BTC
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
       loan
@@ -336,30 +383,30 @@ describe("Btc Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
   it("Swap Loan", async () => {
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
-    const reserveBal = await bepSxp.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
+    const reserveBal = await bepCake.balanceOf(diamondAddress);
     await expect(
       loan
         .connect(accounts[1])
-        .swapLoan(symbolBtc, comit_ONEMONTH, symbolSxp)
+        .swapLoan(symbolBtc, comit_ONEMONTH, symbolCAKE)
         .emit(loan, "MarketSwapped")
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.lt(
       BigNumber.from(reserveBalance)
     );
-    expect(BigNumber.from(await bepSxp.balanceOf(diamondAddress))).to.gt(
+    expect(BigNumber.from(await bepCake.balanceOf(diamondAddress))).to.gt(
       BigNumber.from(reserveBal)
     );
   });
 
   it("Swap Loan (2nd Attempt)", async () => {
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     const reserveBal = await bepSxp.balanceOf(diamondAddress);
     await expect(
       loan
@@ -376,8 +423,8 @@ describe("Btc Test: Loan (Fixed)", async () => {
   });
 
   it("Swap to Loan", async () => {
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
-    const reserveBal = await bepSxp.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
+    const reserveBal = await bepCake.balanceOf(diamondAddress);
     await expect(
       loan
         .connect(accounts[1])
@@ -388,13 +435,13 @@ describe("Btc Test: Loan (Fixed)", async () => {
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.gt(
       BigNumber.from(reserveBalance)
     );
-    expect(BigNumber.from(await bepSxp.balanceOf(diamondAddress))).to.lt(
+    expect(BigNumber.from(await bepCake.balanceOf(diamondAddress))).to.lt(
       BigNumber.from(reserveBal)
     );
   });
 
   it("Swap to Loan (2nd Attempt)", async () => {
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     const reserveBal = await bepSxp.balanceOf(diamondAddress);
     await expect(
       loan
@@ -412,7 +459,7 @@ describe("Btc Test: Loan (Fixed)", async () => {
 
   it("Btc Withdraw Loan", async () => {
     const withdrawAmount = 15000000;
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
     await expect(
       loan
@@ -422,13 +469,13 @@ describe("Btc Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance - withdrawAmount)
+      reserveBalance.sub(BigNumber.from(withdrawAmount))
     );
   });
 
   it("Repay Loan", async () => {
     const repayAmount = 50000000; // 0.5 BTC
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
     await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
@@ -481,7 +528,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     const loanAmount = 40000000000;
     const collateralAmount = 10000000000;
 
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
     await bepUsdc
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -506,7 +553,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     const loanAmount = 300000000000; // 3000 USDC
     const collateralAmount = 15000000; // 0.15 BTC
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -524,7 +571,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
@@ -532,7 +579,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     const loanAmount = 30000000000;
     const collateralAmount = 20000000000;
 
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
     await bepUsdc
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -556,7 +603,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
   it("Usdc Add Collateral (Wrong Market)", async () => {
     const collateralAmount = 15000000000; // 150 USDC
 
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
     await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
     await expect(
       loan
@@ -572,7 +619,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
   it("Usdc Add Collateral", async () => {
     const collateralAmount = 15000000; // 0.15 BTC 
 
-    const reserveBalance = await bepBtc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
     await bepBtc
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -584,12 +631,12 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
   it("Swap Loan", async () => {
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
     await expect(
       loan
         .connect(accounts[1])
@@ -603,7 +650,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
   });
 
   it("Swap to Loan", async () => {
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
     await expect(
       loan
         .connect(accounts[1])
@@ -618,7 +665,7 @@ describe("Usdc Test: Loan (Commit None)", async () => {
 
   it("Usdc Withdraw Loan", async () => {
     const withdrawAmount = 250000000000;
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
 
     await expect(
       loan
@@ -628,13 +675,13 @@ describe("Usdc Test: Loan (Commit None)", async () => {
     );
 
     expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance - withdrawAmount)
+      reserveBalance.sub(BigNumber.from(withdrawAmount))
     );
   });
 
   it("Repay Loan", async () => {
     const repayAmount = 50000000000;
-    const reserveBalance = await bepUsdc.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
 
     await bepUsdc
       .connect(accounts[1])
@@ -688,7 +735,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     const loanAmount = 40000000000;
     const collateralAmount = 10000000000;
 
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     await bepWbnb
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -713,7 +760,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     const loanAmount = 30000000; // 0.3 Wbnb
     const collateralAmount = 20000000; // 0.2 Wbnb
 
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     await bepWbnb
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -731,7 +778,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
@@ -739,7 +786,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     const loanAmount = 300000000;
     const collateralAmount = 200000000;
 
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     await bepWbnb
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -763,7 +810,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
   it("Wbnb Add Collateral", async () => {
     const collateralAmount = 15000000; // 0.15 Wbnb
 
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     await bepWbnb
       .connect(accounts[1])
       .approve(diamondAddress, collateralAmount);
@@ -775,12 +822,12 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance + collateralAmount)
+      reserveBalance.add(BigNumber.from(collateralAmount))
     );
   });
 
   it("Swap Loan", async () => {
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     const reserveBal = await bepSxp.balanceOf(diamondAddress);
     await expect(
       loan
@@ -798,7 +845,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
   });
 
   it("Swap to Loan", async () => {
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
     const reserveBal = await bepSxp.balanceOf(diamondAddress);
     await expect(
       loan
@@ -817,7 +864,7 @@ describe("Bnb Test: Loan (Fixed)", async () => {
 
   it("Wbnb Withdraw Loan", async () => {
     const withdrawAmount = 15000000;
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
 
     await expect(
       loan
@@ -827,13 +874,13 @@ describe("Bnb Test: Loan (Fixed)", async () => {
     );
 
     expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-      BigNumber.from(reserveBalance - withdrawAmount)
+      reserveBalance.sub(BigNumber.from(withdrawAmount))
     );
   });
 
   it("Repay Loan", async () => {
     const repayAmount = 50000000; // 0.5 Wbnb
-    const reserveBalance = await bepWbnb.balanceOf(diamondAddress);
+    const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
 
     await bepWbnb
       .connect(accounts[1])
