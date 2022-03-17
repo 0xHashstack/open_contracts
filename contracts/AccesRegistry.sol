@@ -6,11 +6,13 @@ struct RoleData {
     mapping(address => bool) _members;
     // bytes32 _role;
 	/// REMOVING AS NEVER USED
+	/// GAS OPT
 }
 struct AdminRoleData {
     mapping(address => bool) _adminMembers;
     // bytes32 _adminRole;
 	/// REMOVING AS NEVER USED
+		/// GAS OPT
 }
 contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;

@@ -61,6 +61,7 @@ contract TokenList is Pausable, ITokenList {
     
     ds.pMarkets.push(_market);
     ds.tokenSupportCheck[_market] = true;
+    /// CHECKS FOR MARKET SUPPORT
     ds.marketIndex[_market] = ds.pMarkets.length-1;
     emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
@@ -74,6 +75,7 @@ contract TokenList is Pausable, ITokenList {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
     ds.tokenSupportCheck[_market] = false;
+        /// CHECKS FOR MARKET SUPPORT
     delete ds.indMarketData[_market];
     
     if (ds.marketIndex[_market] >= ds.pMarkets.length) return false;
@@ -101,6 +103,7 @@ contract TokenList is Pausable, ITokenList {
     marketData.decimals = _decimals;
 
     ds.tokenSupportCheck[_market] = true;
+            /// CHECKS FOR MARKET SUPPORT
 	  emit MarketSupportUpdated(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
   }
