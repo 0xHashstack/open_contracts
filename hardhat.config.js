@@ -3,6 +3,7 @@ const { getSelectors, FacetCutAction } = require('./scripts/libraries/diamond.js
 const utils = require('ethers').utils
 require('hardhat-abi-exporter');
 require("@nomiclabs/hardhat-waffle");
+require("solidity-coverage");
 
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {

@@ -110,6 +110,22 @@ describe("Testing Deposit", async () => {
     it("USDT Add to Deposit", async () => {
       const depositAmount = 50000000000; // 500 (8-0's) 500 USDT
 
+      const deposits = await deposit.getDeposits(accounts[1].address);
+
+      expect(await deposit.hasAccount(accounts[1].address)).to.equal(true);
+
+      expect(deposits).to.not.equal(null);
+
+      expect(
+        await deposit.connect(accounts[1]).hasYield(symbolUsdt, comit_NONE)
+      ).to.equal(true);
+
+      expect(
+        await deposit.connect(accounts[1]).hasDeposit(symbolUsdt, comit_NONE)
+      ).to.equal(true);
+
+      expect(BigNumber.from(await deposit.getDepositInterest(accounts[1].address,1)))
+
       const reserveBalance = BigNumber.from(
         await bepUsdt.balanceOf(diamondAddress)
       );
@@ -185,6 +201,12 @@ describe("Testing Deposit", async () => {
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
       ).to.equal(BigNumber.from(reserveBalance));
+    });
+
+    it("USDT Get Interests", async () => {
+      expect(
+        BigNumber.from(await deposit.getDepositInterest(accounts[1].address, 1))
+      ).to.gte(BigNumber.from(0));
     });
 
     // USDC Deposits

@@ -23,7 +23,6 @@ let bepWbnb;
 let bepCake;
 let bepSxp;
 
-
 describe("testing Loans", async () => {
   before(async () => {
     diamondAddress = await deployDiamond();
@@ -179,6 +178,12 @@ describe("testing Loans", async () => {
     it("USDT Add Collateral", async () => {
       const collateralAmount = 20000000000;
 
+      expect(await loanExt.hasLoanAccount(accounts[1].address)).to.equal(true);
+
+      const loans = await loanExt.getLoans(accounts[1].address);
+
+      expect(loans).to.not.equal(null);
+
       const reserveBalance = BigNumber.from(
         await bepUsdt.balanceOf(diamondAddress)
       );
@@ -256,15 +261,20 @@ describe("testing Loans", async () => {
       );
     });
 
+    it("USDT Get Loan Interests", async () => {
+      const [loanInterest, collateralInterest] = await loan.getLoanInterest(accounts[1].address, 1);
+      expect(BigNumber.from(loanInterest)).to.gt(BigNumber.from(0));
+
+      expect(BigNumber.from(collateralInterest)).to.gt(BigNumber.from(0));
+    });
+
     it("Repay Loan", async () => {
       const repayAmount = 90000000000;
       const reserveBalance = BigNumber.from(
         await bepUsdt.balanceOf(diamondAddress)
       );
 
-      await bepUsdt
-        .connect(accounts[1])
-        .approve(diamondAddress, repayAmount);
+      await bepUsdt.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(
         loanExt
           .connect(accounts[1])
@@ -503,9 +513,7 @@ describe("testing Loans", async () => {
         await bepBtc.balanceOf(diamondAddress)
       );
 
-      await bepBtc
-        .connect(accounts[1])
-        .approve(diamondAddress, repayAmount);
+      await bepBtc.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(
         loanExt
           .connect(accounts[1])
@@ -719,9 +727,7 @@ describe("testing Loans", async () => {
         await bepUsdc.balanceOf(diamondAddress)
       );
 
-      await bepUsdc
-        .connect(accounts[1])
-        .approve(diamondAddress, repayAmount);
+      await bepUsdc.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(
         loanExt
           .connect(accounts[1])
@@ -926,9 +932,7 @@ describe("testing Loans", async () => {
         await bepWbnb.balanceOf(diamondAddress)
       );
 
-      await bepWbnb
-        .connect(accounts[1])
-        .approve(diamondAddress, repayAmount);
+      await bepWbnb.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(
         loanExt
           .connect(accounts[1])
