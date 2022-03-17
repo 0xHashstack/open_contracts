@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "../libraries/AppStorageOpen.sol";
-
-import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
+import "../util/Pausable.sol";
 
 import "hardhat/console.sol";
 
@@ -86,83 +84,7 @@ contract Loan is Pausable, ILoan {
         nonReentrant
         returns (bool)
     {
-        // LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
-
-        LibOpen._hasLoanAccount(msg.sender);
-        LibOpen._isMarketSupported(_market);
-
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
-
-        LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
-        LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
-        LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-        CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-		ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
-
-        /// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
-        require(loan.id != 0, "ERROR: Loan does not exist");
-        require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-        require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
-
-        ds.collateralToken = IBEP20(LibOpen._connectMarket(collateral.market));
-        ds.collateralToken.transfer(msg.sender, collateral.amount);
-
-        bytes32 collateralMarket = collateral.market;
-        uint256 collateralAmount = collateral.amount;
-
-        emit WithdrawCollateral(
-            msg.sender,
-            collateralMarket,
-            collateralAmount,
-            loan.id,
-            block.timestamp
-        );
-        // emit WithdrawCollateral(msg.sender, collateralAmount, collateralMarket, block.timestamp);
-
-        /// UPDATING STORAGE RECORDS FOR LOAN
-        /// COLLATERAL RECORDS
-        delete collateral.id;
-        delete collateral.market;
-        delete collateral.commitment;
-        delete collateral.amount;
-        delete collateral.isCollateralisedDeposit;
-        delete collateral.timelockValidity;
-        delete collateral.isTimelockActivated;
-        delete collateral.activationTime;
-
-
-        /// LOAN STATE
-        delete loanState.id;
-        delete loanState.state;
-
-        /// LOAN ACCOUNT
-        delete loanAccount.loans[loan.id - 1];
-        delete loanAccount.collaterals[loan.id - 1];
-        delete loanAccount.loanState[loan.id - 1];
-
-
-		/// UPDATING ACTIVELOANS
-		delete activeLoans.collateralMarket[loan.id - 1];
-		delete activeLoans.collateralAmount[loan.id - 1];
-		delete activeLoans.isSwapped[loan.id - 1];
-
-        if (_commitment == LibOpen._getCommitment(2)) {
-            /// UPDATING ACTIVELOANS
-            delete activeLoans.loanMarket[loan.id - 1];
-            delete activeLoans.loanCommitment[loan.id - 1];
-            delete activeLoans.loanAmount[loan.id - 1];
-            delete activeLoans.loanCurrentMarket[loan.id - 1];
-            delete activeLoans.loanCurrentAmount[loan.id - 1];
-            delete activeLoans.collateralYield[loan.id - 1];
-            delete activeLoans.borrowInterest[loan.id - 1];
-        }
-        /// LOAN RECORDS
-        delete loan.id;
-        delete loan.isSwapped;
-        delete loan.lastUpdate;
-
-        LibOpen._updateReservesLoan(collateralMarket, collateralAmount, 1);
-
+        LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
         return true;
     }
 

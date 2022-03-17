@@ -1,20 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
-import "../interfaces/ILoan.sol";
-
+import "../util/Pausable.sol";
+import "../interfaces/ILoanExt.sol";
 import "hardhat/console.sol";
 
 contract LoanExt is Pausable, ILoanExt {
 
 	event NewLoan(address indexed account,bytes32 loanMarket,bytes32 commitment,uint256 loanAmount,bytes32 collateralMarket,uint256 collateralAmount,uint256 indexed loanId,uint256 time);
-	event LoanRepaid(address indexed account,uint256 indexed id,bytes32 indexed market,uint256 amount,uint256 timestamp);
-	event Liquidation(address indexed account,bytes32 indexed market,bytes32 indexed commitment,uint256 amount,uint256 time);
-	constructor() {
-		
-	}
 
 	receive() external payable {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
@@ -50,6 +44,7 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
+<<<<<<< HEAD
 	) external override nonReentrant()returns (bool) {
 		
 		require(LibOpen._avblMarketReserves(_loanMarket) >= _loanAmount, "ERROR: Borrow amount exceeds reserves");		
@@ -324,6 +319,15 @@ contract LoanExt is Pausable, ILoanExt {
 		return true;
 	}
 	function pauseLoanExt() external override nonReentrant() authLoanExt() nonReentrant() {
+=======
+	) external override nonReentrant() returns (bool) {
+		uint256 loanId = LibOpen._loanRequest(msg.sender, _loanMarket, _commitment, _loanAmount, _collateralMarket, _collateralAmount);
+		emit NewLoan(msg.sender, _loanMarket, _commitment, _loanAmount, _collateralMarket, _collateralAmount, loanId, block.timestamp);
+		return true;
+	}
+
+	function pauseLoanExt() external override authLoanExt() nonReentrant() {
+>>>>>>> be657b6ae5cc04afe66472605ee531ef443da5ce
 		_pause();
 	}
 		
