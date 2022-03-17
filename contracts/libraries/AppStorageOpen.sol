@@ -54,10 +54,6 @@ struct YieldLedger    {
     uint oldLengthAccruedYield; // length of the APY time array.
     uint oldTime; // last recorded block num. This is when this struct is lastly updated.
     uint accruedYield; // accruedYield in 
-    bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-    bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-    uint timelockValidity; // timelock duration
-    uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
 }
 
 struct ActiveDeposits {

@@ -125,7 +125,6 @@ contract Deposit is Pausable, IDeposit{
 
 		if (_commitment != LibOpen._getCommitment(0))	{
 			if (deposit.isTimelockActivated == false)	{
-				
 				deposit.isTimelockActivated = true;
 				deposit.activationTime = block.timestamp;
 				deposit.lastUpdate = block.timestamp;
@@ -133,26 +132,22 @@ contract Deposit is Pausable, IDeposit{
 				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
 				savingsAccount.deposits[deposit.id -1].activationTime = block.timestamp;
 				savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
-				
-				return false;
 			}
-			else if (deposit.isTimelockActivated == true)	{
-				require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
-			}
+			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
 		} 
-			ds.token = IBEP20(LibOpen._connectMarket(_market));
-			require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
-			ds.token.transfer(msg.sender, _amount);
+		ds.token = IBEP20(LibOpen._connectMarket(_market));
+		require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
+		ds.token.transfer(msg.sender, _amount);
 
-			deposit.amount -= _amount;
-			savingsAccount.deposits[deposit.id -1].amount -= _amount;
+		deposit.amount -= _amount;
+		savingsAccount.deposits[deposit.id -1].amount -= _amount;
 
-			activeDeposits.amount[deposit.id-1] -= _amount;
-			activeDeposits.savingsInterest[deposit.id-1] = 0;
+		activeDeposits.amount[deposit.id-1] -= _amount;
+		activeDeposits.savingsInterest[deposit.id-1] = 0;
 
-			LibOpen._updateReservesDeposit(_market, _amount, 1);
-			emit DepositWithdrawal(msg.sender,deposit.id, _amount,  block.timestamp);
-			return true;
+		LibOpen._updateReservesDeposit(_market, _amount, 1);
+		emit DepositWithdrawal(msg.sender,deposit.id, _amount,  block.timestamp);
+		return true;
 	}
 
     function _createNewDeposit(address _sender, bytes32 _market,bytes32 _commitment,uint256 _amount) private {
@@ -209,20 +204,20 @@ contract Deposit is Pausable, IDeposit{
 			yield.oldLengthAccruedYield = LibOpen._getApyTimeLength(_commitment);
 			yield.oldTime = block.timestamp;
 			yield.accruedYield = 0;
-			yield.isTimelockApplicable = true;
-			yield.isTimelockActivated=  false;
-			yield.timelockValidity = 86400;
-			yield.activationTime = 0;
+			deposit.isTimelockApplicable = true;
+			deposit.isTimelockActivated = false;
+			deposit.timelockValidity = 86400;
+			deposit.activationTime = 0;
 		} else if (_commitment == LibOpen._getCommitment(0)) {
 			yield.id=  id;
 			yield.market=_market;
 			yield.oldLengthAccruedYield = LibOpen._getApyTimeLength(_commitment);
 			yield.oldTime = block.timestamp;
 			yield.accruedYield = 0;
-			yield.isTimelockApplicable = false;
-			yield.isTimelockActivated=  true;
-			yield.timelockValidity = 0;
-			yield.activationTime = 0;
+			deposit.isTimelockApplicable = false;
+			deposit.isTimelockActivated = true;
+			deposit.timelockValidity = 0;
+			deposit.activationTime = 0;
 		}
 
 		savingsAccount.deposits.push(deposit);

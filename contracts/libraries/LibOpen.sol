@@ -963,7 +963,7 @@ library LibOpen {
 		/// Permissible withdrawal amount calculation in the loanMarket.
 		// permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
 		require(((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent) >= (amount), "ERROR: Request exceeds funds");
-		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (amount*usdLoanCurrent)) >= (15*(usdLoan*ds.indLoanRecords[account][loan.market][loan.commitment].amount)/10), "ERROR: Liquidation risk");
+		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (amount*usdLoanCurrent)) >= (109*(usdLoan*ds.indLoanRecords[account][loan.market][loan.commitment].amount)/100), "ERROR: Liquidation risk");
 	}
 
 
