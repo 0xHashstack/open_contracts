@@ -93,7 +93,7 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
   
-  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_) external override  authTokenList()  returns(bool){
+  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_,uint _amount) external override  authTokenList()  returns(bool){
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
     MarketData storage marketData = ds.indMarketData[_market];
@@ -101,6 +101,8 @@ contract TokenList is Pausable, ITokenList {
     marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
     marketData.decimals = _decimals;
+    marketData.minAmount = _amount; // not multiply decmial for amount < 1
+
 
     ds.tokenSupportCheck[_market] = true;
             /// CHECKS FOR MARKET SUPPORT
