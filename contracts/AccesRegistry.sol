@@ -4,11 +4,13 @@ import "./util/Pausable.sol";
 import "./interfaces/IAccessRegistry.sol";
 struct RoleData {
     mapping(address => bool) _members;
-    bytes32 _role;
+    // bytes32 _role;
+	/// REMOVING AS NEVER USED
 }
 struct AdminRoleData {
     mapping(address => bool) _adminMembers;
-    bytes32 _adminRole;
+    // bytes32 _adminRole;
+	/// REMOVING AS NEVER USED
 }
 contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;
