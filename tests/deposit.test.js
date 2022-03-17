@@ -1,9 +1,10 @@
 const { expect, assert } = require("chai");
 const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
+const { experimentalAddHardhatNetworkMessageTraceHook } = require("hardhat/config");
 const utils = require("ethers").utils;
 
-const { deployDiamond } = require("../scripts/deploy_all.js");
+const { deployDiamond, provideLiquidity } = require("../scripts/deploy_all.js");
 const { addMarkets } = require("../scripts/deploy_all.js");
 
 let diamondAddress;
@@ -20,12 +21,11 @@ let bepUsdt;
 let bepWbnb;
 
 describe("Testing Deposit", async () => {
-
   before(async () => {
     diamondAddress = await deployDiamond();
     rets = await addMarkets(diamondAddress);
     accounts = await ethers.getSigners();
-  })
+  });
 
   describe("Test: Deposit (Commit None)", async () => {
     const symbolWBNB =
@@ -124,7 +124,9 @@ describe("Testing Deposit", async () => {
         await deposit.connect(accounts[1]).hasDeposit(symbolUsdt, comit_NONE)
       ).to.equal(true);
 
-      expect(BigNumber.from(await deposit.getDepositInterest(accounts[1].address,1)))
+      expect(
+        BigNumber.from(await deposit.getDepositInterest(accounts[1].address, 1))
+      );
 
       const reserveBalance = BigNumber.from(
         await bepUsdt.balanceOf(diamondAddress)
@@ -204,9 +206,12 @@ describe("Testing Deposit", async () => {
     });
 
     it("USDT Get Interests", async () => {
+
+      await ethers.provider.send("evm_increaseTime", [86400]);
+      await ethers.provider.send("evm_mine");
       expect(
         BigNumber.from(await deposit.getDepositInterest(accounts[1].address, 1))
-      ).to.gte(BigNumber.from(0));
+      ).to.gt(BigNumber.from(0));
     });
 
     // USDC Deposits
@@ -444,8 +449,6 @@ describe("Testing Deposit", async () => {
 
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      
-
       await expect(
         deposit
           .connect(accounts[1])
@@ -498,7 +501,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
     });
 
-    it("Withdraw BTC(more than deposited)", async () => {
+    it("Withdraw BNB(more than deposited)", async () => {
       const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
       const reserveBalance = BigNumber.from(
@@ -625,7 +628,34 @@ describe("Testing Deposit", async () => {
       expect(
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
+
+      console.log(
+        "Pre-Time: ",
+        (
+          await ethers.provider.getBlock()
+        ).timestamp
+      );
+
+      const timeInSeconds = 2 * 7 * 24 * 60 * 60 + 20;
+      await ethers.provider.send("evm_increaseTime", [timeInSeconds]);
+      await ethers.provider.send("evm_mine");
+      console.log(
+        "Post-Time: ",
+        (
+          await ethers.provider.getBlock()
+        ).timestamp
+      );
+      await expect(
+        deposit
+          .connect(accounts[1])
+          .withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount)
+      ).emit(deposit, "DepositWithdrawal");
+
+      expect(
+        BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
+        "Reserve Balance unequal"
+      ).to.lte(reserveBalance.sub(BigNumber.from(withdrawAmount)));
     });
 
     it("Withdraw USDT(more than deposited)", async () => {
@@ -727,7 +757,7 @@ describe("Testing Deposit", async () => {
       expect(
         BigNumber.from(await bepUsdc.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
     });
 
     it("Withdraw USDC(more than deposited)", async () => {
@@ -829,7 +859,7 @@ describe("Testing Deposit", async () => {
       expect(
         BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
     });
 
     it("Withdraw BTC(more than deposited)", async () => {
@@ -852,109 +882,112 @@ describe("Testing Deposit", async () => {
     });
 
     // BNB Deposits
-    it("BNB New Deposit", async () => {
-      const depositAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("BNB New Deposit", async () => {
+    //   const depositAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
-        console.log("Pre Approval Allowance: ", await bepWbnb.allowance(accounts[1].address, diamondAddress));
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, 300000000);
-        console.log(
-          "Post Approval Allowance: ",
-          await bepWbnb.allowance(accounts[1].address, diamondAddress)
-        );
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
-      ).emit(deposit, "NewDeposit");
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
+    //   console.log(
+    //     "Pre Approval Allowance: ",
+    //     await bepWbnb.allowance(accounts[1].address, diamondAddress)
+    //   );
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, 300000000);
+    //   console.log(
+    //     "Post Approval Allowance: ",
+    //     await bepWbnb.allowance(accounts[1].address, diamondAddress)
+    //   );
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
+    //   ).emit(deposit, "NewDeposit");
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
+    // });
 
-    it("BNB Add to Deposit", async () => {
-      const depositAmount = 28000000; // 28 (6-0's)  0.28 BNB
+    // it("BNB Add to Deposit", async () => {
+    //   const depositAmount = 28000000; // 28 (6-0's)  0.28 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
-      ).emit(deposit, "DepositAdded");
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
+    //   ).emit(deposit, "DepositAdded");
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
+    // });
 
-    it("BNB Minimum Deposit", async () => {
-      const depositAmount = 5000000; // 5 (6-0's) 0.05 BNB
+    // it("BNB Minimum Deposit", async () => {
+    //   const depositAmount = 5000000; // 5 (6-0's) 0.05 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(BigNumber.from(reserveBalance));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(BigNumber.from(reserveBalance));
+    // });
 
-    it("Withdraw BNB", async () => {
-      const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("Withdraw BNB", async () => {
+    //   const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .withdrawDeposit(symbolWBNB, comit_TWOWEEKS, withdrawAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .withdrawDeposit(symbolWBNB, comit_TWOWEEKS, withdrawAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+    // });
 
-    it("Withdraw BNB(more than deposited)", async () => {
-      const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("Withdraw BNB(more than deposited)", async () => {
+    //   const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepBtc.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepBtc.balanceOf(diamondAddress)
+    //   );
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .withdrawDeposit(symbolWBNB, comit_TWOWEEKS, withdrawAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .withdrawDeposit(symbolWBNB, comit_TWOWEEKS, withdrawAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(BigNumber.from(reserveBalance));
-    });
+    //   expect(
+    //     BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(BigNumber.from(reserveBalance));
+    // });
   });
 
   describe("Test: Deposit (Commit One Month)", async () => {
@@ -1059,12 +1092,12 @@ describe("Testing Deposit", async () => {
         deposit
           .connect(accounts[1])
           .withdrawDeposit(symbolUsdt, comit_ONEMONTH, withdrawAmount)
-      ).emit(deposit, "DepositWithdrawal");
+      ).to.be.reverted;
 
       expect(
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
     });
 
     it("Withdraw USDT(more than deposited)", async () => {
@@ -1166,7 +1199,7 @@ describe("Testing Deposit", async () => {
       expect(
         BigNumber.from(await bepUsdc.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
     });
 
     it("Withdraw USDC(more than deposited)", async () => {
@@ -1268,7 +1301,7 @@ describe("Testing Deposit", async () => {
       expect(
         BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+      ).to.equal(reserveBalance);
     });
 
     it("Withdraw BTC(more than deposited)", async () => {
@@ -1291,105 +1324,105 @@ describe("Testing Deposit", async () => {
     });
 
     // BNB Deposits
-    it("BNB New Deposit", async () => {
-      const depositAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("BNB New Deposit", async () => {
+    //   const depositAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
-      ).emit(deposit, "NewDeposit");
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
+    //   ).emit(deposit, "NewDeposit");
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
+    // });
 
-    it("BNB Add to Deposit", async () => {
-      const depositAmount = 28000000; // 28 (6-0's) 0.28 BTC
+    // it("BNB Add to Deposit", async () => {
+    //   const depositAmount = 28000000; // 28 (6-0's) 0.28 BTC
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
-      ).emit(deposit, "DepositAdded");
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
+    //   ).emit(deposit, "DepositAdded");
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.add(BigNumber.from(depositAmount)));
+    // });
 
-    it("BTC Minimum Deposit", async () => {
-      const depositAmount = 5000000; // 5 (6-0's) 0.05 BNB
+    // it("BTC Minimum Deposit", async () => {
+    //   const depositAmount = 5000000; // 5 (6-0's) 0.05 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //   await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .depositRequest(symbolWBNB, comit_ONEMONTH, depositAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(BigNumber.from(reserveBalance));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(BigNumber.from(reserveBalance));
+    // });
 
-    it("Withdraw BNB", async () => {
-      const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("Withdraw BNB", async () => {
+    //   const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepWbnb.balanceOf(diamondAddress)
+    //   );
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .withdrawDeposit(symbolWBNB, comit_ONEMONTH, withdrawAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .withdrawDeposit(symbolWBNB, comit_ONEMONTH, withdrawAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
-    });
+    //   expect(
+    //     BigNumber.from(await bepWbnb.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(reserveBalance.sub(BigNumber.from(withdrawAmount)));
+    // });
 
-    it("Withdraw BNB(more than deposited)", async () => {
-      const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
+    // it("Withdraw BNB(more than deposited)", async () => {
+    //   const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
-      const reserveBalance = BigNumber.from(
-        await bepBtc.balanceOf(diamondAddress)
-      );
+    //   const reserveBalance = BigNumber.from(
+    //     await bepBtc.balanceOf(diamondAddress)
+    //   );
 
-      await expect(
-        deposit
-          .connect(accounts[1])
-          .withdrawDeposit(symbolBtc, comit_ONEMONTH, withdrawAmount)
-      ).to.be.reverted;
+    //   await expect(
+    //     deposit
+    //       .connect(accounts[1])
+    //       .withdrawDeposit(symbolBtc, comit_ONEMONTH, withdrawAmount)
+    //   ).to.be.reverted;
 
-      expect(
-        BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
-        "Reserve Balance unequal"
-      ).to.equal(BigNumber.from(reserveBalance));
-    });
+    //   expect(
+    //     BigNumber.from(await bepBtc.balanceOf(diamondAddress)),
+    //     "Reserve Balance unequal"
+    //   ).to.equal(BigNumber.from(reserveBalance));
+    // });
   });
-});;
+});
