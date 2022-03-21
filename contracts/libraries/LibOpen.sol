@@ -1364,28 +1364,6 @@ library LibOpen {
 		}
 	}
 
-	/// FUNCTION FOR _collateralPointer
-
-	// function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32, uint) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-		
-	// 	_hasLoanAccount(_account);
-
-	// 	// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
-	// 	LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
-	// 	CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
-
-	// 	//require(loan.id !=0, "ERROR: No Loan");
-	// 	require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-	// 	//if (_commitment != _getCommitment(0)) {
-	// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-	// 	//}		
-	// 	bytes32 collateralMarket = collateral.market;
-	// 	uint collateralAmount = collateral.amount;
-
-	// 	return (collateralMarket, collateralAmount);
-	// }
-
 	function _accruedYieldCollateral(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
 		bytes32 _commitment = cYield.commitment;
 		uint256 aggregateYield;
