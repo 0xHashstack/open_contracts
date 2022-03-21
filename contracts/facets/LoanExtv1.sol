@@ -29,11 +29,11 @@ contract LoanExtv1 is Pausable, ILoanExtv1 {
 		emit LoanRepaid(msg.sender, loan.id, loan.market, repaymentAmount, block.timestamp);
 		return true;
 	}
-	function pauseLoanExtv1() external override authLoanExtv1() nonReentrant {
+	function pauseLoanExtv1() external override authLoanExtv1() {
 		_pause();
 	}
 		
-	function unpauseLoanExtv1() external override authLoanExtv1() nonReentrant {
+	function unpauseLoanExtv1() external override authLoanExtv1() {
 		_unpause();   
 	}
 

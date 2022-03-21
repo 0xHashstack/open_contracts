@@ -50,7 +50,7 @@ contract LoanExt is Pausable, ILoanExt {
 		return true;
 	}
 
-	function pauseLoanExt() external override authLoanExt() nonReentrant {
+	function pauseLoanExt() external override authLoanExt() {
 		_pause();
 	}
 		

@@ -39,11 +39,11 @@ contract OracleOpen is Pausable, IOracleOpen {
 	//     return true;
 	// }
 
-	function pauseOracle() external override nonReentrant authOracleOpen() nonReentrant {
+	function pauseOracle() external override nonReentrant authOracleOpen() {
 			_pause();
 	}
 	
-	function unpauseOracle() external override nonReentrant authOracleOpen() nonReentrant {
+	function unpauseOracle() external override nonReentrant authOracleOpen() {
 		_unpause();
 
 	}

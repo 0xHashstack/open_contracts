@@ -130,11 +130,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		require(hasAdminRole(superAdmin, msg.sender), "ERROR: Not an admin");
 		_;
 	}
-	function pauseAccessRegistry() external override nonReentrant onlyAdmin() nonReentrant {                                                                                                  
+	function pauseAccessRegistry() external override nonReentrant onlyAdmin() {                                                                                                  
 		_pause();
 	}
 	
-	function unpauseAccessRegistry() external override nonReentrant onlyAdmin() nonReentrant {
+	function unpauseAccessRegistry() external override nonReentrant onlyAdmin() {
 		_unpause();   
 	}
 	function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               

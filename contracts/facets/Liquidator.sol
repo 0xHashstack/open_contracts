@@ -26,11 +26,11 @@ contract Liquidator is Pausable, ILiquidator {
 			receivedAmount = LibOpen._swap(msg.sender, _fromMarket, _toMarket, _fromAmount, _mode);
 	}
 
-	function pauseLiquidator() external override nonReentrant authLiquidator() nonReentrant {
+	function pauseLiquidator() external override nonReentrant authLiquidator() {
 			_pause();
 	}
 	
-	function unpauseLiquidator() external override nonReentrant authLiquidator() nonReentrant {
+	function unpauseLiquidator() external override nonReentrant authLiquidator() {
        _unpause();   
 	}
 
