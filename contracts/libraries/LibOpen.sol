@@ -88,7 +88,10 @@ library LibOpen {
 	}
 
 	function _isMarketSupported(bytes32  _market) internal view {
-		AppStorageOpen storage ds = diamondStorage(); 
+		AppStorageOpen storage ds = diamondStorage();
+		console.log("Market: ");
+		console.logBytes32(_market);
+		console.log("Check Support: ", ds.tokenSupportCheck[_market]); 
 		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
@@ -385,6 +388,7 @@ library LibOpen {
 		AppStorageOpen storage ds = diamondStorage(); 
 		APR storage apr = ds.indAPRRecords[_commitment];
 
+		console.log("Accrued length: ", oldLengthAccruedYield);
 		uint256 index = oldLengthAccruedYield - 1;
 		uint256 time = oldTime;
 		uint256 aggregateYield;
@@ -644,8 +648,9 @@ library LibOpen {
 
 		uint256 loanAmount = loan.amount;
 		/// UPDATING THE RESERVES
-		_updateReservesLoan(loan.market, remnantAmount,0);
-		_updateReservesDeposit(collateral.market, collateral.amount,1);
+		_updateReservesLoan(loan.market, loanAmount, 1);
+		_updateReservesDeposit(loan.market, remnantAmount, 0);
+		_updateReservesDeposit(collateral.market, collateral.amount, 1);
 
 		/// DELETING THE LOAN ENTRIES
 		/// COLLATERAL RECORDS
@@ -677,9 +682,9 @@ library LibOpen {
 		delete loanState.state;
 
 		/// LOAN ACCOUNT
-		delete loanAccount.loans[num];
-		delete loanAccount.collaterals[num];
-		delete loanAccount.loanState[num];
+		delete loanAccount.loans[num-1];
+		delete loanAccount.collaterals[num-1];
+		delete loanAccount.loanState[num-1];
 
 		return loanAmount;
     }
