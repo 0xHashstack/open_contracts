@@ -331,7 +331,7 @@ contract LoanExt is Pausable, ILoanExt {
 		_pause();
 	}
 		
-	function unpauseLoanExt() external override nonReentrant() authLoanExt() nonReentrant() {
+	function unpauseLoanExt() external override nonReentrant authLoanExt() {
 		_unpause();   
 	}
 
