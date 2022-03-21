@@ -49,7 +49,7 @@ contract MockBep20 is Context{
     }
 
 
-    function transferAnyERC20(address _token,address _recipient,uint256 _value) external auth() nonReentrant() returns(bool success)   {
+    function transferAnyERC20(address _token,address _recipient,uint256 _value) external auth() nonReentrant returns(bool success)   {
         IERC20(_token).transfer(_recipient, _value);
 
         return success;
@@ -70,22 +70,22 @@ contract MockBep20 is Context{
         return "Contract is not paused";
     }
 
-    function pause() external auth() nonReentrant() {
+    function pause() external auth() nonReentrant {
         _pause();
     }
 
-    function unpause() external auth() nonReentrant() {
+    function unpause() external auth() nonReentrant {
         _unpause();
     }
 
-    function transfer(address _to, uint256 _value) external nonReentrant() returns (bool success) {
+    function transfer(address _to, uint256 _value) external nonReentrant returns (bool success) {
         _checkPauseState();
         _transfer(_msgSender(), _to, _value);
         
         return success;
     }
 
-    function approve(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
+    function approve(address _spender, uint256 _value) external nonReentrant returns (bool success) {
         console.log("approve amount is %s", _value);
         _checkPauseState();
         _approve(_spender, _value);
@@ -93,7 +93,7 @@ contract MockBep20 is Context{
         return success;
     }
 
-    function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool success) {
+    function transferFrom(address _from,address _to,uint256 _value) external nonReentrant returns (bool success) {
         _checkPauseState();
 
         require (_balances[_from] >= _value, "ERROR: Insufficient balance at source");
@@ -106,7 +106,7 @@ contract MockBep20 is Context{
         return success;
     }
 
-    function increaseAllowance(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
+    function increaseAllowance(address _spender, uint256 _value) external nonReentrant returns (bool success) {
         _checkPauseState();
 
         if (_allowances[_msgSender()][_spender] == 0)   {
@@ -119,7 +119,7 @@ contract MockBep20 is Context{
         return success;
     }
 
-    function decreaseAllowance(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
+    function decreaseAllowance(address _spender, uint256 _value) external nonReentrant returns (bool success) {
         _checkPauseState();
         require(_allowances[_msgSender()][_spender]>=_value, "ERROR: Reducible amount exceeds allowance");
 
@@ -131,7 +131,7 @@ contract MockBep20 is Context{
     }
 
 
-    function mint(address _to, uint256 _value) public auth() nonReentrant() returns(bool success){
+    function mint(address _to, uint256 _value) public auth() nonReentrant returns(bool success){
         _checkPauseState();
         
         require(totalSupply <= cappedSupply,"ERROR: Mint exceeds capped supply");
@@ -145,7 +145,7 @@ contract MockBep20 is Context{
         return success;
     }
 
-    function burn(address _account, uint256 _value) public auth() nonReentrant() returns (bool success) {
+    function burn(address _account, uint256 _value) public auth() nonReentrant returns (bool success) {
         _checkPauseState();
         
         require(_account != address(0),"ERROR: Burn is not possible from zero address");
@@ -198,7 +198,7 @@ contract MockBep20 is Context{
         emit Approval(_msgSender(), _spender, _value);   
     }
 
-    modifier nonReentrant() {
+    modifier nonReentrant {
         require(isReentrant == false, "ERROR: Re-entrant");
         isReentrant = true;
         _;

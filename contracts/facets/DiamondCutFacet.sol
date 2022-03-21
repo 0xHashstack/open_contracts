@@ -16,11 +16,11 @@ contract DiamondCutFacet is Pausable,IDiamondCut{
         FacetCut[] calldata _diamondCut,
         address _init,
         bytes calldata _calldata
-    ) external override nonReentrant() {
+    ) external override nonReentrant {
         LibDiamond.enforceIsupgradeAdmin();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
-    //   modifier nonReentrant() {
+    //   modifier nonReentrant {
     //     require(isReentrant == false, "ERROR: Re-entrant");
     //     isReentrant = true;
     //     _;
