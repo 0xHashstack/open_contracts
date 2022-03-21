@@ -221,7 +221,7 @@ contract Loan is Pausable, ILoan {
         _pause();
     }
 
-    function unpauseLoan() external override nonReentrant() authLoan nonReentrant {
+    function unpauseLoan() external override nonReentrant authLoan {
         _unpause();
     }
 
