@@ -47,25 +47,6 @@ library LibOpen {
         uint256 id,
         uint256 timestamp
     );
-	event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed currentAmount,uint256 timestamp);
-
-	// event MarketSwapped(
-	// 	address indexed account,
-	// 	bytes32 loanMarket,
-	// 	bytes32 commmitment,
-	// 	bytes32 indexed fromMarket,
-	// 	bytes32 indexed toMarket,
-	// 	uint256 toAmount,
-	// 	uint256 timestamp
-	// );
-
-	// event MarketSwapped(
-	// 	address indexed account,
-	// 	uint256 indexed loanid,
-	// 	bytes32 marketFrom,
-	// 	bytes32 marketTo,
-	// 	uint256 amount
-	// );
 
 	function upgradeAdmin() internal view returns (address upgradeAdmin_) {
 		upgradeAdmin_ = diamondStorage().upgradeAdmin;
