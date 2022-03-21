@@ -85,6 +85,14 @@ describe("Testing Deposit", async () => {
       await expect(faucet.connect(accounts[1]).getTokens(3)).to.be.reverted;
     });
 
+    it("Pause Deposit:", async () => {
+      await deposit.pauseDeposit();
+      expect(await deposit.isPausedDeposit()).to.equal(true);
+
+      await deposit.unpauseDeposit();
+      expect(await deposit.isPausedDeposit()).to.equal(false);
+    });
+
     // USDT Deposits
     it("USDT New Deposit", async () => {
       const depositAmount = 50000000000; // 500 (8-0's) 500 USDT

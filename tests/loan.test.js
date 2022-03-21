@@ -122,6 +122,11 @@ describe("testing Loans", async () => {
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         BigNumber.from(reserveBalance)
       );
+
+      expect(await loanExt.avblReservesLoan(symbolUsdt)).to.not.equal(BigNumber.from(0));
+      expect(await loanExt.utilisedReservesLoan(symbolUsdt)).to.equal(
+        BigNumber.from(0)
+      );
     });
 
     it("USDT New Loan", async () => {
@@ -265,6 +270,8 @@ describe("testing Loans", async () => {
     });
 
     it("USDT Get Loan Interests", async () => {
+      const obj1 = await loanExt.getLoans(accounts[1].address);
+      console.log("OBJ-Loan: ", obj1); 
       const obj = await loan.getLoanInterest(accounts[1].address, 1);
       console.log("OBJ: ", obj);
       // expect(BigNumber.from(loanInterest)).to.gt(BigNumber.from(0));
@@ -947,6 +954,33 @@ describe("testing Loans", async () => {
       expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.gte(
         BigNumber.from(reserveBalance)
       );
+    });
+
+    it("Pause Loan:", async () => {
+      await loan.pauseLoan();
+      expect(await loan.isPausedLoan()).to.equal(true);
+
+      await loan.unpauseLoan();
+      expect(await loan.isPausedLoan()).to.equal(false);
+    });
+
+    it("Pause LoanExt:", async () => {
+
+      expect(await loanExt.utilisedReservesLoan(symbolBtc)).to.equal(BigNumber.from(0));
+
+      await loanExt.pauseLoanExt();
+      expect(await loanExt.isPausedLoanExt()).to.equal(true);
+
+      await loanExt.unpauseLoanExt();
+      expect(await loanExt.isPausedLoanExt()).to.equal(false);
+    });
+
+    it("Pause LoanExtv1:", async () => {
+      await loanExtv1.pauseLoanExtv1();
+      expect(await loanExtv1.isPausedLoanExtv1()).to.equal(true);
+
+      await loanExtv1.unpauseLoanExtv1();
+      expect(await loanExtv1.isPausedLoanExtv1()).to.equal(false);
     });
   });
 });
