@@ -48,7 +48,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         bytes32 _swapMarket
-    ) external override nonReentrant() nonReentrant returns (bool) {
+    ) external override nonReentrant returns (bool) {
         
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         
