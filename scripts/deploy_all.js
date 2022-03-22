@@ -319,11 +319,12 @@ async function addMarkets(diamondAddress) {
   // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
-  console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
-  const minUSDC = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
-  const minBTC = BigNumber.from("10000000"); // 0.1 BTC
-  const minBNB = BigNumber.from("25000000"); // 0.25
+  // console.log("addMarket & minAmount");
+  const minUSDT = BigNumber.from("250000000000"); // 2500 USDT
+  const minUSDC = BigNumber.from("250000000000"); //  2500 USDC
+  const minBTC = BigNumber.from("100000000"); // 1 BTC
+  const minBNB = BigNumber.from("250000000"); // 2.5 wBNB
+  console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
   await tokenList
@@ -483,7 +484,7 @@ async function provideLiquidity(rets) {
   const tbtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
   const tusdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
   const tusdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
-  const twbnb = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+  const twbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
   const tcake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
   const tsxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
 

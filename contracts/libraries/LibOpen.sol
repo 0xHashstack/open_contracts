@@ -450,7 +450,7 @@ library LibOpen {
 		//WBNB as other test tokens
 		address[] memory path;
 		// if (addrFromMarket == WBNB || addrToMarket == WBNB) {
-			if (_mode != 2) {
+		if (_mode != 2) {
 			path = new address[](2);
 			path[0] = addrFromMarket;
 			path[1] = addrToMarket;
@@ -463,18 +463,18 @@ library LibOpen {
 
 // https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens
 		uint[] memory ret;
-		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp+15);
+		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount, _mode),path,address(this),block.timestamp+15);
 		return ret[ret.length-1];
 	}
 
 	function _getAmountOutMin(
 		address _tokenIn,
 		address _tokenOut,
-		uint _amountIn
+		uint _amountIn,
+        uint _mode
 	) private view returns (uint) {
 		// bytes32 cake;
 		address addrCake;
-		uint _mode;
 		// cake =  ;
 		addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
 		console.log("address cake is ", addrCake);
@@ -482,7 +482,7 @@ library LibOpen {
 		
 		address[] memory path;
 		//if (_tokenIn == WBNB || _tokenOut == WBNB) {
-			if (_mode != 2) {
+		if (_mode != 2) {
 			path = new address[](2);
 			path[0] = _tokenIn;
 			path[1] = _tokenOut;
@@ -1239,6 +1239,7 @@ library LibOpen {
 			activeLoans.loanCurrentAmount.pop();
 			activeLoans.collateralYield.pop();
 			activeLoans.borrowInterest.pop();
+            activeLoans.state.pop();
 
 			// delete activeLoans.collateralMarket[loan.id - 1];
 			// delete activeLoans.collateralAmount[loan.id - 1];
