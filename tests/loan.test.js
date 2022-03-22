@@ -736,6 +736,227 @@ describe("testing Loans", async () => {
     it("Repay Loan", async () => {
       const repayAmount = 50000000000;
       const reserveBalance = BigNumber.from(
+        await bepBtc.balanceOf(diamondAddress)
+      );
+
+      console.log("Pre RBal: ", reserveBalance);
+
+      await bepUsdc.connect(accounts[1]).approve(diamondAddress, repayAmount);
+      await expect(
+        loanExtv1
+          .connect(accounts[1])
+          .repayLoan(symbolUsdc, comit_NONE, repayAmount)
+      ).emit(loanExtv1, "LoanRepaid");
+
+      console.log(
+        "Pos RBal: ",
+        BigNumber.from(await bepBtc.balanceOf(diamondAddress))
+      );
+      expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.lt(
+        BigNumber.from(reserveBalance)
+      );
+
+    });
+  });
+
+  describe.skip("Usdc Test: Loan 2(Commit None)", async () => {
+    const symbolWBNB =
+      "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt =
+      "0x555344542e740000000000000000000000000000000000000000000000000000"; // Usdc.t
+    const symbolUsdc =
+      "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc =
+      "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolSxp =
+      "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+    const symbolCAKE =
+      "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+    const comit_NONE = utils.formatBytes32String("comit_NONE");
+    const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
+    before(async () => {
+      // deploying relevant contracts
+      library = await ethers.getContractAt("LibOpen", diamondAddress);
+      tokenList = await ethers.getContractAt("TokenList", diamondAddress);
+      loan = await ethers.getContractAt("Loan", diamondAddress);
+      loanExt = await ethers.getContractAt("LoanExt", diamondAddress);
+
+      // deploying tokens
+      bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
+      bepBtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
+      bepUsdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+      bepWbnb = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+      bepCake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
+      bepSxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
+    });
+
+    it("Usdc New Loan (1:4 CDR)", async () => {
+      const loanAmount = 40000000000;
+      const collateralAmount = 10000000000;
+
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+      await bepUsdc
+        .connect(accounts[1])
+        .approve(diamondAddress, collateralAmount);
+      await expect(
+        loanExt
+          .connect(accounts[1])
+          .loanRequest(
+            symbolUsdc,
+            comit_NONE,
+            loanAmount,
+            symbolUsdc,
+            collateralAmount
+          )
+      ).to.be.reverted;
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
+        BigNumber.from(reserveBalance)
+      );
+    });
+
+    it("Usdc New Loan (Cross Market)", async () => {
+      const loanAmount = 300000000000; // 3000 USDC
+      const collateralAmount = 500000000000; 
+
+      const reserveBalance = BigNumber.from(
+        await bepUsdt.balanceOf(diamondAddress)
+      );
+      await bepUsdt
+        .connect(accounts[1])
+        .approve(diamondAddress, collateralAmount);
+      await expect(
+        loanExt
+          .connect(accounts[1])
+          .loanRequest(
+            symbolUsdc,
+            comit_NONE,
+            loanAmount,
+            symbolUsdt,
+            collateralAmount
+          )
+      ).emit(loanExt, "NewLoan");
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
+        reserveBalance.add(BigNumber.from(collateralAmount))
+      );
+    });
+
+    it("Usdc New Loan (Retry)", async () => {
+      const loanAmount = 30000000000;
+      const collateralAmount = 20000000000;
+
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+      await bepUsdc
+        .connect(accounts[1])
+        .approve(diamondAddress, collateralAmount);
+      await expect(
+        loanExt
+          .connect(accounts[1])
+          .loanRequest(
+            symbolUsdc,
+            comit_NONE,
+            loanAmount,
+            symbolUsdc,
+            collateralAmount
+          )
+      ).to.be.reverted;
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
+        BigNumber.from(reserveBalance)
+      );
+    });
+
+    it("Usdc Add Collateral (Wrong Market)", async () => {
+      const collateralAmount = 15000000000; // 150 USDC
+
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+      await bepUsdc
+        .connect(accounts[1])
+        .approve(diamondAddress, collateralAmount);
+      await expect(
+        loan
+          .connect(accounts[1])
+          .addCollateral(symbolUsdc, comit_NONE, collateralAmount)
+      ).to.be.reverted;
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
+        BigNumber.from(reserveBalance)
+      );
+    });
+
+    it("Usdc Add Collateral", async () => {
+      const collateralAmount = 500000000000; 
+
+      const reserveBalance = BigNumber.from(
+        await bepUsdt.balanceOf(diamondAddress)
+      );
+      await bepUsdt
+        .connect(accounts[1])
+        .approve(diamondAddress, collateralAmount);
+      await expect(
+        loan
+          .connect(accounts[1])
+          .addCollateral(symbolUsdc, comit_NONE, collateralAmount)
+      ).emit(loan, "AddCollateral");
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
+        reserveBalance.add(BigNumber.from(collateralAmount))
+      );
+    });
+
+    it("Swap Loan", async () => {
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+      await expect(
+        loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_NONE, symbolCAKE)
+      ).emit(loan, "MarketSwapped");
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.lt(
+        BigNumber.from(reserveBalance)
+      );
+    });
+
+    it("Swap to Loan", async () => {
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+      await expect(
+        loan.connect(accounts[1]).swapToLoan(symbolUsdc, comit_NONE)
+      ).emit(loan, "MarketSwapped");
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.gt(
+        BigNumber.from(reserveBalance)
+      );
+    });
+
+    it("Usdc Withdraw Loan", async () => {
+      const withdrawAmount = 250000000000;
+      const reserveBalance = BigNumber.from(
+        await bepUsdc.balanceOf(diamondAddress)
+      );
+
+      await expect(
+        loan
+          .connect(accounts[1])
+          .withdrawPartialLoan(symbolUsdc, comit_NONE, withdrawAmount)
+      ).emit(loan, "WithdrawPartialLoan");
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
+        reserveBalance.sub(BigNumber.from(withdrawAmount))
+      );
+    });
+
+    it("Repay Loan", async () => {
+      const repayAmount = 50000000000;
+      const reserveBalance = BigNumber.from(
         await bepUsdc.balanceOf(diamondAddress)
       );
 

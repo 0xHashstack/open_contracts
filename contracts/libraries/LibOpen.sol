@@ -444,8 +444,8 @@ library LibOpen {
 			addrFromMarket = _getMarket2Address(_fromMarket);
 			addrToMarket = _getMarketAddress(_toMarket);
 		} else if(_mode == 2) {
-			addrFromMarket = _getMarketAddress(_toMarket);
-			addrToMarket = _getMarketAddress(_fromMarket);
+			addrFromMarket = _getMarketAddress(_fromMarket);
+			addrToMarket = _getMarketAddress(_toMarket);
 			addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
 			console.log("address cake is ", addrCake);
 			require(addrCake != address(0), "CAKE Address can not be zero.");
@@ -487,6 +487,8 @@ library LibOpen {
 // https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens
 		uint[] memory ret;
 		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount, _mode),path,address(this),block.timestamp+15);
+		for(uint i = 0; i < ret.length; i++)
+			console.log("ret[%s] = %s", i, ret[i]);
 		return ret[ret.length-1];
 	}
 
@@ -1043,16 +1045,19 @@ library LibOpen {
 		if (_commitment == _getCommitment(2)) 
 			_collateralAmount += cYield.accruedYield;
 
-		_repayAmount += _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
-		console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
+		uint swapAmount = _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
+		_repayAmount += swapAmount;
+		console.log("swapped amount: %s\n, repay amount is %s, loanAmount is %s",swapAmount, _repayAmount, loan.amount);
 		
 		if(_repayAmount >= loan.amount)
 		 	_remnantAmount = (_repayAmount - loan.amount);
 		else {
+			console.log("Current Loan Amount: ", loanState.currentAmount);
 			if (loanState.currentMarket == loan.market)	
 				_repayAmount += loanState.currentAmount;
 			else if (loanState.currentMarket != loanState.loanMarket)
 				_repayAmount += _swap(address(this), loanState.currentMarket, loanState.loanMarket, loanState.currentAmount, 2);
+			console.log("Post Current Loan Amount: ", loanState.currentAmount);
 			console.log("Repay Amount:", _repayAmount);
 			console.log("Loan Amount:", loan.amount);
 			_remnantAmount = (_repayAmount - loan.amount);
