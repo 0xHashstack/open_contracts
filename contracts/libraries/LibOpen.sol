@@ -1239,6 +1239,7 @@ library LibOpen {
 			activeLoans.loanCurrentAmount.pop();
 			activeLoans.collateralYield.pop();
 			activeLoans.borrowInterest.pop();
+            activeLoans.state.pop();
 
 			// delete activeLoans.collateralMarket[loan.id - 1];
 			// delete activeLoans.collateralAmount[loan.id - 1];
