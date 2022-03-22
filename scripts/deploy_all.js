@@ -318,11 +318,12 @@ async function addMarkets(diamondAddress) {
   // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
-  console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
-  const minUSDC = BigNumber.from("10000000000"); // 100 USDT, or 100 USDC
-  const minBTC = BigNumber.from("10000000"); // 0.1 BTC
-  const minBNB = BigNumber.from("25000000"); // 0.25
+  // console.log("addMarket & minAmount");
+  const minUSDT = BigNumber.from("250000000000"); // 2500 USDT
+  const minUSDC = BigNumber.from("250000000000"); //  2500 USDC
+  const minBTC = BigNumber.from("100000000"); // 1 BTC
+  const minBNB = BigNumber.from("250000000"); // 2.5 wBNB
+  console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
   await tokenList
@@ -382,6 +383,12 @@ async function addMarkets(diamondAddress) {
   await tusdc.transfer(diamondAddress, "200000000000000000");
   await tbtc.transfer(diamondAddress, "420000000000000");
   await twbnb.transfer(diamondAddress, "1800000000000000");
+
+  // UPDATE AVAILABLE RESERVES
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolBtc, "420000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdc, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
 
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");

@@ -41,32 +41,31 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_pauser",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isPaused",
-        "type": "bool"
-      }
-    ],
-    "name": "PauseState",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "account",
         "type": "address"
       },
       {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "loanMarket",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "commmitment",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isSwapped",
+        "type": "bool"
+      },
+      {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "market",
+        "name": "currentMarket",
         "type": "bytes32"
       },
       {
@@ -78,17 +77,30 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "timestamp",
         "type": "uint256"
       }
     ],
-    "name": "WithdrawCollateral",
+    "name": "MarketSwapped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_pauser",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPaused",
+        "type": "bool"
+      }
+    ],
+    "name": "PauseState",
     "type": "event"
   },
   {

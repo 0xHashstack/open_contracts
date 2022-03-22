@@ -19,14 +19,7 @@ contract Loan is Pausable, ILoan {
         uint256 indexed amount,
         uint256 timestamp
     );
-    event WithdrawCollateral(
-        address indexed account,
-        bytes32 indexed market,
-        uint256 indexed amount,
-        uint256 id,
-        uint256 timestamp
-    );
-    event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed currentAmount,uint256 timestamp);
+    event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed amount,uint256 timestamp);
 
     constructor() {
         // AppStorage storage ds = LibOpen.diamondStorage();
