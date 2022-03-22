@@ -421,8 +421,8 @@ library LibOpen {
 			addrFromMarket = _getMarket2Address(_fromMarket);
 			addrToMarket = _getMarketAddress(_toMarket);
 		} else if(_mode == 2) {
-			addrFromMarket = _getMarketAddress(_toMarket);
-			addrToMarket = _getMarketAddress(_fromMarket);
+			addrFromMarket = _getMarketAddress(_fromMarket);
+			addrToMarket = _getMarketAddress(_toMarket);
 			addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
 			console.log("address cake is ", addrCake);
 			require(addrCake != address(0), "CAKE Address can not be zero.");

@@ -222,6 +222,10 @@ contract Comptroller is Pausable, IComptroller {
     	return LibOpen._getReserveFactor();
 	}
 
+	function updateReservesDeposit(bytes32 _market, uint _amount) external authComptroller {
+		LibOpen._updateReservesDeposit(_market, _amount, 0);
+	}
+
 	modifier authComptroller() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage();
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminComptroller, msg.sender), "ERROR: Not an admin");
