@@ -78,13 +78,6 @@ contract Reserve is Pausable, IReserve {
 		_;
 	}
 
-	// modifier authTransfer(uint256 nFacetIndex) {
-	// 	require(nFacetIndex == LibOpen.LOAN_ID || 
-	// 		nFacetIndex == LibOpen.LOANEXT_ID || 
-	// 		nFacetIndex == LibOpen.DEPOSIT_ID, "Not permitted facet");
-	// 	_;
-	// }
-
 	function pauseReserve() external override nonReentrant authReserve() {
 			_pause();
 	}

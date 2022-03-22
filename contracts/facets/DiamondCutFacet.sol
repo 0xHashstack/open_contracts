@@ -20,10 +20,5 @@ contract DiamondCutFacet is Pausable,IDiamondCut{
         LibDiamond.enforceIsupgradeAdmin();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
-    //   modifier nonReentrant {
-    //     require(isReentrant == false, "ERROR: Re-entrant");
-    //     isReentrant = true;
-    //     _;
-    //     isReentrant = false;
-    // }
+  
 }

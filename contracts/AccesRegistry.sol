@@ -10,9 +10,6 @@ struct RoleData {
 }
 struct AdminRoleData {
     mapping(address => bool) _adminMembers;
-    // bytes32 _adminRole;
-	/// REMOVING AS NEVER USED
-		/// GAS OPT
 }
 contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;
@@ -140,10 +137,5 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               
 		return _paused();
 	}
-	// modifier nonReentrant {
-    //     require(isReentrant == false, "ERROR: Re-entrant");
-    //     isReentrant = true;
-    //     _;
-    //     isReentrant = false;
-    // }
+	
 }
