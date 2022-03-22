@@ -484,7 +484,7 @@ async function provideLiquidity(rets) {
   const tbtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
   const tusdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
   const tusdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
-  const twbnb = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+  const twbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
   const tcake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
   const tsxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
 
