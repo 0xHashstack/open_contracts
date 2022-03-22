@@ -385,6 +385,12 @@ async function addMarkets(diamondAddress) {
   await tbtc.transfer(diamondAddress, "420000000000000");
   await twbnb.transfer(diamondAddress, "1800000000000000");
 
+  // UPDATE AVAILABLE RESERVES
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolBtc, "420000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdc, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
+
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await Faucet.deploy();
