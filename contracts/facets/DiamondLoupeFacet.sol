@@ -4,10 +4,9 @@ pragma solidity 0.8.1;
 import { LibDiamond } from  "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 
-import "../util/Pausable.sol";
 
 
-contract DiamondLoupeFacet is Pausable,IDiamondLoupe {
+contract DiamondLoupeFacet is IDiamondLoupe {
     function facets() external override view returns (Facet[] memory facets_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 selectorCount = ds.selectors.length;
