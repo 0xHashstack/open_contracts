@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
-const fs = require('fs');
+const fs = require("fs");
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -22,13 +22,13 @@ async function deployDiamond() {
 
   const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
-//   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
-//     if(err) {
-//         return console.log(err);
-//     }
+  //   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
+  //     if(err) {
+  //         return console.log(err);
+  //     }
 
-//     console.log("The file was saved!");
-// }); ;
+  //     console.log("The file was saved!");
+  // }); ;
 
   /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
@@ -249,8 +249,7 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
   console.log("updateAPR complete");
 
-
-/// DEPLOYING TEST TOKENS
+  /// DEPLOYING TEST TOKENS
   console.log("Deploy test tokens");
   const admin_ = upgradeAdmin.address;
   const Mockup = await ethers.getContractFactory("BEP20Token");
@@ -439,31 +438,53 @@ async function addMarkets(diamondAddress) {
     "10000000000" // 100 BNB
   );
 
-  console.log('ALL ENV USED IN UI');
+  console.log("ALL ENV USED IN UI");
 
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
-  
+
   console.log("REACT_APP_FAUCET_ADDRESS = ", faucet.address);
-  
+
   console.log("REACT_APP_T_BTC_ADDRESS = ", tBtcAddress);
-  
+
   console.log("REACT_APP_T_USDC_ADDRESS = ", tUsdcAddress);
-  
+
   console.log("REACT_APP_T_USDT_ADDRESS = ", tUsdtAddress);
- 
+
   console.log("REACT_APP_T_SXP_ADDRESS = ", tSxpAddress);
 
   console.log("REACT_APP_T_CAKE_ADDRESS = ", tCakeAddress);
-  
+
   console.log("REACT_APP_T_WBNB_ADDRESS = ", tWBNBAddress);
-  fs.writeFile('addr.js',("REACT_APP_DIAMOND_ADDRESS = "+ diamond.address+ '\r\n'+ "REACT_APP_FAUCET_ADDRESS = "+ faucet.address+ '\r\n'+ "REACT_APP_T_USDC_ADDRESS = "+ tUsdcAddress+ '\r\n'+ "REACT_APP_T_USDT_ADDRESS = "+ tUsdtAddress+ '\r\n'+ "REACT_APP_T_SXP_ADDRESS = "+ tSxpAddress+ '\r\n'+ "REACT_APP_T_CAKE_ADDRESS = "+ tCakeAddress+ '\r\n'+ "REACT_APP_T_WBNB_ADDRESS = "+tWBNBAddress), function(err) {
-    if(err) {
+  fs.writeFile(
+    "addr.js",
+    "REACT_APP_DIAMOND_ADDRESS = " +
+      diamond.address +
+      "\r\n" +
+      "REACT_APP_FAUCET_ADDRESS = " +
+      faucet.address +
+      "\r\n" +
+      "REACT_APP_T_USDC_ADDRESS = " +
+      tUsdcAddress +
+      "\r\n" +
+      "REACT_APP_T_USDT_ADDRESS = " +
+      tUsdtAddress +
+      "\r\n" +
+      "REACT_APP_T_SXP_ADDRESS = " +
+      tSxpAddress +
+      "\r\n" +
+      "REACT_APP_T_CAKE_ADDRESS = " +
+      tCakeAddress +
+      "\r\n" +
+      "REACT_APP_T_WBNB_ADDRESS = " +
+      tWBNBAddress,
+    function (err) {
+      if (err) {
         return console.log(err);
+      }
+
+      console.log("The addresses are saved!");
     }
-
-    console.log("The addresses are saved!");
-}); ;
-
+  );
 
   return {
     tBtcAddress,
@@ -485,7 +506,7 @@ async function provideLiquidity(rets) {
   const tbtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
   const tusdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
   const tusdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
-  const twbnb = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
+  const twbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
   const tcake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
   const tsxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
 
@@ -552,7 +573,7 @@ async function provideLiquidity(rets) {
   /// WBNB-CAKE LIQUIDITY
   await twbnb.approve(pancakeRouterAddr, "5000000000");
   await tcake.approve(pancakeRouterAddr, "250000000000");
-  
+
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -568,7 +589,7 @@ async function provideLiquidity(rets) {
     );
   console.log("WBNB <-> CAKE LP done");
 
- // LP FOR SXP
+  // LP FOR SXP
 
   /// USDC-SXP LIQUIDITY
   await tusdc.approve(pancakeRouterAddr, "10000000000000000");
@@ -627,7 +648,7 @@ async function provideLiquidity(rets) {
   /// WBNB-SXP LIQUIDITY
   await twbnb.approve(pancakeRouterAddr, "5000000000");
   await tsxp.approve(pancakeRouterAddr, "250000000000");
-  
+
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -659,8 +680,14 @@ exports.addMarkets = addMarkets;
 exports.provideLiquidity = provideLiquidity;
 
 /// CREATE ABI OF CONTRACTS
-function createAbiJSON(artifact, filename){
-  const data = JSON.parse(artifact.interface.format("json"))
-  writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
-  writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
+function createAbiJSON(artifact, filename) {
+  const data = JSON.parse(artifact.interface.format("json"));
+  writeFileSync(
+    `${__dirname}/../abi/backend/${filename}.json`,
+    JSON.stringify(data)
+  );
+  writeFileSync(
+    `${__dirname}/../abi/frontend/${filename}.json`,
+    JSON.stringify(data)
+  );
 }

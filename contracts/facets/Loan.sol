@@ -3,7 +3,6 @@ pragma solidity 0.8.1;
 
 import "../libraries/LibOpen.sol";
 import "../util/Pausable.sol";
-
 import "hardhat/console.sol";
 
 
@@ -193,26 +192,28 @@ contract Loan is Pausable, ILoan {
 
     function getLoanInterest(address account, uint256 id) external view returns(uint256 loanInterest, uint collateralInterest)	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		uint256 num = id -1;
+		// uint256 num = id -1;
 		
-        ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
-		
-		bytes32 market = activeLoans.loanMarket[num];
-		bytes32 commitment = activeLoans.loanCommitment[num];
+        ActiveLoans memory activeLoans = ds.getActiveLoans[account];
+		console.log("LoanMarket:", activeLoans.loanMarket.length);
+		bytes32 market = activeLoans.loanMarket[id-1];
+		bytes32 commitment = activeLoans.loanCommitment[id-1];
 		uint256 interestFactor = 0;
+        uint256 collateralInterestFactor = 0;
 
-		LoanRecords storage loan = ds.indLoanRecords[account][market][commitment];
-		YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
-        CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][market][commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][market][commitment];
+		LoanRecords memory loan = ds.indLoanRecords[account][market][commitment];
+		DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
+        // CollateralRecords memory collateral = ds.indCollateralRecords[account][market][commitment];
+        CollateralYield memory cYield = ds.indAccruedAPY[account][market][commitment];
         
-		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
-
-		loanInterest = yield.accruedYield;
+		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);
+        if(commitment != LibOpen._getCommitment(0)){
+            collateralInterestFactor = LibOpen._getDepositInterest(commitment, cYield.oldLengthAccruedYield, cYield.oldTime);
+            collateralInterest = cYield.accruedYield;
+            collateralInterest += ((collateralInterestFactor*(ds.indCollateralRecords[account][market][commitment]).amount)/(365*86400*10000));
+        }
+        loanInterest = yield.accruedInterest;
 		loanInterest += ((interestFactor*loan.amount)/(365*86400*10000));	
-        collateralInterest = cYield.accruedYield;
-        collateralInterest += ((interestFactor*collateral.amount)/(365*86400*10000));
-
 		return (loanInterest, collateralInterest);
 
 	}
