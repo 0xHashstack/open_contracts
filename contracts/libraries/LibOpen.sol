@@ -418,8 +418,12 @@ library LibOpen {
 			addrFromMarket = _getMarketAddress(_fromMarket);
 			addrToMarket = _getMarket2Address(_toMarket);
 		} else if(_mode == 1) {
+			console.log("address from before is ", addrFromMarket);
 			addrFromMarket = _getMarket2Address(_fromMarket);
+			console.log("address from after is ", addrFromMarket);
+			console.log("address to before is ", addrToMarket);
 			addrToMarket = _getMarketAddress(_toMarket);
+			console.log("address to after is ", addrToMarket);
 		} else if(_mode == 2) {
 			addrFromMarket = _getMarketAddress(_fromMarket);
 			addrToMarket = _getMarketAddress(_toMarket);
@@ -428,7 +432,8 @@ library LibOpen {
 			require(addrCake != address(0), "CAKE Address can not be zero.");
 		}
 
-		require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
+		require(addrFromMarket != address(0), "Swap from Address can not be zero.");
+		require(addrToMarket != address(0), "Swap to Address can not be zero.");
 
 		/// PARASSWAP
 		// address[] memory callee = new address[](2);
