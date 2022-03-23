@@ -1,14 +1,9 @@
 name: Test
 on:
   push:
-    branches: [ staging ]
-    paths:
-      - 'tests/**'
+    branches: [ development ]
   pull_request:
-    branches: [ review ]
-    paths:
-      - 'tests/**'
-  workflow_dispatch:
+    branches: [ development ]
 
 jobs:
   build:
@@ -17,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
     - uses: actions/checkout@v2
