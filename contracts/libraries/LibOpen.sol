@@ -1034,7 +1034,7 @@ library LibOpen {
 			if (loanState.currentMarket == loan.market)	
 				_repayAmount += loanState.currentAmount;
 			else if (loanState.currentMarket != loanState.loanMarket)
-				_repayAmount += _swap(address(this), loanState.currentMarket, loanState.loanMarket, loanState.currentAmount, 2);
+				_repayAmount += _swap(address(this), loanState.currentMarket, loanState.loanMarket, loanState.currentAmount, 1);
 			
 			_remnantAmount = (_repayAmount - loan.amount);
 		}
