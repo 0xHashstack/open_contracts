@@ -894,25 +894,6 @@ describe("testing Loans", async () => {
       );
     });
 
-    it("Usdc Add Collateral", async () => {
-      const collateralAmount = 500000000000; 
-
-      const reserveBalance = BigNumber.from(
-        await bepUsdc.balanceOf(diamondAddress)
-      );
-      await bepUsdc
-        .connect(accounts[1])
-        .approve(diamondAddress, collateralAmount);
-      await expect(
-        loan
-          .connect(accounts[1])
-          .addCollateral(symbolUsdc, comit_NONE, collateralAmount)
-      ).emit(loan, "AddCollateral");
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
-        reserveBalance.add(BigNumber.from(collateralAmount))
-      );
-    });
 
     it("Swap Loan", async () => {
       const reserveBalance = BigNumber.from(
@@ -1115,107 +1096,6 @@ describe("testing Loans", async () => {
     //   );
     // });
 
-    // it("Wbnb Withdraw Loan", async () => {
-    //   const withdrawAmount = 15000000;
-    //   const reserveBalance = BigNumber.from(
-    //     await bepWbnb.balanceOf(diamondAddress)
-    //   );
-
-    //   await expect(
-    //     loan
-    //       .connect(accounts[1])
-    //       .withdrawPartialLoan(symbolWbnb, comit_ONEMONTH, withdrawAmount)
-    //   ).emit(loan, "WithdrawPartialLoan");
-
-    //   expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-    //     reserveBalance.sub(BigNumber.from(withdrawAmount))
-    //   );
-    // });
-
-    it("Repay Loan", async () => {
-      const repayAmount = 50000000; // 0.5 Wbnb
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
-
-      await bepWbnb.connect(accounts[1]).approve(diamondAddress, repayAmount);
-      await expect(
-        loanExtv1
-          .connect(accounts[1])
-          .repayLoan(symbolWbnb, comit_ONEMONTH, repayAmount)
-      ).emit(loanExtv1, "LoanRepaid");
-
-      expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.gte(
-        BigNumber.from(reserveBalance)
-      );
-    });
-
-    it("Wbnb New Loan", async () => {
-      const loanAmount = 40000000; // 0.4 Wbnb
-      const collateralAmount = 30000000; // 0.3 Wbnb
-
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
-      await bepWbnb
-        .connect(accounts[1])
-        .approve(diamondAddress, collateralAmount);
-      await expect(
-        loanExt
-          .connect(accounts[1])
-          .loanRequest(
-            symbolWbnb,
-            comit_ONEMONTH,
-            loanAmount,
-            symbolWbnb,
-            collateralAmount
-          )
-      ).emit(loanExt, "NewLoan");
-
-      expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-        reserveBalance.add(BigNumber.from(collateralAmount))
-      );
-    });
-
-    it("Wbnb Add Collateral", async () => {
-      const collateralAmount = 15000000; // 0.15 Wbnb
-
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
-      await bepWbnb
-        .connect(accounts[1])
-        .approve(diamondAddress, collateralAmount);
-      await expect(
-        loan
-          .connect(accounts[1])
-          .addCollateral(symbolWbnb, comit_ONEMONTH, collateralAmount)
-      ).emit(loan, "AddCollateral");
-
-      expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-        reserveBalance.add(BigNumber.from(collateralAmount))
-      );
-    });
-
-    it("Swap Loan", async () => {
-      const reserveBalance = BigNumber.from(
-        await bepWbnb.balanceOf(diamondAddress)
-      );
-      const reserveBal = await bepSxp.balanceOf(diamondAddress);
-      await expect(
-        loan
-          .connect(accounts[1])
-          .swapLoan(symbolWbnb, comit_ONEMONTH, symbolSxp)
-      ).emit(loan, "MarketSwapped");
-
-      expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.lt(
-        BigNumber.from(reserveBalance)
-      );
-      expect(BigNumber.from(await bepSxp.balanceOf(diamondAddress))).to.gt(
-        BigNumber.from(reserveBal)
-      );
-    });
-
     it("Wbnb Withdraw Loan", async () => {
       const withdrawAmount = 15000000;
       const reserveBalance = BigNumber.from(
@@ -1229,8 +1109,7 @@ describe("testing Loans", async () => {
       ).to.be.reverted;
 
       expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-        reserveBalance
-      );
+        reserveBalance);
     });
 
     it("Repay Loan", async () => {
