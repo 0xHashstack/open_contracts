@@ -759,7 +759,7 @@ describe("testing Loans", async () => {
     });
   });
 
-  describe.skip("Usdc Test: Loan 2(Commit None)", async () => {
+  describe("Usdc Test: Loan 2(Commit None)", async () => {
     const symbolWBNB =
       "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
     const symbolUsdt =
@@ -921,36 +921,6 @@ describe("testing Loans", async () => {
 
       expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.lt(
         BigNumber.from(reserveBalance)
-      );
-    });
-
-    it("Swap to Loan", async () => {
-      const reserveBalance = BigNumber.from(
-        await bepUsdc.balanceOf(diamondAddress)
-      );
-      await expect(
-        loan.connect(accounts[1]).swapToLoan(symbolUsdc, comit_NONE)
-      ).emit(loan, "MarketSwapped");
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.gt(
-        BigNumber.from(reserveBalance)
-      );
-    });
-
-    it("Usdc Withdraw Loan", async () => {
-      const withdrawAmount = 250000000000;
-      const reserveBalance = BigNumber.from(
-        await bepUsdc.balanceOf(diamondAddress)
-      );
-
-      await expect(
-        loan
-          .connect(accounts[1])
-          .withdrawPartialLoan(symbolUsdc, comit_NONE, withdrawAmount)
-      ).emit(loan, "WithdrawPartialLoan");
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
-        reserveBalance.sub(BigNumber.from(withdrawAmount))
       );
     });
 

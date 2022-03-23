@@ -319,10 +319,10 @@ async function addMarkets(diamondAddress) {
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from("250000000000"); // 2500 USDT
-  const minUSDC = BigNumber.from("250000000000"); //  2500 USDC
-  const minBTC = BigNumber.from("100000000"); // 1 BTC
-  const minBNB = BigNumber.from("250000000"); // 2.5 wBNB
+  const minUSDT = BigNumber.from(process.env.minUSDT); 
+  const minUSDC = BigNumber.from(process.env.minUSDC); 
+  const minBTC = BigNumber.from(process.env.minBTC); 
+  const minBNB = BigNumber.from(process.env.minBNB); 
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
