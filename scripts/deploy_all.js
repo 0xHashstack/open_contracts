@@ -118,8 +118,6 @@ async function deployDiamond() {
   createAbiJSON(diamond, "OpenDiamond");
   console.log("Diamond deployed:", diamond.address);
 
-  await diamondInit.init(upgradeAdmin.address,diamond.address,accessRegistry.address);
-    console.log("Diamond Initialized");
 
   // upgrade diamond with facets
   console.log("");
