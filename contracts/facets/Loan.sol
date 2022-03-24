@@ -41,7 +41,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         bytes32 _swapMarket
-    ) external override nonReentrant returns (bool) {
+    ) external override nonReentrant() nonReentrant returns (bool) {
         
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         
@@ -83,10 +83,10 @@ contract Loan is Pausable, ILoan {
 
     function _preAddCollateralProcess(
         bytes32 _collateralMarket,
-        uint256 _collateralAmount,
         LoanRecords storage loan,
         LoanState storage loanState,
         CollateralRecords storage collateral
+        // Have removed collateral amount param from this as we stopped using min amount check in add collateral
     ) private view {
         require(loan.id != 0, "ERROR: No loan");
         require(loanState.state == STATE.ACTIVE, "ERROR: Inactive loan");
@@ -96,14 +96,13 @@ contract Loan is Pausable, ILoan {
         );
 
         LibOpen._isMarketSupported(_collateralMarket);
-        // LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
     }
 
     function addCollateral(
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _collateralAmount
-    ) external override returns (bool) {
+    ) external override nonReentrant returns (bool) {
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -114,7 +113,6 @@ contract Loan is Pausable, ILoan {
 
         _preAddCollateralProcess(
             collateral.market,
-            _collateralAmount,
             loan,
             loanState,
             collateral
@@ -152,7 +150,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _amount
-    ) external override nonReentrant returns (bool) {
+    ) external override nonReentrant() nonReentrant returns (bool) {
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         LibOpen._hasLoanAccount(msg.sender);
 
@@ -210,11 +208,11 @@ contract Loan is Pausable, ILoan {
 
 	}
 
-    function pauseLoan() external override authLoan nonReentrant {
+    function pauseLoan() external override nonReentrant authLoan nonReentrant {
         _pause();
     }
 
-    function unpauseLoan() external override authLoan nonReentrant {
+    function unpauseLoan() external override nonReentrant authLoan {
         _unpause();
     }
 

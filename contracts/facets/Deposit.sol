@@ -85,7 +85,7 @@ contract Deposit is Pausable, IDeposit{
 
 
 /// CREATE DEPOSIT
-	function depositRequest(bytes32 _market, bytes32 _commitment, uint _amount) external override nonReentrant() returns(bool) {
+	function depositRequest(bytes32 _market, bytes32 _commitment, uint _amount) external override nonReentrant returns(bool) {
         AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
         preDepositProcess(_market, _amount);
@@ -109,7 +109,7 @@ contract Deposit is Pausable, IDeposit{
 		bytes32 _market, 
 		bytes32 _commitment,
 		uint _amount
-	) external override nonReentrant() returns(bool) 
+	) external override nonReentrant returns(bool) 
 	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
@@ -334,11 +334,11 @@ contract Deposit is Pausable, IDeposit{
 		}
 	}
 
-	function pauseDeposit() external override authDeposit() nonReentrant() {
+	function pauseDeposit() external override nonReentrant authDeposit() {
 		_pause();
 	}
 	
-	function unpauseDeposit() external override authDeposit() nonReentrant() {
+	function unpauseDeposit() external override nonReentrant authDeposit() {
 		_unpause();   
 	}
 

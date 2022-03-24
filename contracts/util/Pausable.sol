@@ -37,7 +37,7 @@ abstract contract Pausable is Context {
         require(isPaused == false,"The contract is paused. Transfer functions are temporarily disabled");
     }
 
-    modifier nonReentrant() {
+    modifier nonReentrant {
 		require(isReentrant == false, "ERROR: Re-entrant");
 		isReentrant = true;
 		_;
