@@ -178,6 +178,7 @@ contract Loan is Pausable, ILoan {
         ds.loanToken = IBEP20(LibOpen._connectMarket(loan.market));
         ds.loanToken.transfer(msg.sender, _amount);
 
+        LibOpen._updateUtilisationLoan(_loanMarket, _amount, 1);
         emit WithdrawPartialLoan(msg.sender, loan.id, _amount, block.timestamp);
         // emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loan.market, block.timestamp);
         return true;

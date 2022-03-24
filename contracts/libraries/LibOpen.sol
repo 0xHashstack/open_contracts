@@ -629,9 +629,8 @@ library LibOpen {
 
 		uint256 loanAmount = loan.amount;
 		/// UPDATING THE RESERVES
-		_updateReservesLoan(loan.market, loanAmount, 1);
-		_updateReservesDeposit(loan.market, remnantAmount, 0);
-		_updateReservesDeposit(collateral.market, collateral.amount, 1);
+		_updateReservesLoan(loan.market, remnantAmount, 0);
+        _updateUtilisationLoan(loan.market, loan.amount, 1);
 
 		/// DELETING THE LOAN ENTRIES
 		/// COLLATERAL RECORDS
@@ -853,6 +852,7 @@ library LibOpen {
 			loanAccount.accruedAPR.push(deductibleInterest);
 		}
 
+		console.log("Loan AMount while processing: ", _loanAmount);
 		_updateUtilisationLoan(_loanMarket, _loanAmount, 0);
 	}
 
@@ -1098,6 +1098,9 @@ library LibOpen {
 			cYield
 		);
 
+		bytes32 collateralMarket = collateral.market;
+        uint256 collateralAmount = collateral.amount;
+
 		// return remnantAmount;
 		/// CONVERT remnantAmount into collateralAmount
 		console.log("Collateral Preswap ",collateral.amount);
@@ -1189,6 +1192,7 @@ library LibOpen {
 	        );
 
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
+			_updateReserveLoan(collateralMarket, collateralAmount, 1);
 			console.log("Utilisation updated ",loan.amount);
 
 			/// COLLATERAL RECORDS
@@ -1334,21 +1338,25 @@ library LibOpen {
 
 	function _updateReservesLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
 		AppStorageOpen storage ds = diamondStorage(); 
+		console.log("Loan Reserve before: ", ds.marketReservesLoan[_loanMarket]);
 		if (_num == 0) {
 			ds.marketReservesLoan[_loanMarket] += _amount;
 		} else if (_num == 1) {
 			ds.marketReservesLoan[_loanMarket] -= _amount;
 		}
+		console.log("Loan Reserve after: ", ds.marketReservesLoan[_loanMarket]);
 	}
 
 	function _updateUtilisationLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
-		AppStorageOpen storage ds = diamondStorage(); 
+		AppStorageOpen storage ds = diamondStorage();
+		console.log("Loan Util before: ", ds.marketUtilisationLoan[_loanMarket]); 
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_loanMarket] += _amount;
 		} else if (_num == 1)	{
 			// require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "ERROR: Utilisation is less than amount");
 			ds.marketUtilisationLoan[_loanMarket] -= _amount;
 		}
+		console.log("Loan Util After: ", ds.marketUtilisationLoan[_loanMarket]);
 	}
 
 	// function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32, uint) {
@@ -1440,6 +1448,9 @@ library LibOpen {
 		uint balance = token.balanceOf(address(this));
 
 		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
+		console.log("Market Reserves: ", _marketReserves(_market));
+		console.log("Market Utilisation: ", _marketUtilisation(_market));
+		console.log("Balance: ", balance);
 		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
 
 		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {

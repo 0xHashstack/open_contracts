@@ -64,7 +64,7 @@ describe("testing Loans", async () => {
       bepSxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
     });
 
-    it("Faucet Testing", async () => {
+    it.only("Faucet Testing", async () => {
       await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
         faucet,
         "TokensIssued"
@@ -1168,8 +1168,8 @@ describe("testing Loans", async () => {
       "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
     const symbolCAKE =
       "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
-    // const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
     const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
+    const comit_NONE = utils.formatBytes32String("comit_NONE");
 
     before(async () => {
       // deploying relevant contracts
@@ -1188,49 +1188,47 @@ describe("testing Loans", async () => {
       bepSxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
     });
 
-    it("USDT New Loan", async () => {
+
+    it.only("Check Liquidation", async () => {
+
       const loanAmount = 30000000000;
       const collateralAmount = 20000000000;
 
       const reserveBalance = BigNumber.from(
-        await bepUsdt.balanceOf(diamondAddress)
+        await bepUsdc.balanceOf(diamondAddress)
       );
-      await bepUsdt
+      await bepUsdc
         .connect(accounts[1])
         .approve(diamondAddress, collateralAmount);
       await expect(
         loanExt
           .connect(accounts[1])
           .loanRequest(
-            symbolUsdt,
+            symbolUsdc,
             comit_ONEMONTH,
             loanAmount,
-            symbolUsdt,
+            symbolUsdc,
             collateralAmount
           )
       ).emit(loanExt, "NewLoan");
 
-      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount))
       );
-    });
 
-    it("Check Liquidation", async () => {
-      await expect(loanExtv1.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdt, comit_ONEMONTH)).emit(loanExtv1, "Liquidation");
+      await expect(loanExtv1.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdc, comit_ONEMONTH)).emit(loanExtv1, "Liquidation");
 
-      const collateralAmount = 20000000000;
-
-      await bepUsdt
+      await bepUsdc
         .connect(accounts[1])
         .approve(diamondAddress, collateralAmount);
       await expect(
         loan
           .connect(accounts[1])
-          .addCollateral(symbolUsdt, comit_ONEMONTH, collateralAmount)
+          .addCollateral(symbolUsdc, comit_NONE, collateralAmount)
       ).to.be.reverted;
 
       await expect(
-        loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_ONEMONTH, symbolCAKE)
+        loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_NONE, symbolCAKE)
       ).to.be.reverted;
     });
   })

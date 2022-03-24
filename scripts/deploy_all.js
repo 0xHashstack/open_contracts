@@ -9,7 +9,7 @@ const fs = require("fs");
 async function main() {
   const diamondAddress = await deployDiamond();
   const rets = await addMarkets(diamondAddress);
-  await provideLiquidity(rets);
+  await provideLiquidity(rets, diamondAddress);
 }
 // Deploy Diamond
 
@@ -172,6 +172,7 @@ async function addMarkets(diamondAddress) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+  const reserve = await ethers.getContractAt("Reserve", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32
@@ -319,10 +320,10 @@ async function addMarkets(diamondAddress) {
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from(process.env.minUSDT); 
-  const minUSDC = BigNumber.from(process.env.minUSDC); 
-  const minBTC = BigNumber.from(process.env.minBTC); 
-  const minBNB = BigNumber.from(process.env.minBNB); 
+  const minUSDT = BigNumber.from(process.env.minUSDT);
+  const minUSDC = BigNumber.from(process.env.minUSDC);
+  const minBTC = BigNumber.from(process.env.minBTC);
+  const minBNB = BigNumber.from(process.env.minBNB);
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
@@ -385,11 +386,20 @@ async function addMarkets(diamondAddress) {
   await twbnb.transfer(diamondAddress, "1800000000000000");
 
   // UPDATE AVAILABLE RESERVES
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolBtc, "420000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdc, "200000000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolBtc, "420000000000000");
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolUsdc, "200000000000000000");
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolUsdt, "200000000000000000");
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolWBNB, "1800000000000000");
 
+  
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await Faucet.deploy();
@@ -505,7 +515,8 @@ async function addMarkets(diamondAddress) {
 }
 
 /// CREATE LIQUIDITY POOL
-async function provideLiquidity(rets) {
+async function provideLiquidity(rets, diamondAddress) {
+
   console.log("Start LP making");
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
