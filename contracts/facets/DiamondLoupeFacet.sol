@@ -4,10 +4,9 @@ pragma solidity 0.8.1;
 import { LibDiamond } from  "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 
-import "../util/Pausable.sol";
 
 
-contract DiamondLoupeFacet is Pausable,IDiamondLoupe {
+contract DiamondLoupeFacet is IDiamondLoupe {
     function facets() external override view returns (Facet[] memory facets_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 selectorCount = ds.selectors.length;
@@ -27,7 +26,9 @@ contract DiamondLoupeFacet is Pausable,IDiamondLoupe {
                 if (facets_[facetIndex].facetAddress == facetAddress_) {
                     facets_[facetIndex].functionSelectors[numFacetSelectors[facetIndex]] = selector;
                     // probably will never have more than 256 functions from one facet contract
-                    require(numFacetSelectors[facetIndex] < 255);
+                    // require(numFacetSelectors[facetIndex] < 255,"numFacetSelectors cannot be less than 2^8");
+                    /*THIS REQUIRE STATEMENT WOULD NOT BE NEEDED AS THE numFacetSelectors IS OF SIZE UINT 8 AND WOULD REVERT 
+                        THE FUNCTION CALL BEFORE REACHING INSIDE THE LOOP*/
                     numFacetSelectors[facetIndex]++;
                     continueLoop = true;
                     break;

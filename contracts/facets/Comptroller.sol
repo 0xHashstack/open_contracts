@@ -79,12 +79,12 @@ contract Comptroller is Pausable, IComptroller {
     	return LibOpen._getCommitment(_index);
 	}
 
-	function setCommitment(bytes32 _commitment) external override nonReentrant() authComptroller {
+	function setCommitment(bytes32 _commitment) external override nonReentrant authComptroller {
     	LibOpen._setCommitment(_commitment);
 	}
 
 	// SETTERS
-	function updateAPY(bytes32 _commitment, uint _apy) external override nonReentrant() authComptroller() nonReentrant() returns (bool) {
+	function updateAPY(bytes32 _commitment, uint _apy) external override nonReentrant authComptroller() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
@@ -96,7 +96,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateAPR(bytes32 _commitment, uint _apr) external override nonReentrant() authComptroller() nonReentrant() returns (bool ) {
+	function updateAPR(bytes32 _commitment, uint _apr) external override nonReentrant authComptroller() returns (bool ) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		APR storage aprUpdate = ds.indAPRRecords[_commitment];
 
@@ -109,7 +109,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateLoanIssuanceFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateLoanIssuanceFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanIssuanceFees;
 		ds.loanIssuanceFees = fees;
@@ -118,7 +118,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateLoanClosureFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateLoanClosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanClosureFees;
 		ds.loanClosureFees = fees;
@@ -127,7 +127,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateLoanPreClosureFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateLoanPreClosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanPreClosureFees;
 		ds.loanPreClosureFees = fees;
@@ -140,7 +140,7 @@ contract Comptroller is Pausable, IComptroller {
 		return LibOpen.diamondStorage().depositPreClosureFees;
 	}
 
-	function updateDepositPreclosureFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateDepositPreclosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.depositPreClosureFees;
 		ds.depositPreClosureFees = fees;
@@ -153,7 +153,7 @@ contract Comptroller is Pausable, IComptroller {
 		return LibOpen.diamondStorage().depositWithdrawalFees;
 	}
 
-	function updateWithdrawalFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateWithdrawalFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.depositWithdrawalFees;
 		ds.depositWithdrawalFees = fees;
@@ -166,7 +166,7 @@ contract Comptroller is Pausable, IComptroller {
 		return LibOpen.diamondStorage().collateralReleaseFees;
 	}
 
-	function updateCollateralReleaseFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateCollateralReleaseFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.collateralReleaseFees;
 		ds.collateralReleaseFees = fees;
@@ -175,7 +175,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 	
-	function updateYieldConversion(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateYieldConversion(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.yieldConversionFees;
 		ds.yieldConversionFees = fees;
@@ -184,7 +184,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateMarketSwapFees(uint fees) external override nonReentrant() authComptroller() returns(bool) {
+	function updateMarketSwapFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.marketSwapFees;
 		ds.marketSwapFees = fees;
@@ -193,7 +193,7 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function updateReserveFactor(uint _reserveFactor) external override nonReentrant() authComptroller() returns (bool) {
+	function updateReserveFactor(uint _reserveFactor) external override nonReentrant authComptroller() returns (bool) {
 	 	// implementing the barebones version for testnet. 
 		//  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
@@ -205,7 +205,7 @@ contract Comptroller is Pausable, IComptroller {
 	} 
 
 // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
-	function updateMaxWithdrawal(uint factor, uint blockLimit) external override nonReentrant() authComptroller() returns(bool) {
+	function updateMaxWithdrawal(uint factor, uint blockLimit) external override nonReentrant authComptroller() returns(bool) {
 		
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFactor = ds.maxWithdrawalFactor; 
@@ -232,11 +232,11 @@ contract Comptroller is Pausable, IComptroller {
 		_;
 	}
 
-	function pauseComptroller() external override nonReentrant() authComptroller() nonReentrant() {
+	function pauseComptroller() external override nonReentrant authComptroller() {
 		_pause();
 	}
 	
-	function unpauseComptroller() external override nonReentrant() authComptroller() nonReentrant() {
+	function unpauseComptroller() external override nonReentrant authComptroller() {
 		_unpause(); 
 	}
 

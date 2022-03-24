@@ -118,6 +118,7 @@ async function deployDiamond() {
   createAbiJSON(diamond, "OpenDiamond");
   console.log("Diamond deployed:", diamond.address);
 
+
   // upgrade diamond with facets
   console.log("");
   // console.log('Diamond Cut:', cut)
@@ -445,6 +446,7 @@ async function addMarkets(diamondAddress) {
     "10000000000" // 100 BNB
   );
 
+
   console.log('ALL ENV USED IN UI');
 
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
@@ -647,6 +649,7 @@ async function provideLiquidity(rets) {
       { gasLimit: 8000000 }
     );
   console.log("WBNB <-> SXP LP done");
+
 }
 
 if (require.main === module) {
