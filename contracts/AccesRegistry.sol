@@ -4,9 +4,6 @@ import "./util/Pausable.sol";
 import "./interfaces/IAccessRegistry.sol";
 struct RoleData {
     mapping(address => bool) _members;
-    // bytes32 _role;
-	/// REMOVING AS NEVER USED
-	/// GAS OPT
 }
 struct AdminRoleData {
     mapping(address => bool) _adminMembers;
