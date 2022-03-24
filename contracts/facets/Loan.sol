@@ -83,10 +83,10 @@ contract Loan is Pausable, ILoan {
 
     function _preAddCollateralProcess(
         bytes32 _collateralMarket,
-        // uint256 _collateralAmount,
         LoanRecords storage loan,
         LoanState storage loanState,
         CollateralRecords storage collateral
+        // Have removed collateral amount param from this as we stopped using min amount check in add collateral
     ) private view {
         require(loan.id != 0, "ERROR: No loan");
         require(loanState.state == STATE.ACTIVE, "ERROR: Inactive loan");
@@ -96,7 +96,6 @@ contract Loan is Pausable, ILoan {
         );
 
         LibOpen._isMarketSupported(_collateralMarket);
-        // LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
     }
 
     function addCollateral(
@@ -114,7 +113,6 @@ contract Loan is Pausable, ILoan {
 
         _preAddCollateralProcess(
             collateral.market,
-            // _collateralAmount,
             loan,
             loanState,
             collateral
