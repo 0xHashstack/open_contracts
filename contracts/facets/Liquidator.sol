@@ -21,16 +21,16 @@ contract Liquidator is Pausable, ILiquidator {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 	
-	function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override returns (uint256 receivedAmount) {
+	function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override nonReentrant() returns (uint256 receivedAmount) {
 			require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
 			receivedAmount = LibOpen._swap(msg.sender, _fromMarket, _toMarket, _fromAmount, _mode);
 	}
 
-	function pauseLiquidator() external override authLiquidator() nonReentrant() {
+	function pauseLiquidator() external override nonReentrant() authLiquidator() nonReentrant() {
 			_pause();
 	}
 	
-	function unpauseLiquidator() external override authLiquidator() nonReentrant() {
+	function unpauseLiquidator() external override nonReentrant() authLiquidator() nonReentrant() {
        _unpause();   
 	}
 

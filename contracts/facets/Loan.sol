@@ -41,7 +41,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         bytes32 _swapMarket
-    ) external override nonReentrant returns (bool) {
+    ) external override nonReentrant() nonReentrant returns (bool) {
         
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         
@@ -103,7 +103,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _collateralAmount
-    ) external override returns (bool) {
+    ) external override nonReentrant() returns (bool) {
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -152,7 +152,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _amount
-    ) external override nonReentrant returns (bool) {
+    ) external override nonReentrant() nonReentrant returns (bool) {
         AppStorageOpen storage ds = LibOpen.diamondStorage();
         LibOpen._hasLoanAccount(msg.sender);
 
@@ -210,11 +210,11 @@ contract Loan is Pausable, ILoan {
 
 	}
 
-    function pauseLoan() external override authLoan nonReentrant {
+    function pauseLoan() external override nonReentrant() authLoan nonReentrant {
         _pause();
     }
 
-    function unpauseLoan() external override authLoan nonReentrant {
+    function unpauseLoan() external override nonReentrant() authLoan nonReentrant {
         _unpause();
     }
 

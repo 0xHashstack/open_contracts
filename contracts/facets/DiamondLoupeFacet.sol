@@ -4,7 +4,10 @@ pragma solidity 0.8.1;
 import { LibDiamond } from  "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 
-contract DiamondLoupeFacet is IDiamondLoupe {
+import "../util/Pausable.sol";
+
+
+contract DiamondLoupeFacet is Pausable,IDiamondLoupe {
     function facets() external override view returns (Facet[] memory facets_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 selectorCount = ds.selectors.length;
@@ -59,7 +62,7 @@ contract DiamondLoupeFacet is IDiamondLoupe {
     /// @notice Gets all the function selectors supported by a specific facet.
     /// @param _facet The facet address.
     /// @return _facetFunctionSelectors The selectors associated with a facet address.
-    function facetFunctionSelectors(address _facet) external override view returns (bytes4[] memory _facetFunctionSelectors) {
+    function facetFunctionSelectors(address _facet) external override  view returns (bytes4[] memory _facetFunctionSelectors) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 selectorCount = ds.selectors.length;
         uint256 numSelectors;
@@ -81,7 +84,7 @@ contract DiamondLoupeFacet is IDiamondLoupe {
 
     /// @notice Get all the facet addresses used by a diamond.
     /// @return facetAddresses_
-    function facetAddresses() external override view returns (address[] memory facetAddresses_) {
+    function facetAddresses() external override  view returns (address[] memory facetAddresses_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 selectorCount = ds.selectors.length;
         // create an array set to the maximum size possible
@@ -113,7 +116,7 @@ contract DiamondLoupeFacet is IDiamondLoupe {
             mstore(facetAddresses_, numFacets)
         }
     }
-    function facetAddress(bytes4 _functionSelector) external override view returns (address facetAddress_) {
+    function facetAddress(bytes4 _functionSelector) external override  view returns (address facetAddress_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         facetAddress_ = ds.facetAddressAndSelectorPosition[_functionSelector].facetAddress;
     }

@@ -24,7 +24,7 @@ contract Reserve is Pausable, IReserve {
 	function transferAnyBEP20(
 		address _token,
 		address _recipient,
-		uint256 _value) external override authReserve() nonReentrant() returns(bool)   
+		uint256 _value) external override nonReentrant() authReserve() nonReentrant() returns(bool)   
 	{
 		IBEP20(_token).transfer(_recipient, _value);
 		return true;
@@ -58,7 +58,7 @@ contract Reserve is Pausable, IReserve {
 
 /// Duplicate: withdrawCollateral() in Loan.sol
 
-// 	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
+// 	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool){
 // 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 // 		bytes32 collateralMarket;
@@ -85,11 +85,11 @@ contract Reserve is Pausable, IReserve {
 	// 	_;
 	// }
 
-	function pauseReserve() external override authReserve() nonReentrant() {
+	function pauseReserve() external override nonReentrant() authReserve() nonReentrant() {
 			_pause();
 	}
 	
-	function unpauseReserve() external override authReserve() nonReentrant() {
+	function unpauseReserve() external override nonReentrant() authReserve() nonReentrant() {
 		_unpause();   
 	}
 

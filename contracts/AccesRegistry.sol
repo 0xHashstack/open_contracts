@@ -59,11 +59,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		roles[role]._members[account] = true;
 		emit RoleGranted(role, account, msg.sender);
 	}
-	function removeRole(bytes32 role, address account) external override onlyAdmin {
+	function removeRole(bytes32 role, address account) external override nonReentrant() onlyAdmin {
 		require(hasRole(role, account), "Role does not exist.");
 		revokeRole(role, account);
 	}
-	function renounceRole(bytes32 role, address account) external override nonReentrant() {
+	function renounceRole(bytes32 role, address account) external override nonReentrant(){
 		require(hasRole(role, account), "Role does not exist.");
 		require(_msgSender() == account, "Inadequate permissions");
 		revokeRole(role, account);
@@ -76,7 +76,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		bytes32 role,
 		address oldAccount,
 		address newAccount
-	) external override nonReentrant() {
+	) external override nonReentrant(){
 		require(
 				hasRole(role, oldAccount) && _msgSender() == oldAccount,
 				"Role does not exist."
@@ -95,7 +95,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		adminRoles[role]._adminMembers[account] = true;
 		emit AdminRoleDataGranted(role, account, msg.sender);
 	}
-	function removeAdminRole(bytes32 role, address account) external override onlyAdmin {
+	function removeAdminRole(bytes32 role, address account) external override nonReentrant() onlyAdmin {
 		require(hasAdminRole(role, account), "Role does not exist.");
 		revokeAdmin(role, account);
 	}
@@ -107,7 +107,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		bytes32 role,
 		address oldAccount,
 		address newAccount 
-	) external override onlyAdmin
+	) external override nonReentrant() onlyAdmin
 	{
 		require(
 				hasAdminRole(role, oldAccount),
@@ -116,7 +116,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		revokeAdmin(role, oldAccount);
 		addAdminRole(role, newAccount);
 	}
-	function adminRoleRenounce(bytes32 role, address account) external override onlyAdmin {
+	function adminRoleRenounce(bytes32 role, address account) external override nonReentrant() onlyAdmin {
 		require(hasAdminRole(role, account), "Role does not exist.");
 		require(_msgSender() == account, "Inadequate permissions");
 		revokeAdmin(role, account);
@@ -126,14 +126,20 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		require(hasAdminRole(superAdmin, msg.sender), "ERROR: Not an admin");
 		_;
 	}
-	function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {                                                                                                  
+	function pauseAccessRegistry() external override nonReentrant() onlyAdmin() nonReentrant() {                                                                                                  
 		_pause();
 	}
 	
-	function unpauseAccessRegistry() external override onlyAdmin() nonReentrant() {
+	function unpauseAccessRegistry() external override nonReentrant() onlyAdmin() nonReentrant() {
 		_unpause();   
 	}
 	function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               
 		return _paused();
 	}
+	// modifier nonReentrant() {
+    //     require(isReentrant == false, "ERROR: Re-entrant");
+    //     isReentrant = true;
+    //     _;
+    //     isReentrant = false;
+    // }
 }
