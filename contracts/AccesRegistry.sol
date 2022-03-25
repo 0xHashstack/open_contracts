@@ -35,7 +35,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	);
 	constructor(address upgradeAdmin) {
 		// AppStorageOpen storage ds = LibOpen.diamondStorage();
-		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
+		superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000;
 		adminRoles[superAdmin]._adminMembers[upgradeAdmin] = true;
 
 		addAdminRole(superAdmin, address(this));

@@ -21,8 +21,19 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
 
-        s.superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8; //keccak256("AccessRegistry.admin");
+        s.superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000; //bytes32("AccessRegistry.admin");
         s.superAdminAddress = accessRegistry;
+
+        s.adminComptroller = 0x61646d696e436f6d7074726f6c6c657200000000000000000000000000000000;
+        s.adminDeposit = 0x61646d696e4465706f7369740000000000000000000000000000000000000000;
+        s.adminLoan = 0x61646d696e4c6f616e0000000000000000000000000000000000000000000000;
+        s.adminLoanExt = 0x61646d696e4c6f616e4578740000000000000000000000000000000000000000;
+        s.adminLoanExtv1 = 0x61646d696e4c6f616e4578747631000000000000000000000000000000000000;
+        s.adminLiquidator = 0x61646d696e4c697175696461746f720000000000000000000000000000000000;
+        s.adminOpenOracle = 0x61646d696e4f70656e4f7261636c650000000000000000000000000000000000;
+        s.adminReserve = 0x61646d696e526573657276650000000000000000000000000000000000000000;
+        s.adminTokenList = 0x61646d696e546f6b656e4c697374000000000000000000000000000000000000;
+
         s.reserveAddress = reserveAddr;
         s.upgradeAdmin = account;
         ds.upgradeAdmin = account;

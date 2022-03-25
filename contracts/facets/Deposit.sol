@@ -132,7 +132,6 @@ contract Deposit is Pausable, IDeposit{
 				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
 				savingsAccount.deposits[deposit.id -1].activationTime = block.timestamp;
 				savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
-
 				return false;
 			}
 			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");

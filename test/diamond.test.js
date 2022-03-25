@@ -14,7 +14,7 @@ const { assert } = require('chai')
 const {deployDiamond}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 
-describe(" Oracle Test ", function () {
+describe(" Complex Test ", function () {
     let diamondAddress
 	let diamondCutFacet
 	let diamondLoupeFacet
@@ -32,6 +32,7 @@ describe(" Oracle Test ", function () {
 	let bepUsdt
 	let bepBtc
 	let bepUsdc
+    let bepCake
 
 	let rets
 	const addresses = []
@@ -49,12 +50,18 @@ describe(" Oracle Test ", function () {
 	const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
 	const comit_THREEMONTHS = utils.formatBytes32String("comit_THREEMONTHS");
 
-
     before(async function () {
         accounts = await ethers.getSigners()
 		upgradeAdmin = accounts[0]
-
-		diamondAddress = "0xf87B4A3eD47416De6096d1eE183e86dAbcFc8Cc8";
+		console.log("account1 is ", accounts[1].address)
+		
+		array = await deployDiamond();
+    	diamondAddress = array["diamondAddress"];
+    	rets = await addMarkets(array);
+    
+		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
+		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
+		library = await ethers.getContractAt('LibOpen', diamondAddress)
 
 		tokenList = await ethers.getContractAt('TokenList', diamondAddress)
 		comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
@@ -65,15 +72,38 @@ describe(" Oracle Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-        console.log(tokenList.address);
+		bepUsdt = await ethers.getContractAt('BEP20Token', rets['tUsdtAddress'])
+		bepBtc = await ethers.getContractAt('BEP20Token', rets['tBtcAddress'])
+		bepUsdc = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
+        bepWbnb = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
+        bepCake = await ethers.getContractAt('BEP20Token', rets['tCakeAddress'])
 	})
 
-    it("Check diamond", async () => {
-        expect(await tokenList.connect(upgradeAdmin).isMarketSupported(symbolUsdt, {gasLimit: 5000000})).to.be.equal(true)
+    it('should have 11 facets -- call to facetAddresses function', async () => {
+        for (const address of await diamondLoupeFacet.facetAddresses()) {
+            addresses.push(address)
+        }
+        assert.equal(addresses.length, 11)
     })
 
-    it("GetLatestPrice Check", async () => {
-        let latestPrice = await oracle.getLatestPrice(symbolCAKE, {gasLimit: 5000000});
-        console.log("Latest Cake Price is ", latestPrice);
+    it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
+        let selectors = getSelectors(diamondCutFacet)
+        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0])
+        assert.sameMembers(result, selectors)
+        selectors = getSelectors(diamondLoupeFacet)
+        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[1])
+        assert.sameMembers(result, selectors)
     })
+
+    it("should get all the facets and function selectors of the diamond -- call to facets function", async () => {
+      result = await diamondLoupeFacet.facets();
+      assert.equal(result[0].facetAddress, addresses[0]);
+      assert.equal(result[1].facetAddress, addresses[1]);
+      assert.equal(result[2].facetAddress, addresses[2]);
+      assert.equal(result[3].facetAddress, addresses[3]);
+      assert.equal(result[4].facetAddress, addresses[4]);
+      assert.equal(result[5].facetAddress, addresses[5]);
+      assert.equal(result[6].facetAddress, addresses[6]);
+      assert.equal(result[7].facetAddress, addresses[7]);
+    });
 })

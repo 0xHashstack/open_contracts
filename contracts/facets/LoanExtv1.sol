@@ -43,7 +43,7 @@ contract LoanExtv1 is Pausable, ILoanExtv1 {
 
 	modifier authLoanExtv1() {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoanExt, msg.sender), "ERROR: Not an admin");
+		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoanExtv1, msg.sender), "ERROR: Not an admin");
 
 		_;
 	}

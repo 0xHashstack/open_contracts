@@ -1,10 +1,11 @@
 const { keccak256 } = require("@ethersproject/keccak256");
 const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
+const { minAmount } = require("./minimumAmount.js");
 const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
-const fs = require('fs');
+const fs = require("fs");
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -20,15 +21,15 @@ async function deployDiamond() {
   mkdirSync("abi/frontend", { recursive: true });
   mkdirSync("abi/backend", { recursive: true });
 
-  const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
+  const superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
-//   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
-//     if(err) {
-//         return console.log(err);
-//     }
+  //   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
+  //     if(err) {
+  //         return console.log(err);
+  //     }
 
-//     console.log("The file was saved!");
-// }); ;
+  //     console.log("The file was saved!");
+  // }); ;
 
   /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
@@ -60,6 +61,7 @@ async function deployDiamond() {
   /// DEPLOY ACCESS_REGISTRY
   const AccessRegistry = await ethers.getContractFactory("AccessRegistry");
   const accessRegistry = await AccessRegistry.deploy(upgradeAdmin.address);
+  const accessRegistryAddress = accessRegistry.address;
   console.log("AccessRegistry deployed at ", accessRegistry.address);
 
   console.log("Begin deploying facets");
@@ -161,15 +163,19 @@ async function deployDiamond() {
   if (!receipt.status) {
     throw Error(`Diamond upgrade failed: ${tx.hash}`);
   }
-
-  return diamond.address;
+  const diamondAddress = diamond.address;
+  return {
+    diamondAddress, 
+    accessRegistryAddress,
+  };
 }
 
 /// ADDMARKETS()
-async function addMarkets(diamondAddress) {
+async function addMarkets(array) {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
-
+  const diamondAddress = array["diamondAddress"];
+  const accessRegistryAddress = array["accessRegistryAddress"];
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
@@ -250,8 +256,7 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
   console.log("updateAPR complete");
 
-
-/// DEPLOYING TEST TOKENS
+  /// DEPLOYING TEST TOKENS
   console.log("Deploy test tokens");
   const admin_ = upgradeAdmin.address;
   const Mockup = await ethers.getContractFactory("BEP20Token");
@@ -321,10 +326,12 @@ async function addMarkets(diamondAddress) {
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from("250000000000"); // 2500 USDT
-  const minUSDC = BigNumber.from("250000000000"); //  2500 USDC
-  const minBTC = BigNumber.from("100000000"); // 1 BTC
-  const minBNB = BigNumber.from("250000000"); // 2.5 wBNB
+  console.log("Network ID: ", ethers.provider.network.chainId);
+  const chainId = ethers.provider.network.chainId;
+  const minUSDT = BigNumber.from(minAmount(symbolUsdt, chainId));
+  const minUSDC = BigNumber.from(minAmount(symbolUsdc, chainId));
+  const minBTC = BigNumber.from(minAmount(symbolBtc, chainId));
+  const minBNB = BigNumber.from(minAmount(symbolWBNB, chainId));
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
@@ -392,12 +399,14 @@ async function addMarkets(diamondAddress) {
   await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
   await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
 
+  
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await Faucet.deploy();
   createAbiJSON(faucet, "Faucet");
   console.log("Faucet deployed at ", faucet.address);
 
+  const faucetAddress = faucet.address;
   /// TRANSFERRING TOKENS TO FAUCET
   await tusdt.transfer(faucet.address, "600000000000000000"); // 6 billion USDT
   console.log(
@@ -448,30 +457,45 @@ async function addMarkets(diamondAddress) {
 
 
   console.log('ALL ENV USED IN UI');
-
+  
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
-  
   console.log("REACT_APP_FAUCET_ADDRESS = ", faucet.address);
-  
   console.log("REACT_APP_T_BTC_ADDRESS = ", tBtcAddress);
-  
   console.log("REACT_APP_T_USDC_ADDRESS = ", tUsdcAddress);
-  
   console.log("REACT_APP_T_USDT_ADDRESS = ", tUsdtAddress);
- 
   console.log("REACT_APP_T_SXP_ADDRESS = ", tSxpAddress);
-
   console.log("REACT_APP_T_CAKE_ADDRESS = ", tCakeAddress);
-  
   console.log("REACT_APP_T_WBNB_ADDRESS = ", tWBNBAddress);
-  fs.writeFile('addr.js',("REACT_APP_DIAMOND_ADDRESS = "+ diamond.address+ '\r\n'+ "REACT_APP_FAUCET_ADDRESS = "+ faucet.address+ '\r\n'+ "REACT_APP_T_USDC_ADDRESS = "+ tUsdcAddress+ '\r\n'+ "REACT_APP_T_USDT_ADDRESS = "+ tUsdtAddress+ '\r\n'+ "REACT_APP_T_SXP_ADDRESS = "+ tSxpAddress+ '\r\n'+ "REACT_APP_T_CAKE_ADDRESS = "+ tCakeAddress+ '\r\n'+ "REACT_APP_T_WBNB_ADDRESS = "+tWBNBAddress), function(err) {
-    if(err) {
+  fs.writeFile(
+    "addr.js",
+    "REACT_APP_DIAMOND_ADDRESS = " +
+      diamond.address +
+      "\r\n" +
+      "REACT_APP_FAUCET_ADDRESS = " +
+      faucet.address +
+      "\r\n" +
+      "REACT_APP_T_USDC_ADDRESS = " +
+      tUsdcAddress +
+      "\r\n" +
+      "REACT_APP_T_USDT_ADDRESS = " +
+      tUsdtAddress +
+      "\r\n" +
+      "REACT_APP_T_SXP_ADDRESS = " +
+      tSxpAddress +
+      "\r\n" +
+      "REACT_APP_T_CAKE_ADDRESS = " +
+      tCakeAddress +
+      "\r\n" +
+      "REACT_APP_T_WBNB_ADDRESS = " +
+      tWBNBAddress,
+    function (err) {
+      if (err) {
         return console.log(err);
+      }
+
+      console.log("The addresses are saved!");
     }
-
-    console.log("The addresses are saved!");
-}); ;
-
+  );
 
   return {
     tBtcAddress,
@@ -480,11 +504,14 @@ async function addMarkets(diamondAddress) {
     tSxpAddress,
     tCakeAddress,
     tWBNBAddress,
+    faucetAddress,
+    accessRegistryAddress,
   };
 }
 
 /// CREATE LIQUIDITY POOL
 async function provideLiquidity(rets) {
+
   console.log("Start LP making");
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
@@ -559,7 +586,7 @@ async function provideLiquidity(rets) {
   /// WBNB-CAKE LIQUIDITY
   await twbnb.approve(pancakeRouterAddr, "5000000000");
   await tcake.approve(pancakeRouterAddr, "250000000000");
-  
+
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -575,7 +602,7 @@ async function provideLiquidity(rets) {
     );
   console.log("WBNB <-> CAKE LP done");
 
- // LP FOR SXP
+  // LP FOR SXP
 
   /// USDC-SXP LIQUIDITY
   await tusdc.approve(pancakeRouterAddr, "10000000000000000");
@@ -634,7 +661,7 @@ async function provideLiquidity(rets) {
   /// WBNB-SXP LIQUIDITY
   await twbnb.approve(pancakeRouterAddr, "5000000000");
   await tsxp.approve(pancakeRouterAddr, "250000000000");
-  
+
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
@@ -667,8 +694,14 @@ exports.addMarkets = addMarkets;
 exports.provideLiquidity = provideLiquidity;
 
 /// CREATE ABI OF CONTRACTS
-function createAbiJSON(artifact, filename){
-  const data = JSON.parse(artifact.interface.format("json"))
-  writeFileSync(`${__dirname}/../abi/backend/${filename}.json`,JSON.stringify(data));
-  writeFileSync(`${__dirname}/../abi/frontend/${filename}.json`,JSON.stringify(data));
+function createAbiJSON(artifact, filename) {
+  const data = JSON.parse(artifact.interface.format("json"));
+  writeFileSync(
+    `${__dirname}/../abi/backend/${filename}.json`,
+    JSON.stringify(data)
+  );
+  writeFileSync(
+    `${__dirname}/../abi/frontend/${filename}.json`,
+    JSON.stringify(data)
+  );
 }
