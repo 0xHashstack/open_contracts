@@ -44,17 +44,17 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external override nonReentrant() returns (bool) {
+	) external override nonReentrant returns (bool) {
 		uint256 loanId = LibOpen._loanRequest(msg.sender, _loanMarket, _commitment, _loanAmount, _collateralMarket, _collateralAmount);
 		emit NewLoan(msg.sender, _loanMarket, _commitment, _loanAmount, _collateralMarket, _collateralAmount, loanId, block.timestamp);
 		return true;
 	}
 
-	function pauseLoanExt() external override authLoanExt() nonReentrant() {
+	function pauseLoanExt() external override nonReentrant authLoanExt() {
 		_pause();
 	}
 		
-	function unpauseLoanExt() external override authLoanExt() nonReentrant() {
+	function unpauseLoanExt() external override nonReentrant authLoanExt() {
 		_unpause();   
 	}
 

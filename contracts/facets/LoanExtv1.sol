@@ -17,23 +17,23 @@ contract LoanExtv1 is Pausable, ILoanExtv1 {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
-	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override authLoanExtv1() nonReentrant() returns (bool success) {
+	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override authLoanExtv1() nonReentrant returns (bool success) {
 		uint256 amount = LibOpen._liquidation(account, _market, _commitment);
 		emit Liquidation(account, _market, _commitment, amount, block.timestamp);
 	}
 
-	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
+	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		uint256 repaymentAmount = LibOpen._repayLoan(msg.sender, _loanMarket, _commitment, _repayAmount);
 		emit LoanRepaid(msg.sender, loan.id, loan.market, repaymentAmount, block.timestamp);
 		return true;
 	}
-	function pauseLoanExtv1() external override authLoanExtv1() nonReentrant() {
+	function pauseLoanExtv1() external override nonReentrant authLoanExtv1() {
 		_pause();
 	}
 		
-	function unpauseLoanExtv1() external override authLoanExtv1() nonReentrant() {
+	function unpauseLoanExtv1() external override nonReentrant authLoanExtv1() {
 		_unpause();   
 	}
 
