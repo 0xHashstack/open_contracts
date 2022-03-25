@@ -25,11 +25,11 @@ contract Loan2 is Pausable, ILoan2 {
 		emit LoanRepaid(msg.sender, loan.id, loan.market, repaymentAmount, block.timestamp);
 		return true;
 	}
-	function pauseLoan2() external override authLoan2() nonReentrant() {
+	function pauseLoan2() external override authLoan2() {
 		_pause();
 	}
 		
-	function unpauseLoan2() external override authLoan2() nonReentrant() {
+	function unpauseLoan2() external override authLoan2() {
 		_unpause();   
 	}
 

@@ -52,11 +52,11 @@ contract Reserve is Pausable, IReserve {
 		_;
 	}
 
-	function pauseReserve() external override nonReentrant authReserve() {
+	function pauseReserve() external override authReserve() {
 			_pause();
 	}
 	
-	function unpauseReserve() external override nonReentrant authReserve() {
+	function unpauseReserve() external override authReserve() {
 		_unpause();   
 	}
 

@@ -200,11 +200,11 @@ contract Loan is Pausable, ILoan {
 		return (loanInterest, collateralInterest);
 	}
 
-    function pauseLoan() external override nonReentrant authLoan {
+    function pauseLoan() external override authLoan {
         _pause();
     }
 
-    function unpauseLoan() external override nonReentrant authLoan {
+    function unpauseLoan() external override authLoan {
         _unpause();
     }
 

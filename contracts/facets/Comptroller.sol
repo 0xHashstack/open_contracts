@@ -228,11 +228,11 @@ contract Comptroller is Pausable, IComptroller {
 		_;
 	}
 
-	function pauseComptroller() external override nonReentrant authComptroller() {
+	function pauseComptroller() external override authComptroller() {
 		_pause();
 	}
 	
-	function unpauseComptroller() external override nonReentrant authComptroller() {
+	function unpauseComptroller() external override authComptroller() {
 		_unpause(); 
 	}
 

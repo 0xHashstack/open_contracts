@@ -28,11 +28,11 @@ contract Liquidator is Pausable, ILiquidator {
 		return true;
 	}
 
-	function pauseLiquidator() external override nonReentrant authLiquidator() {
+	function pauseLiquidator() external override authLiquidator() {
 			_pause();
 	}
 	
-	function unpauseLiquidator() external override nonReentrant authLiquidator() {
+	function unpauseLiquidator() external override authLiquidator() {
        _unpause();   
 	}
 

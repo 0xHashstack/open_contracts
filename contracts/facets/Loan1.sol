@@ -51,11 +51,11 @@ contract Loan1 is Pausable, ILoan1 {
 		return true;
 	}
 
-	function pauseLoan1() external override nonReentrant authLoan1() {
+	function pauseLoan1() external override authLoan1() {
 		_pause();
 	}
 		
-	function unpauseLoan1() external override nonReentrant authLoan1() {
+	function unpauseLoan1() external override authLoan1() {
 		_unpause();   
 	}
 

@@ -310,11 +310,11 @@ contract Deposit is Pausable, IDeposit{
 		}
 	}
 
-	function pauseDeposit() external override nonReentrant authDeposit() {
+	function pauseDeposit() external override authDeposit() {
 		_pause();
 	}
 	
-	function unpauseDeposit() external override nonReentrant authDeposit() {
+	function unpauseDeposit() external override authDeposit() {
 		_unpause();   
 	}
 
