@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-import "./util/Pausable.sol";
-import "./interfaces/IAccessRegistry.sol";
+import { Pausable } from "./util/Pausable.sol";
+import { IAccessRegistry } from "./interfaces/IAccessRegistry.sol";
+
 struct RoleData {
     mapping(address => bool) _members;
     bytes32 _role;
@@ -36,21 +37,12 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed sender
 	);
 	constructor(address upgradeAdmin) {
-		// AppStorageOpen storage ds = LibOpen.diamondStorage();
 		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
 		adminRoles[superAdmin]._adminMembers[upgradeAdmin] = true;
 
 		addAdminRole(superAdmin, address(this));
 	}
 
-	// receive() external payable {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.upgradeAdmin).transfer(msg.value);
-	// }
-	// fallback() external payable {
-	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.upgradeAdmin).transfer(msg.value);
-	// }
 	function hasRole(bytes32 role, address account) public view override returns (bool) {
 		return roles[role]._members[account];
 	}

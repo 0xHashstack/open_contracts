@@ -70,8 +70,8 @@ async function deployDiamond() {
     "Reserve",
     "OracleOpen",
     "Loan",
-    "LoanExt",
-    "LoanExtv1",
+    "Loan1",
+    "Loan2",
     "Deposit",
   ];
   const opencut = [];

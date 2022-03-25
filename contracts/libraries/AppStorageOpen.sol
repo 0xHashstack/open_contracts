@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "../util/Address.sol";
-import "../util/IBEP20.sol";
+import { IBEP20 } from "../util/IBEP20.sol";
 
 // =========== TokenList structs ===========
 struct MarketData {
@@ -215,8 +214,10 @@ struct AppStorageOpen {
     // =========== Loan state variables ============
     bytes32 adminLoan;
     address adminLoanAddress;
-    bytes32 adminLoanExt;
-    address adminLoanExtAddress;
+    bytes32 adminLoan1;
+    address adminLoan1Address;
+    bytes32 adminLoan2;
+    address adminLoan2Address;
     
     IBEP20 loanToken;
     IBEP20 withdrawToken;

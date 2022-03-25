@@ -2,7 +2,7 @@
 pragma solidity 0.8.1;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
-import { LibOpen } from "./libraries/LibOpen.sol";
+import { LibOracle } from "./libraries/LibOracle.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
 contract OpenDiamond {
@@ -52,11 +52,11 @@ contract OpenDiamond {
     }
 
     function addFairPriceAddress(bytes32 _market, address _address) external {
-        LibOpen._addFairPriceAddress(_market, _address);
+        LibOracle._addFairPriceAddress(_market, _address);
     }
 
     function getFairPriceAddress(bytes32 _market) external view returns(address) {
-        return LibOpen._getFairPriceAddress(_market);
+        return LibOracle._getFairPriceAddress(_market);
     }
     receive() external payable {}
 
