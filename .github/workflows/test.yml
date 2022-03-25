@@ -28,8 +28,4 @@ jobs:
     
     - name: Unit test
     - run: npx hardhat test
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.YOUR_SECRET_TOKEN }}
+  
