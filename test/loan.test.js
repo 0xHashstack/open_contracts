@@ -25,8 +25,9 @@ let bepSxp;
 
 describe("testing Loans", async () => {
   before(async () => {
-    diamondAddress = await deployDiamond();
-    rets = await addMarkets(diamondAddress);
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
     faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);

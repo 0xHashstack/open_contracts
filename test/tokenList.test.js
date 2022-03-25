@@ -16,8 +16,9 @@ let tokenList;
 
 describe("testing tokenList", async () => {
   before(async () => {
-    diamondAddress = await deployDiamond();
-    rets = await addMarkets(diamondAddress);
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });

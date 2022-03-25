@@ -17,10 +17,12 @@ let tokenList;
 
 describe("testing OracleOpen", async () => {
   before(async () => {
-    diamondAddress = await deployDiamond();
-    rets = await addMarkets(diamondAddress);
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
+    await provideLiquidity(rets);
   });
 
   describe("Oracle Open", async () => {

@@ -18,8 +18,9 @@ let tokenList;
 
 describe("testing Comptroller", async () => {
   before(async () => {
-    diamondAddress = await deployDiamond();
-    rets = await addMarkets(diamondAddress);
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });
@@ -53,7 +54,7 @@ describe("testing Comptroller", async () => {
       await expect(comptroller.connect(accounts[1]).pauseComptroller()).to.be.reverted;
 
       await expect(accessRegistry.addAdminRole(adminComptroller, accounts[1].address)).emit(
-        AdminRoleDataGranted
+        accessRegistry, "AdminRoleDataGranted"
       );
       
       await expect(
@@ -64,10 +65,10 @@ describe("testing Comptroller", async () => {
       expect(await comptroller.isPausedComptroller()).to.equal(true);
 
       await expect(
-        accessRegistry.revokeAdminRole(adminComptroller, accounts[1].address)
-      ).emit(AdminRoleDataRevoked);
+        accessRegistry.removeAdminRole(adminComptroller, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
 
-      await comptroller.connect(accounts[1]).unpauseComptroller().to.be.reverted;
+      await expect(comptroller.connect(accounts[1]).unpauseComptroller()).to.be.reverted;
       expect(await comptroller.isPausedComptroller()).to.equal(true);
 
       await comptroller.unpauseComptroller();

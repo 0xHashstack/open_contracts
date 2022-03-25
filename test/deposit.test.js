@@ -21,8 +21,10 @@ let bepWbnb;
 
 describe("Testing Deposit", async () => {
   before(async () => {
-    diamondAddress = await deployDiamond();
-    rets = await addMarkets(diamondAddress);
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
+    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
     faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
     await expect(faucet.connect(accounts[1]).getTokens(0)).emit(

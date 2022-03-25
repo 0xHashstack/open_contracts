@@ -55,9 +55,10 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = await deployDiamond()
-		rets = await addMarkets(diamondAddress)
-
+		array = await deployDiamond();
+    	diamondAddress = array["diamondAddress"];
+    	rets = await addMarkets(array);
+    
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 		library = await ethers.getContractAt('LibOpen', diamondAddress)

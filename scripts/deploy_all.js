@@ -21,7 +21,7 @@ async function deployDiamond() {
   mkdirSync("abi/frontend", { recursive: true });
   mkdirSync("abi/backend", { recursive: true });
 
-  const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
+  const superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
   //   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
   //     if(err) {
@@ -326,10 +326,11 @@ async function addMarkets(array) {
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
   console.log("Network ID: ", ethers.provider.network.chainId);
-  const minUSDT = BigNumber.from(minAmount(symbolUsdt));
-  const minUSDC = BigNumber.from(minAmount(symbolUsdc));
-  const minBTC = BigNumber.from(minAmount(symbolBtc));
-  const minBNB = BigNumber.from(minAmount(symbolWBNB));
+  const chainId = ethers.provider.network.chainId;
+  const minUSDT = BigNumber.from(minAmount(symbolUsdt, chainId));
+  const minUSDC = BigNumber.from(minAmount(symbolUsdc, chainId));
+  const minBTC = BigNumber.from(minAmount(symbolBtc, chainId));
+  const minBNB = BigNumber.from(minAmount(symbolWBNB, chainId));
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
