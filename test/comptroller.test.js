@@ -11,6 +11,7 @@ let diamondAddress;
 let rets;
 let accounts;
 
+let accessRegistry;
 let comptroller;
 let library;
 let tokenList;
@@ -29,16 +30,44 @@ describe("testing Comptroller", async () => {
     const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
     const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
     const comit_THREEMONTHS = utils.formatBytes32String("comit_THREEMONTHS");
+    const adminComptroller = utils.formatBytes32String("adminComptroller");
 
     before(async () => {
       // deploying relevant contracts
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
     });
 
     it("Pause Comptroller", async () => {
       await comptroller.pauseComptroller();
+      expect(await comptroller.isPausedComptroller()).to.equal(true);
+
+      await comptroller.unpauseComptroller();
+      expect(await comptroller.isPausedComptroller()).to.equal(false);
+
+      await expect(comptroller.connect(accounts[1]).pauseComptroller()).to.be.reverted;
+
+      await expect(accessRegistry.addAdminRole(adminComptroller, accounts[1].address)).emit(
+        AdminRoleDataGranted
+      );
+      
+      await expect(
+        accessRegistry.addAdminRole(adminComptroller, accounts[1].address)
+      ).to.be.reverted;
+
+      await comptroller.connect(accounts[1]).pauseComptroller();
+      expect(await comptroller.isPausedComptroller()).to.equal(true);
+
+      await expect(
+        accessRegistry.revokeAdminRole(adminComptroller, accounts[1].address)
+      ).emit(AdminRoleDataRevoked);
+
+      await comptroller.connect(accounts[1]).unpauseComptroller().to.be.reverted;
       expect(await comptroller.isPausedComptroller()).to.equal(true);
 
       await comptroller.unpauseComptroller();

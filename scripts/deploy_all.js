@@ -1,6 +1,7 @@
 const { keccak256 } = require("@ethersproject/keccak256");
 const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
+const { minAmount } = require("./minimumAmount.js");
 const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
@@ -9,7 +10,7 @@ const fs = require("fs");
 async function main() {
   const diamondAddress = await deployDiamond();
   const rets = await addMarkets(diamondAddress);
-  await provideLiquidity(rets, diamondAddress);
+  await provideLiquidity(rets);
 }
 // Deploy Diamond
 
@@ -60,6 +61,7 @@ async function deployDiamond() {
   /// DEPLOY ACCESS_REGISTRY
   const AccessRegistry = await ethers.getContractFactory("AccessRegistry");
   const accessRegistry = await AccessRegistry.deploy(upgradeAdmin.address);
+  const accessRegistryAddress = accessRegistry.address;
   console.log("AccessRegistry deployed at ", accessRegistry.address);
 
   console.log("Begin deploying facets");
@@ -160,19 +162,22 @@ async function deployDiamond() {
   if (!receipt.status) {
     throw Error(`Diamond upgrade failed: ${tx.hash}`);
   }
-
-  return diamond.address;
+  const diamondAddress = diamond.address;
+  return {
+    diamondAddress, 
+    accessRegistryAddress,
+  };
 }
 
 /// ADDMARKETS()
-async function addMarkets(diamondAddress) {
+async function addMarkets(array) {
   const accounts = await ethers.getSigners();
   const upgradeAdmin = accounts[0];
-
+  const diamondAddress = array["diamondAddress"];
+  const accessRegistryAddress = array["accessRegistryAddress"];
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
-  const reserve = await ethers.getContractAt("Reserve", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32
@@ -320,10 +325,11 @@ async function addMarkets(diamondAddress) {
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
-  const minUSDT = BigNumber.from(process.env.minUSDT);
-  const minUSDC = BigNumber.from(process.env.minUSDC);
-  const minBTC = BigNumber.from(process.env.minBTC);
-  const minBNB = BigNumber.from(process.env.minBNB);
+  console.log("Network ID: ", ethers.provider.network.chainId);
+  const minUSDT = BigNumber.from(minAmount(symbolUsdt));
+  const minUSDC = BigNumber.from(minAmount(symbolUsdc));
+  const minBTC = BigNumber.from(minAmount(symbolBtc));
+  const minBNB = BigNumber.from(minAmount(symbolWBNB));
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
@@ -386,18 +392,10 @@ async function addMarkets(diamondAddress) {
   await twbnb.transfer(diamondAddress, "1800000000000000");
 
   // UPDATE AVAILABLE RESERVES
-  await comptroller
-    .connect(upgradeAdmin)
-    .updateReservesDeposit(symbolBtc, "420000000000000");
-  await comptroller
-    .connect(upgradeAdmin)
-    .updateReservesDeposit(symbolUsdc, "200000000000000000");
-  await comptroller
-    .connect(upgradeAdmin)
-    .updateReservesDeposit(symbolUsdt, "200000000000000000");
-  await comptroller
-    .connect(upgradeAdmin)
-    .updateReservesDeposit(symbolWBNB, "1800000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolBtc, "420000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdc, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
+  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
 
   
   /// DEPLOY FAUCET
@@ -458,19 +456,12 @@ async function addMarkets(diamondAddress) {
   console.log("ALL ENV USED IN UI");
 
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
-
   console.log("REACT_APP_FAUCET_ADDRESS = ", faucet.address);
-
   console.log("REACT_APP_T_BTC_ADDRESS = ", tBtcAddress);
-
   console.log("REACT_APP_T_USDC_ADDRESS = ", tUsdcAddress);
-
   console.log("REACT_APP_T_USDT_ADDRESS = ", tUsdtAddress);
-
   console.log("REACT_APP_T_SXP_ADDRESS = ", tSxpAddress);
-
   console.log("REACT_APP_T_CAKE_ADDRESS = ", tCakeAddress);
-
   console.log("REACT_APP_T_WBNB_ADDRESS = ", tWBNBAddress);
   fs.writeFile(
     "addr.js",
@@ -511,11 +502,12 @@ async function addMarkets(diamondAddress) {
     tCakeAddress,
     tWBNBAddress,
     faucetAddress,
+    accessRegistryAddress,
   };
 }
 
 /// CREATE LIQUIDITY POOL
-async function provideLiquidity(rets, diamondAddress) {
+async function provideLiquidity(rets) {
 
   console.log("Start LP making");
   const accounts = await ethers.getSigners();

@@ -134,8 +134,6 @@ contract Deposit is Pausable, IDeposit{
 				savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
 				return false;
 			}
-
-			console.log("Block time: ", block.timestamp);
 			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
 		} 
 		ds.token = IBEP20(LibOpen._connectMarket(_market));
@@ -294,7 +292,6 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._isMarketSupported(_market);
 		ds.token = IBEP20(LibOpen._connectMarket(_market));
 		// _quantifyAmount(_market, _amount);
-		console.log("Token Address: ", address(ds.token)); 
 		LibOpen._minAmountCheck(_market, _amount);
 	}
 

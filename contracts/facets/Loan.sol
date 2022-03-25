@@ -178,7 +178,6 @@ contract Loan is Pausable, ILoan {
         ds.loanToken = IBEP20(LibOpen._connectMarket(loan.market));
         ds.loanToken.transfer(msg.sender, _amount);
 
-        LibOpen._updateUtilisationLoan(_loanMarket, _amount, 1);
         emit WithdrawPartialLoan(msg.sender, loan.id, _amount, block.timestamp);
         // emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loan.market, block.timestamp);
         return true;
@@ -189,7 +188,6 @@ contract Loan is Pausable, ILoan {
 		// uint256 num = id -1;
 		
         ActiveLoans memory activeLoans = ds.getActiveLoans[account];
-		console.log("LoanMarket:", activeLoans.loanMarket.length);
 		bytes32 market = activeLoans.loanMarket[id-1];
 		bytes32 commitment = activeLoans.loanCommitment[id-1];
 		uint256 interestFactor = 0;

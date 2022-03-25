@@ -29,6 +29,26 @@ describe("testing Loans", async () => {
     rets = await addMarkets(diamondAddress);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
+    faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
+    await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
+      faucet,
+      "TokensIssued"
+    );
   });
 
   describe("USDT Test: Loan (Commit None)", async () => {
@@ -53,7 +73,6 @@ describe("testing Loans", async () => {
       loan = await ethers.getContractAt("Loan", diamondAddress);
       loanExt = await ethers.getContractAt("LoanExt", diamondAddress);
       loanExtv1 = await ethers.getContractAt("LoanExtv1", diamondAddress);
-      faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
 
       // deploying tokens
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
@@ -62,38 +81,6 @@ describe("testing Loans", async () => {
       bepWbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
       bepCake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
       bepSxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
-    });
-
-    it.only("Faucet Testing", async () => {
-      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
-        faucet,
-        "TokensIssued"
-      );
-    });
-
-    it("Faucet Testing (Timelock-Check)", async () => {
-      await expect(faucet.connect(accounts[1]).getTokens(0)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(1)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(2)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(3)).to.be.reverted;
     });
 
     it("USDT New Loan (1:4 CDR)", async () => {
@@ -1189,7 +1176,7 @@ describe("testing Loans", async () => {
     });
 
 
-    it.only("Check Liquidation", async () => {
+    it("Check Liquidation", async () => {
 
       const loanAmount = 30000000000;
       const collateralAmount = 20000000000;

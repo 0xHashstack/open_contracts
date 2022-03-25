@@ -24,6 +24,26 @@ describe("Testing Deposit", async () => {
     diamondAddress = await deployDiamond();
     rets = await addMarkets(diamondAddress);
     accounts = await ethers.getSigners();
+    faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
+    await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
+      faucet,
+      "TokensIssued"
+    );
+
+    await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
+      faucet,
+      "TokensIssued"
+    );
   });
 
   describe("Test: Deposit (Commit None)", async () => {
@@ -43,45 +63,11 @@ describe("Testing Deposit", async () => {
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       deposit = await ethers.getContractAt("Deposit", diamondAddress);
-      faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
-
       // deploying tokens
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
       bepBtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
       bepUsdc = await ethers.getContractAt("BEP20Token", rets["tUsdcAddress"]);
       bepWbnb = await ethers.getContractAt("BEP20Token", rets["tWBNBAddress"]);
-    });
-
-    it("Faucet Testing", async () => {
-      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
-        faucet,
-        "TokensIssued"
-      );
-
-      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
-        faucet,
-        "TokensIssued"
-      );
-    });
-
-    it("Faucet Testing (Timelock-Check)", async () => {
-      await expect(faucet.connect(accounts[1]).getTokens(0)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(1)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(2)).to.be.reverted;
-
-      await expect(faucet.connect(accounts[1]).getTokens(3)).to.be.reverted;
     });
 
     it("Pause Deposit:", async () => {
@@ -628,33 +614,21 @@ describe("Testing Deposit", async () => {
         await bepUsdt.balanceOf(diamondAddress)
       );
 
-      
-        await deposit
-          .connect(accounts[1])
-          .withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount);
-      
+      await deposit
+        .connect(accounts[1])
+        .withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount);
 
       expect(
         BigNumber.from(await bepUsdt.balanceOf(diamondAddress)),
         "Reserve Balance unequal"
       ).to.equal(reserveBalance);
 
-      console.log(
-        "Pre-Time: ",
-        (
-          await currentProvider.getBlock()
-        ).timestamp
-      );
+      console.log("Pre-Time: ", (await currentProvider.getBlock()).timestamp);
 
       const timeInSeconds = 2 * 7 * 24 * 60 * 60 + 20;
       await currentProvider.send("evm_increaseTime", [timeInSeconds]);
       await currentProvider.send("evm_mine");
-      console.log(
-        "Post-Time: ",
-        (
-          await currentProvider.getBlock()
-        ).timestamp
-      );
+      console.log("Post-Time: ", (await currentProvider.getBlock()).timestamp);
       await expect(
         deposit
           .connect(accounts[1])
@@ -750,6 +724,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw USDC", async () => {
       const withdrawAmount = 50000000000; // 500 8-0's 500 USDC
 
@@ -852,6 +827,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw BTC", async () => {
       const withdrawAmount = 20000000; // 2 (7-0's)  0.2 BTC
 
@@ -904,8 +880,8 @@ describe("Testing Deposit", async () => {
 
       await expect(
         deposit
-        .connect(accounts[1])
-        .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
+          .connect(accounts[1])
+          .depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)
       ).emit(deposit, "NewDeposit");
 
       expect(
@@ -956,6 +932,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw BNB", async () => {
       const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
@@ -1086,6 +1063,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw USDT", async () => {
       const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
       const currentProvider = waffle.provider;
@@ -1198,6 +1176,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw USDC", async () => {
       const withdrawAmount = 50000000000; // 500 8-0's 500 USDC
 
@@ -1300,6 +1279,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw BTC", async () => {
       const withdrawAmount = 20000000; // 2 (7-0's)  0.2 BTC
 
@@ -1402,6 +1382,7 @@ describe("Testing Deposit", async () => {
       ).to.equal(BigNumber.from(reserveBalance));
     });
 
+    // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw BNB", async () => {
       const withdrawAmount = 30000000; // 3 (7-0's)  0.3 BNB
 
