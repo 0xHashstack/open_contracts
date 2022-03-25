@@ -70,9 +70,6 @@ library LibOpen {
 
 	function _isMarketSupported(bytes32  _market) internal view {
 		AppStorageOpen storage ds = diamondStorage();
-		console.log("Market: ");
-		console.logBytes32(_market);
-		console.log("Check Support: ", ds.tokenSupportCheck[_market]); 
 		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
@@ -369,7 +366,6 @@ library LibOpen {
 		AppStorageOpen storage ds = diamondStorage(); 
 		APR storage apr = ds.indAPRRecords[_commitment];
 
-		console.log("Accrued length: ", oldLengthAccruedYield);
 		uint256 index = oldLengthAccruedYield - 1;
 		uint256 time = oldTime;
 		uint256 aggregateYield;
@@ -852,7 +848,6 @@ library LibOpen {
 			loanAccount.accruedAPR.push(deductibleInterest);
 		}
 
-		console.log("Loan AMount while processing: ", _loanAmount);
 		_updateUtilisationLoan(_loanMarket, _loanAmount, 0);
 	}
 
@@ -952,47 +947,6 @@ library LibOpen {
 		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (amount*usdLoanCurrent)) >= (109*(usdLoan*ds.indLoanRecords[account][loan.market][loan.commitment].amount)/100), "ERROR: Liquidation risk");
 	}
 
-
-	// function _updateDebtRecords(LoanAccount storage loanAccount,LoanRecords storage loan, LoanState storage loanState, CollateralRecords storage collateral/*, DeductibleInterest storage deductibleInterest, CollateralYield storage cYield*/) private {
-    //     AppStorageOpen storage ds = diamondStorage(); 
-	// 	uint256 num = loan.id - 1;
-	// 	bytes32 _market = loan.market;
-
-	// 	loan.amount = 0;
-	// 	loan.isSwapped = false;
-	// 	loan.lastUpdate = block.timestamp;
-		
-	// 	loanState.currentMarket = _market;
-	// 	loanState.currentAmount = 0;
-	// 	loanState.actualLoanAmount = 0;
-	// 	loanState.state = STATE.REPAID;
-
-	// 	collateral.isCollateralisedDeposit = false;
-	// 	collateral.isTimelockActivated = true;
-	// 	collateral.activationTime = block.timestamp;
-
-	// 	delete ds.indAccruedAPY[loanAccount.account][loan.market][loan.commitment];
-	// 	delete ds.indAccruedAPR[loanAccount.account][loan.market][loan.commitment];
-
-	// 	/// Updating LoanPassbook
-	// 	loanAccount.loans[num].amount = 0;
-	// 	loanAccount.loans[num].isSwapped = false;
-	// 	loanAccount.loans[num].lastUpdate = block.timestamp;
-
-	// 	loanAccount.loanState[num].currentMarket = _market;
-	// 	loanAccount.loanState[num].currentAmount = 0;
-	// 	loanAccount.loanState[num].actualLoanAmount = 0;
-	// 	loanAccount.loanState[num].state = STATE.REPAID;
-		
-	// 	loanAccount.collaterals[num].isCollateralisedDeposit = false;
-	// 	loanAccount.collaterals[num].isTimelockActivated = true;
-	// 	loanAccount.collaterals[num].activationTime = block.timestamp;
-
-		
-	// 	delete loanAccount.accruedAPY[num];
-	// 	delete loanAccount.accruedAPR[num];
-	// }
-
 	function _repaymentProcess(
 		uint256 num,
 		uint256 _repayAmount,
@@ -1025,12 +979,11 @@ library LibOpen {
 
 		uint swapAmount = _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
 		_repayAmount += swapAmount;
-		console.log("swapped amount: %s\n, repay amount is %s, loanAmount is %s",swapAmount, _repayAmount, loan.amount);
+		console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
 		
 		if(_repayAmount >= loan.amount)
 		 	_remnantAmount = (_repayAmount - loan.amount);
 		else {
-			console.log("Current Loan Amount: ", loanState.currentAmount);
 			if (loanState.currentMarket == loan.market)	
 				_repayAmount += loanState.currentAmount;
 			else if (loanState.currentMarket != loanState.loanMarket)
@@ -1098,14 +1051,11 @@ library LibOpen {
 			cYield
 		);
 
-		bytes32 collateralMarket = collateral.market;
-        uint256 collateralAmount = collateral.amount;
-
 		// return remnantAmount;
 		/// CONVERT remnantAmount into collateralAmount
-		console.log("Collateral Preswap ",collateral.amount);
+		if(_commitment != _getCommitment(2))
+			_updateReservesLoan(collateral.market, collateral.amount, 1);
 		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
-		console.log("Collateral Postswap ",collateral.amount);
 		// /// RESETTING STORAGE VALUES COMMON FOR commitment(0) & commitment(2)
 
 		/// UPDATING LoanRecords
@@ -1192,7 +1142,6 @@ library LibOpen {
 	        );
 
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
-			_updateReserveLoan(collateralMarket, collateralAmount, 1);
 			console.log("Utilisation updated ",loan.amount);
 
 			/// COLLATERAL RECORDS
@@ -1211,13 +1160,12 @@ library LibOpen {
 			delete loanState.state;
 			console.log("loanState.id deleted");
 
-			uint256 loanAccountCount = loanAccount.loans.length;
-			LoanRecords memory lastLoanAccountLoan = loanAccount.loans[loanAccountCount - 1];
+			LoanRecords memory lastLoanAccountLoan = loanAccount.loans[loanAccount.loans.length - 1];
 			loanAccount.loans[loan.id - 1] = lastLoanAccountLoan;
-			loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccountCount - 1];
-			loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccountCount - 1];
-			loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccountCount - 1];
-			loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccountCount - 1];
+			loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccount.loans.length - 1];
+			loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccount.loans.length - 1];
+			loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccount.loans.length - 1];
+			loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccount.loans.length - 1];
 			loanAccount.loans.pop();
 			loanAccount.loanState.pop();
 			loanAccount.accruedAPR.pop();
@@ -1338,46 +1286,22 @@ library LibOpen {
 
 	function _updateReservesLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
 		AppStorageOpen storage ds = diamondStorage(); 
-		console.log("Loan Reserve before: ", ds.marketReservesLoan[_loanMarket]);
 		if (_num == 0) {
 			ds.marketReservesLoan[_loanMarket] += _amount;
 		} else if (_num == 1) {
 			ds.marketReservesLoan[_loanMarket] -= _amount;
 		}
-		console.log("Loan Reserve after: ", ds.marketReservesLoan[_loanMarket]);
 	}
 
 	function _updateUtilisationLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
 		AppStorageOpen storage ds = diamondStorage();
-		console.log("Loan Util before: ", ds.marketUtilisationLoan[_loanMarket]); 
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_loanMarket] += _amount;
 		} else if (_num == 1)	{
 			// require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "ERROR: Utilisation is less than amount");
 			ds.marketUtilisationLoan[_loanMarket] -= _amount;
 		}
-		console.log("Loan Util After: ", ds.marketUtilisationLoan[_loanMarket]);
 	}
-
-	// function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32, uint) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-		
-	// 	_hasLoanAccount(_account);
-
-	// 	// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
-	// 	LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
-	// 	CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
-
-	// 	//require(loan.id !=0, "ERROR: No Loan");
-	// 	require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-	// 	//if (_commitment != _getCommitment(0)) {
-	// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-	// 	//}		
-	// 	bytes32 collateralMarket = collateral.market;
-	// 	uint collateralAmount = collateral.amount;
-
-	// 	return (collateralMarket, collateralAmount);
-	// }
 
 	function _accruedYieldCollateral(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
 		bytes32 _commitment = cYield.commitment;
@@ -1448,9 +1372,6 @@ library LibOpen {
 		uint balance = token.balanceOf(address(this));
 
 		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
-		console.log("Market Reserves: ", _marketReserves(_market));
-		console.log("Market Utilisation: ", _marketUtilisation(_market));
-		console.log("Balance: ", balance);
 		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
 
 		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {
