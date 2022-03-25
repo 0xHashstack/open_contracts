@@ -242,6 +242,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set APR", async () => {
+      await expect(comptroller.connect(accounts[1]).updateAPR(comit_NONE, 2800)).to.be.reverted;
+
       await expect(
           comptroller
           .updateAPR(comit_NONE, 2800)
@@ -256,6 +258,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set APY", async () => {
+      await expect(comptroller.connect(accounts[1]).updateAPY(comit_NONE, 2800))
+        .to.be.reverted;
       await expect(comptroller.updateAPY(comit_NONE, 2800)).emit(
         comptroller,
         "APYupdated"
@@ -270,6 +274,9 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Loan Issuance Fee", async () => {
+      await expect(
+        comptroller.connect(accounts[1]).updateLoanIssuanceFees(2800)
+      ).to.be.reverted;
       await expect(comptroller.updateLoanIssuanceFees(2800)).emit(
         comptroller,
         "LoanIssuanceFeesUpdated"
@@ -277,6 +284,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Loan Closure Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(2800))
+        .to.be.reverted;
       await expect(comptroller.updateLoanClosureFees(2800)).emit(
         comptroller,
         "LoanClosureFeesUpdated"
@@ -284,6 +293,9 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Loan pre Closure Fee", async () => {
+      await expect(
+        comptroller.connect(accounts[1]).updateLoanPreClosureFees(2800)
+      ).to.be.reverted;
       await expect(comptroller.updateLoanPreClosureFees(2800)).emit(
         comptroller,
         "LoanPreClosureFeesUpdated"
@@ -291,6 +303,9 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Deposit pre Closure Fee", async () => {
+      await expect(
+        comptroller.connect(accounts[1]).updateDepositPreclosureFees(2800)
+      ).to.be.reverted;
       await expect(comptroller.updateDepositPreclosureFees(2800)).emit(
         comptroller,
         "DepositPreClosureFeesUpdated"
@@ -300,6 +315,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Withdrawal Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateWithdrawalFees(2800))
+        .to.be.reverted;
       await expect(comptroller.updateWithdrawalFees(2800)).emit(
         comptroller,
         "DepositWithdrawalFeesUpdated"
@@ -311,6 +328,9 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Collateral release Fee", async () => {
+      await expect(
+        comptroller.connect(accounts[1]).updateCollateralReleaseFees(2800)
+      ).to.be.reverted;
       await expect(comptroller.updateCollateralReleaseFees(2800)).emit(
         comptroller,
         "CollateralReleaseFeesUpdated"
@@ -322,6 +342,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Yield Conversion Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateYieldConversion(2800))
+        .to.be.reverted;
       await expect(comptroller.updateYieldConversion(2800)).emit(
         comptroller,
         "YieldConversionFeesUpdated"
@@ -329,6 +351,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set MarketSwap Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(2800))
+        .to.be.reverted;
       await expect(comptroller.updateMarketSwapFees(2800)).emit(
         comptroller,
         "MarketSwapFeesUpdated"
@@ -336,6 +360,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set ReserveFactor", async () => {
+      await expect(comptroller.connect(accounts[1]).updateReserveFactor(1)).to
+        .be.reverted;
       await expect(comptroller.updateReserveFactor(1)).emit(
         comptroller,
         "ReserveFactorUpdated"
@@ -345,8 +371,12 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Max Withdrawal Limit", async () => {
-
       const x = (await ethers.provider.getBlock()).timestamp;
+
+      await expect(
+        comptroller.connect(accounts[1]).updateMaxWithdrawal(2800, x)
+      ).to.be.reverted;
+
       await expect(comptroller.updateMaxWithdrawal(2800, x)).emit(
         comptroller,
         "MaxWithdrawalUpdated"

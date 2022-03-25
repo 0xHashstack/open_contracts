@@ -92,6 +92,13 @@ describe("testing Reserves", async () => {
     it("transferAnyBep20", async () => {
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
       const reserveBalance = await bepUsdt.balanceOf(diamondAddress); 
+      await expect (reserve
+        .connect(accounts[1])
+        .transferAnyBEP20(
+          rets["tUsdtAddress"],
+          accounts[1].address,
+          10000000000
+        )).to.be.reverted;
       await reserve.connect(accounts[0]).transferAnyBEP20(rets["tUsdtAddress"], accounts[0].address, 10000000000);
       expect(await bepUsdt.balanceOf(diamondAddress)).to.equal(
         reserveBalance.sub(BigNumber.from(10000000000))

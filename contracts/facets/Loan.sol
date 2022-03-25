@@ -185,7 +185,6 @@ contract Loan is Pausable, ILoan {
 
     function getLoanInterest(address account, uint256 id) external view returns(uint256 loanInterest, uint collateralInterest)	{
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		// uint256 num = id -1;
 		
         ActiveLoans memory activeLoans = ds.getActiveLoans[account];
 		bytes32 market = activeLoans.loanMarket[id-1];
@@ -195,7 +194,6 @@ contract Loan is Pausable, ILoan {
 
 		LoanRecords memory loan = ds.indLoanRecords[account][market][commitment];
 		DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
-        // CollateralRecords memory collateral = ds.indCollateralRecords[account][market][commitment];
         CollateralYield memory cYield = ds.indAccruedAPY[account][market][commitment];
         
 		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);

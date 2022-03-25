@@ -977,8 +977,7 @@ library LibOpen {
 		if (_commitment == _getCommitment(2)) 
 			_collateralAmount += cYield.accruedYield;
 
-		uint swapAmount = _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
-		_repayAmount += swapAmount;
+		_repayAmount += _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);;
 		console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
 		
 		if(_repayAmount >= loan.amount)

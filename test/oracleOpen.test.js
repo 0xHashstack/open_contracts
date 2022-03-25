@@ -94,20 +94,20 @@ describe("testing OracleOpen", async () => {
       expect(await oracle.isPausedOracle()).to.equal(false);
     });
 
-    // it("Get Fair Price:", async () => {
-    //   let x;
-    //   let requestId;
-    //   x = BigNumber.from(await oracle.getFairPrice(requestId));
-    //   expect(x).to.not.equal(BigNumber.from(0));
-    // });
+    it.skip("Get Fair Price:", async () => {
+      let x;
+      let requestId;
+      x = BigNumber.from(await oracle.getFairPrice(requestId));
+      expect(x).to.not.equal(BigNumber.from(0));
+    });
 
-    // it("Set Fair Price:", async () => {
-    //   let x;
-    //   let requestId;
-    //   let _fPrice;
-    //   let amount;
-    //   x = await oracle.getLatestPrice(requestId, _fPrice, symbolBtc, amount);
-    //   expect(x).to.equal(true);
-    // });
+    it.skip("Set Fair Price:", async () => {
+      let x;
+      let requestId;
+      let _fPrice;
+      let amount;
+      x = await oracle.getLatestPrice(requestId, _fPrice, symbolBtc, amount);
+      expect(x).to.equal(true);
+    });
   });
 });

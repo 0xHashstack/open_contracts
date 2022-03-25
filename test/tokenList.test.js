@@ -79,6 +79,9 @@ describe("testing tokenList", async () => {
 
     it("Add Primary Market", async () => {
       await expect(
+        tokenList.connect(accounts[1]).addMarketSupport(symbolBtc, 6, rets["tBtcAddress"], 100000000)
+      ).to.be.reverted;
+      await expect(
         tokenList.addMarketSupport(symbolBtc, 6, rets["tBtcAddress"], 100000000)
       ).emit(tokenList, "MarketSupportAdded");
       expect(await tokenList.isMarketSupported(symbolBtc)).to.equal(true);
@@ -86,12 +89,18 @@ describe("testing tokenList", async () => {
 
     it("Update Primary Market", async () => {
       await expect(
+        tokenList.connect(accounts[1]).updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"])
+      ).to.be.reverted;
+      await expect(
         tokenList.updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"])
       ).emit(tokenList, "MarketSupportUpdated");
       expect(await tokenList.isMarketSupported(symbolBtc)).to.equal(true);
     });
 
     it("Secondary Market Removal", async () => {
+      await expect(
+        tokenList.connect(accounts[1]).removeMarket2Support(symbolCAKE)
+      ).to.be.reverted;
       await expect(tokenList.removeMarket2Support(symbolCAKE)).emit(
         tokenList,
         "Market2Removed"
@@ -101,12 +110,22 @@ describe("testing tokenList", async () => {
 
     it("Add Secondary Market", async () => {
       await expect(
+        tokenList
+          .connect(accounts[1])
+          .addMarket2Support(symbolCAKE, 6, rets["tCakeAddress"])
+      ).to.be.reverted;
+      await expect(
         tokenList.addMarket2Support(symbolCAKE, 6, rets["tCakeAddress"])
       ).emit(tokenList, "Market2Added");
       expect(await tokenList.isMarket2Supported(symbolCAKE)).to.equal(true);
     });
 
     it("Update Secondary Market:", async () => {
+      await expect(
+        tokenList
+          .connect(accounts[1])
+          .updateMarket2Support(symbolCAKE, 8, rets["tCakeAddress"])
+      ).to.be.reverted;
       await expect(
         tokenList.updateMarket2Support(symbolCAKE, 8, rets["tCakeAddress"])
       ).emit(tokenList, "Market2Updated");
