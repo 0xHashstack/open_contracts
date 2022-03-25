@@ -108,7 +108,8 @@ library LibDiamond {
         }
     }
 
-    function removeFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
+    function removeFunctions(address _facetAddress ,bytes4[] memory _functionSelectors) internal {
+
         require(_functionSelectors.length > 0, "LibDiamondCut: No selectors in facet to cut");
         DiamondStorage storage ds = diamondStorage();
         uint256 selectorCount = ds.selectors.length;

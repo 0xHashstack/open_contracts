@@ -5,11 +5,9 @@ import { IAccessRegistry } from "./interfaces/IAccessRegistry.sol";
 
 struct RoleData {
     mapping(address => bool) _members;
-    bytes32 _role;
 }
 struct AdminRoleData {
     mapping(address => bool) _adminMembers;
-    bytes32 _adminRole;
 }
 contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;
@@ -37,7 +35,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed sender
 	);
 	constructor(address upgradeAdmin) {
-		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
+		superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000;
 		adminRoles[superAdmin]._adminMembers[upgradeAdmin] = true;
 
 		addAdminRole(superAdmin, address(this));
@@ -51,11 +49,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		roles[role]._members[account] = true;
 		emit RoleGranted(role, account, msg.sender);
 	}
-	function removeRole(bytes32 role, address account) external override onlyAdmin {
+	function removeRole(bytes32 role, address account) external override nonReentrant onlyAdmin {
 		require(hasRole(role, account), "Role does not exist.");
 		revokeRole(role, account);
 	}
-	function renounceRole(bytes32 role, address account) external override nonReentrant() {
+	function renounceRole(bytes32 role, address account) external override nonReentrant{
 		require(hasRole(role, account), "Role does not exist.");
 		require(_msgSender() == account, "Inadequate permissions");
 		revokeRole(role, account);
@@ -68,7 +66,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		bytes32 role,
 		address oldAccount,
 		address newAccount
-	) external override nonReentrant() {
+	) external override nonReentrant{
 		require(
 				hasRole(role, oldAccount) && _msgSender() == oldAccount,
 				"Role does not exist."
@@ -87,7 +85,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		adminRoles[role]._adminMembers[account] = true;
 		emit AdminRoleDataGranted(role, account, msg.sender);
 	}
-	function removeAdminRole(bytes32 role, address account) external override onlyAdmin {
+	function removeAdminRole(bytes32 role, address account) external override nonReentrant onlyAdmin {
 		require(hasAdminRole(role, account), "Role does not exist.");
 		revokeAdmin(role, account);
 	}
@@ -99,7 +97,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		bytes32 role,
 		address oldAccount,
 		address newAccount 
-	) external override onlyAdmin
+	) external override nonReentrant onlyAdmin
 	{
 		require(
 				hasAdminRole(role, oldAccount),
@@ -108,7 +106,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		revokeAdmin(role, oldAccount);
 		addAdminRole(role, newAccount);
 	}
-	function adminRoleRenounce(bytes32 role, address account) external override onlyAdmin {
+	function adminRoleRenounce(bytes32 role, address account) external override nonReentrant onlyAdmin {
 		require(hasAdminRole(role, account), "Role does not exist.");
 		require(_msgSender() == account, "Inadequate permissions");
 		revokeAdmin(role, account);
@@ -118,14 +116,15 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		require(hasAdminRole(superAdmin, msg.sender), "ERROR: Not an admin");
 		_;
 	}
-	function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {                                                                                                  
+	function pauseAccessRegistry() external override nonReentrant onlyAdmin() {                                                                                                  
 		_pause();
 	}
 	
-	function unpauseAccessRegistry() external override onlyAdmin() nonReentrant() {
+	function unpauseAccessRegistry() external override nonReentrant onlyAdmin() {
 		_unpause();   
 	}
 	function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               
 		return _paused();
 	}
+	
 }

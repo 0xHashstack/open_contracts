@@ -26,6 +26,7 @@
     "hardhat": "^2.6.7",
     "hardhat-contract-sizer": "^2.1.1",
     "solc": "^0.8.1",
+    "solidity-coverage": "^0.7.20",
     "web3": "^1.6.0"
   },
   "directories": {

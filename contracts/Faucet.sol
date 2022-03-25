@@ -46,7 +46,7 @@ contract Faucet {
     }
 
     /// GET TOKENS
-    function getTokens(uint _index) public payable nonReentrant() returns(bool success)   {
+    function getTokens(uint _index) public payable nonReentrant returns(bool success)   {
         
         require(msg.sender != address(0), "ERROR: Zero address");
 
@@ -65,7 +65,7 @@ contract Faucet {
         return success = true;
     }
 
-    modifier nonReentrant() {
+    modifier nonReentrant {
         require(isReentrant == false, "ERROR: Re-entrant");
         isReentrant = true;
         _;

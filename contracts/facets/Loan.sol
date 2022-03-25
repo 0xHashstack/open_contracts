@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import { LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, CollateralYield, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibLoan } from "../libraries/LibLoan.sol";
+import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, CollateralYield, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
 import { Pausable } from "../util/Pausable.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 import { ILoan } from "../interfaces/ILoan.sol";
@@ -80,6 +80,7 @@ contract Loan is Pausable, ILoan {
         LoanRecords storage loan,
         LoanState storage loanState,
         CollateralRecords storage collateral
+        // Have removed collateral amount param from this as we stopped using min amount check in add collateral
     ) private view {
         require(loan.id != 0, "ERROR: No loan");
         require(loanState.state == STATE.ACTIVE, "ERROR: Inactive loan");
@@ -95,7 +96,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _collateralAmount
-    ) external override returns (bool) {
+    ) external override nonReentrant returns (bool) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -177,35 +178,33 @@ contract Loan is Pausable, ILoan {
 
     function getLoanInterest(address account, uint256 id) external view returns(uint256 loanInterest, uint collateralInterest)	{
 		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		uint256 num = id -1;
 		
-        ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
-		
-		bytes32 market = activeLoans.loanMarket[num];
-		bytes32 commitment = activeLoans.loanCommitment[num];
+        ActiveLoans memory activeLoans = ds.getActiveLoans[account];
+		bytes32 market = activeLoans.loanMarket[id-1];
+		bytes32 commitment = activeLoans.loanCommitment[id-1];
 		uint256 interestFactor = 0;
+        uint256 collateralInterestFactor = 0;
 
-		LoanRecords storage loan = ds.indLoanRecords[account][market][commitment];
-		YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
-        CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][market][commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][market][commitment];
+		LoanRecords memory loan = ds.indLoanRecords[account][market][commitment];
+		DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
+        CollateralYield memory cYield = ds.indAccruedAPY[account][market][commitment];
         
-		interestFactor = LibLoan._getLoanInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
-
-		loanInterest = yield.accruedYield;
+		interestFactor = LibLoan._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);
+        if(commitment != LibCommon._getCommitment(0)){
+            collateralInterestFactor = LibDeposit._getDepositInterest(commitment, cYield.oldLengthAccruedYield, cYield.oldTime);
+            collateralInterest = cYield.accruedYield;
+            collateralInterest += ((collateralInterestFactor*(ds.indCollateralRecords[account][market][commitment]).amount)/(365*86400*10000));
+        }
+        loanInterest = yield.accruedInterest;
 		loanInterest += ((interestFactor*loan.amount)/(365*86400*10000));	
-        collateralInterest = cYield.accruedYield;
-        collateralInterest += ((interestFactor*collateral.amount)/(365*86400*10000));
-
 		return (loanInterest, collateralInterest);
-
 	}
 
-    function pauseLoan() external override authLoan nonReentrant {
+    function pauseLoan() external override nonReentrant authLoan {
         _pause();
     }
 
-    function unpauseLoan() external override authLoan nonReentrant {
+    function unpauseLoan() external override nonReentrant authLoan {
         _unpause();
     }
 

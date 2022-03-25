@@ -8,7 +8,7 @@ interface ITokenList {
     function addMarketSupport(bytes32 _market,uint256 _decimals,address marketAddress_, uint _amount) external returns (bool);
     function minAmountCheck(bytes32 _market, uint _amount) external view;
     function removeMarketSupport(bytes32 market_) external returns(bool);
-    function updateMarketSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external returns(bool);
+    function updateMarketSupport(bytes32 market_, uint256 decimals_,address tokenAddress_,uint _amount) external returns(bool);
     // function quantifyAmount(bytes32 _market, uint _amount) external view returns (uint);
     function isMarket2Supported(bytes32  market_) external view returns (bool);
     function getMarket2Address(bytes32 market_) external view returns (address);

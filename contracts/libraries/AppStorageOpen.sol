@@ -189,6 +189,7 @@ struct AppStorageOpen {
 
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
+    bytes32 protocolOwnedLiquidator;
     address adminLiquidatorAddress;
 
     // =========== Deposit state variables ===========
