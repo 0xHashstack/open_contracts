@@ -12,6 +12,7 @@ let tokenList;
 let library;
 let deposit;
 let faucet;
+let accessRegistry;
 let accounts;
 
 let bepBtc;
@@ -65,6 +66,10 @@ describe("Testing Deposit", async () => {
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       deposit = await ethers.getContractAt("Deposit", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
       // deploying tokens
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
       bepBtc = await ethers.getContractAt("BEP20Token", rets["tBtcAddress"]);
@@ -73,7 +78,34 @@ describe("Testing Deposit", async () => {
     });
 
     it("Pause Deposit:", async () => {
+
+      const adminDeposit = utils.formatBytes32String("adminDeposit");
       await deposit.pauseDeposit();
+      expect(await deposit.isPausedDeposit()).to.equal(true);
+
+      await deposit.unpauseDeposit();
+      expect(await deposit.isPausedDeposit()).to.equal(false);
+
+      await expect(deposit.connect(accounts[1]).pauseDeposit()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminDeposit, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminDeposit, accounts[1].address)
+      ).to.be.reverted;
+
+      await deposit.connect(accounts[1]).pauseDeposit();
+      expect(await deposit.isPausedDeposit()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminDeposit, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(deposit.connect(accounts[1]).unpauseDeposit()).to.be
+        .reverted;
       expect(await deposit.isPausedDeposit()).to.equal(true);
 
       await deposit.unpauseDeposit();

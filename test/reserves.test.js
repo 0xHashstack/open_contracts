@@ -14,13 +14,13 @@ let accounts;
 let reserve;
 let library;
 let tokenList;
+let accessRegistry;
 
-describe("testing OracleOpen", async () => {
+describe("testing Reserves", async () => {
   before(async () => {
     array = await deployDiamond();
     diamondAddress = array["diamondAddress"];
     rets = await addMarkets(array);
-    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });
 
@@ -38,6 +38,10 @@ describe("testing OracleOpen", async () => {
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       reserve = await ethers.getContractAt("Reserve", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
     });
 
     it("Available Market reserves:", async () => {
@@ -96,9 +100,35 @@ describe("testing OracleOpen", async () => {
     
     
     it("Pause:", async () => {
+      const adminReserve = utils.formatBytes32String("adminReserve");
       await reserve.pauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(true);
       
+      await reserve.unpauseReserve();
+      expect(await reserve.isPausedReserve()).to.equal(false);
+
+      await expect(reserve.connect(accounts[1]).pauseReserve()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminReserve, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminReserve, accounts[1].address)
+      ).to.be.reverted;
+
+      await reserve.connect(accounts[1]).pauseReserve();
+      expect(await reserve.isPausedReserve()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminReserve, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(reserve.connect(accounts[1]).unpauseReserve()).to.be
+        .reverted;
+      expect(await reserve.isPausedReserve()).to.equal(true);
+
       await reserve.unpauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(false);
       

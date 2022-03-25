@@ -13,6 +13,7 @@ let accounts;
 let loan;
 let loanExt;
 let loanExtv1;
+let accessRegistry;
 let faucet;
 let library;
 let tokenList;
@@ -74,6 +75,10 @@ describe("testing Loans", async () => {
       loan = await ethers.getContractAt("Loan", diamondAddress);
       loanExt = await ethers.getContractAt("LoanExt", diamondAddress);
       loanExtv1 = await ethers.getContractAt("LoanExtv1", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
 
       // deploying tokens
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
@@ -934,6 +939,11 @@ describe("testing Loans", async () => {
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       loan = await ethers.getContractAt("Loan", diamondAddress);
       loanExt = await ethers.getContractAt("LoanExt", diamondAddress);
+      loanExtv1 = await ethers.getContractAt("LoanExtv1", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
 
       // deploying tokens
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
@@ -1116,7 +1126,34 @@ describe("testing Loans", async () => {
     });
 
     it("Pause Loan:", async () => {
+
+      const adminLoan = utils.formatBytes32String("adminLoan");
       await loan.pauseLoan();
+      expect(await loan.isPausedLoan()).to.equal(true);
+
+      await loan.unpauseLoan();
+      expect(await loan.isPausedLoan()).to.equal(false);
+
+      await expect(loan.connect(accounts[1]).pauseLoan()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoan, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoan, accounts[1].address)
+      ).to.be.reverted;
+
+      await loan.connect(accounts[1]).pauseLoan();
+      expect(await loan.isPausedLoan()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminLoan, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(loan.connect(accounts[1]).unpauseLoan()).to.be
+        .reverted;
       expect(await loan.isPausedLoan()).to.equal(true);
 
       await loan.unpauseLoan();
@@ -1127,7 +1164,33 @@ describe("testing Loans", async () => {
 
       expect(await loanExt.utilisedReservesLoan(symbolBtc)).to.not.equal(BigNumber.from(0));
 
+      const adminLoanExt = utils.formatBytes32String("adminLoanExt");
       await loanExt.pauseLoanExt();
+      expect(await loanExt.isPausedLoanExt()).to.equal(true);
+
+      await loanExt.unpauseLoanExt();
+      expect(await loanExt.isPausedLoanExt()).to.equal(false);
+
+      await expect(loanExt.connect(accounts[1]).pauseLoanExt()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoanExt, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoanExt, accounts[1].address)
+      ).to.be.reverted;
+
+      await loanExt.connect(accounts[1]).pauseLoanExt();
+      expect(await loanExt.isPausedLoanExt()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminLoanExt, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(loanExt.connect(accounts[1]).unpauseLoanExt()).to.be
+        .reverted;
       expect(await loanExt.isPausedLoanExt()).to.equal(true);
 
       await loanExt.unpauseLoanExt();
@@ -1135,7 +1198,34 @@ describe("testing Loans", async () => {
     });
 
     it("Pause LoanExtv1:", async () => {
+      const adminLoanExtv1 = utils.formatBytes32String("adminLoanExtv1");
+
       await loanExtv1.pauseLoanExtv1();
+      expect(await loanExtv1.isPausedLoanExtv1()).to.equal(true);
+
+      await loanExtv1.unpauseLoanExtv1();
+      expect(await loanExtv1.isPausedLoanExtv1()).to.equal(false);
+
+      await expect(loanExtv1.connect(accounts[1]).pauseLoanExtv1()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoanExtv1, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminLoanExtv1, accounts[1].address)
+      ).to.be.reverted;
+
+      await loanExtv1.connect(accounts[1]).pauseLoanExtv1();
+      expect(await loanExtv1.isPausedLoanExtv1()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminLoanExtv1, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(loanExtv1.connect(accounts[1]).unpauseLoanExtv1()).to.be
+        .reverted;
       expect(await loanExtv1.isPausedLoanExtv1()).to.equal(true);
 
       await loanExtv1.unpauseLoanExtv1();

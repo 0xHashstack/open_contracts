@@ -21,7 +21,6 @@ describe("testing Comptroller", async () => {
     array = await deployDiamond();
     diamondAddress = array["diamondAddress"];
     rets = await addMarkets(array);
-    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });
 

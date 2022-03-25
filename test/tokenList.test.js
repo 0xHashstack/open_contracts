@@ -13,13 +13,13 @@ let accounts;
 
 let library;
 let tokenList;
+let accessRegistry;
 
 describe("testing tokenList", async () => {
   before(async () => {
     array = await deployDiamond();
     diamondAddress = array["diamondAddress"];
     rets = await addMarkets(array);
-    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });
 
@@ -40,6 +40,10 @@ describe("testing tokenList", async () => {
     before(async () => {
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
     });
 
     it("Primary Market Support:", async () => {
@@ -136,7 +140,34 @@ describe("testing tokenList", async () => {
     });
 
     it("Pause:", async () => {
+      const adminTokenList = utils.formatBytes32String("adminTokenList");
+
       await tokenList.pauseTokenList();
+      expect(await tokenList.isPausedTokenList()).to.equal(true);
+
+      await tokenList.unpauseTokenList();
+      expect(await tokenList.isPausedTokenList()).to.equal(false);
+
+      await expect(tokenList.connect(accounts[1]).pauseTokenList()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminTokenList, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminTokenList, accounts[1].address)
+      ).to.be.reverted;
+
+      await tokenList.connect(accounts[1]).pauseTokenList();
+      expect(await tokenList.isPausedTokenList()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminTokenList, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(tokenList.connect(accounts[1]).unpauseTokenList()).to.be
+        .reverted;
       expect(await tokenList.isPausedTokenList()).to.equal(true);
 
       await tokenList.unpauseTokenList();

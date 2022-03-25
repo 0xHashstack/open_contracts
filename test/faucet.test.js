@@ -19,12 +19,11 @@ let bepUsdc;
 let bepUsdt;
 let bepWbnb;
 
-describe("Testing Deposit", async () => {
+describe("Testing Faucet", async () => {
   before(async () => {
     array = await deployDiamond();
     diamondAddress = array["diamondAddress"];
     rets = await addMarkets(array);
-    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
   });
 

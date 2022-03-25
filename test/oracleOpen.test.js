@@ -14,13 +14,13 @@ let accounts;
 let oracle;
 let library;
 let tokenList;
+let accessRegistry;
 
 describe("testing OracleOpen", async () => {
   before(async () => {
     array = await deployDiamond();
     diamondAddress = array["diamondAddress"];
     rets = await addMarkets(array);
-    await provideLiquidity(rets);
     accounts = await ethers.getSigners();
     await provideLiquidity(rets);
   });
@@ -39,6 +39,10 @@ describe("testing OracleOpen", async () => {
       library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       oracle = await ethers.getContractAt("OracleOpen", diamondAddress);
+      accessRegistry = await ethers.getContractAt(
+        "AccessRegistry",
+        rets["accessRegistryAddress"]
+      );
     });
 
     it("Get Latest Price:", async () => {
@@ -57,7 +61,33 @@ describe("testing OracleOpen", async () => {
     });
 
     it("Pause:", async () => {
+      const adminOracle = utils.formatBytes32String("adminOpenOracle");
       await oracle.pauseOracle();
+      expect(await oracle.isPausedOracle()).to.equal(true);
+
+      await oracle.unpauseOracle();
+      expect(await oracle.isPausedOracle()).to.equal(false);
+
+      await expect(oracle.connect(accounts[1]).pauseOracle()).to.be
+        .reverted;
+
+      await expect(
+        accessRegistry.addAdminRole(adminOracle, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataGranted");
+
+      await expect(
+        accessRegistry.addAdminRole(adminOracle, accounts[1].address)
+      ).to.be.reverted;
+
+      await oracle.connect(accounts[1]).pauseOracle();
+      expect(await oracle.isPausedOracle()).to.equal(true);
+
+      await expect(
+        accessRegistry.removeAdminRole(adminOracle, accounts[1].address)
+      ).emit(accessRegistry, "AdminRoleDataRevoked");
+
+      await expect(oracle.connect(accounts[1]).unpauseOracle()).to.be
+        .reverted;
       expect(await oracle.isPausedOracle()).to.equal(true);
 
       await oracle.unpauseOracle();
