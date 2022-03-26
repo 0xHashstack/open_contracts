@@ -11,8 +11,5 @@
 // };
 
 module.exports = {
-  skipFiles: [
-    "contracts/interfaces/",
-    "contracts/util/",
-  ],
+  skipFiles: ["contracts/interfaces/", "contracts/util/"],
 };

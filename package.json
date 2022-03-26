@@ -6,8 +6,8 @@
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
-    "prettier:sol": "npx prettier --write 'contracts/*.sol'",
-    "prettier:js": "prettier --config ./.prettierrc.yaml --write \"**/*.{js,json,md,sol,ts}\""
+    "prettier:sol": "npx prettier --write 'contracts/*.sol' && npx prettier --write 'contracts/*/*.sol'",
+    "prettier:js": "prettier --config ./.prettierrc.yaml --write \"**/*.{js,json,md,ts}\""
   },
   "author": "",
   "license": "MIT",

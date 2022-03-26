@@ -25,22 +25,15 @@ describe("testing Reserves", async () => {
   });
 
   describe("Reserves", async () => {
-    const symbolWBNB =
-      "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
-    const symbolUsdt =
-      "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
-    const symbolUsdc =
-      "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
-    const symbolBtc =
-      "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
 
     before(async () => {
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       reserve = await ethers.getContractAt("Reserve", diamondAddress);
-      accessRegistry = await ethers.getContractAt(
-        "AccessRegistry",
-        rets["accessRegistryAddress"]
-      );
+      accessRegistry = await ethers.getContractAt("AccessRegistry", rets["accessRegistryAddress"]);
     });
 
     it("Available Market reserves:", async () => {
@@ -90,55 +83,44 @@ describe("testing Reserves", async () => {
 
     it("transferAnyBep20", async () => {
       bepUsdt = await ethers.getContractAt("BEP20Token", rets["tUsdtAddress"]);
-      const reserveBalance = await bepUsdt.balanceOf(diamondAddress); 
-      await expect (reserve
-        .connect(accounts[1])
-        .transferAnyBEP20(
-          rets["tUsdtAddress"],
-          accounts[1].address,
-          10000000000
-        )).to.be.reverted;
+      const reserveBalance = await bepUsdt.balanceOf(diamondAddress);
+      await expect(
+        reserve.connect(accounts[1]).transferAnyBEP20(rets["tUsdtAddress"], accounts[1].address, 10000000000),
+      ).to.be.reverted;
       await reserve.connect(accounts[0]).transferAnyBEP20(rets["tUsdtAddress"], accounts[0].address, 10000000000);
-      expect(await bepUsdt.balanceOf(diamondAddress)).to.equal(
-        reserveBalance.sub(BigNumber.from(10000000000))
-      );
-    })
-    
-    
+      expect(await bepUsdt.balanceOf(diamondAddress)).to.equal(reserveBalance.sub(BigNumber.from(10000000000)));
+    });
+
     it("Pause:", async () => {
       const adminReserve = utils.formatBytes32String("adminReserve");
       await reserve.pauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(true);
-      
+
       await reserve.unpauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(false);
 
-      await expect(reserve.connect(accounts[1]).pauseReserve()).to.be
-        .reverted;
+      await expect(reserve.connect(accounts[1]).pauseReserve()).to.be.reverted;
 
-      await expect(
-        accessRegistry.addAdminRole(adminReserve, accounts[1].address)
-      ).emit(accessRegistry, "AdminRoleDataGranted");
+      await expect(accessRegistry.addAdminRole(adminReserve, accounts[1].address)).emit(
+        accessRegistry,
+        "AdminRoleDataGranted",
+      );
 
-      await expect(
-        accessRegistry.addAdminRole(adminReserve, accounts[1].address)
-      ).to.be.reverted;
+      await expect(accessRegistry.addAdminRole(adminReserve, accounts[1].address)).to.be.reverted;
 
       await reserve.connect(accounts[1]).pauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(true);
 
-      await expect(
-        accessRegistry.removeAdminRole(adminReserve, accounts[1].address)
-      ).emit(accessRegistry, "AdminRoleDataRevoked");
+      await expect(accessRegistry.removeAdminRole(adminReserve, accounts[1].address)).emit(
+        accessRegistry,
+        "AdminRoleDataRevoked",
+      );
 
-      await expect(reserve.connect(accounts[1]).unpauseReserve()).to.be
-        .reverted;
+      await expect(reserve.connect(accounts[1]).unpauseReserve()).to.be.reverted;
       expect(await reserve.isPausedReserve()).to.equal(true);
 
       await reserve.unpauseReserve();
       expect(await reserve.isPausedReserve()).to.equal(false);
-      
-    });    
-    
+    });
   });
 });

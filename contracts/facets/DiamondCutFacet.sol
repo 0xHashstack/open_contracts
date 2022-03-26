@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
@@ -7,11 +6,7 @@ import { LibDiamond } from "../libraries/LibDiamond.sol";
 
 import "../util/Pausable.sol";
 
-
-
-contract DiamondCutFacet is Pausable,IDiamondCut{
-
-
+contract DiamondCutFacet is Pausable, IDiamondCut {
     function diamondCut(
         FacetCut[] calldata _diamondCut,
         address _init,
@@ -20,5 +15,4 @@ contract DiamondCutFacet is Pausable,IDiamondCut{
         LibDiamond.enforceIsupgradeAdmin();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
-  
 }

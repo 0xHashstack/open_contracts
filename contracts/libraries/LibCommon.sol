@@ -4,75 +4,73 @@ pragma solidity 0.8.1;
 import "./AppStorageOpen.sol";
 
 library LibCommon {
-	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
+    address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3; // pancakeswap bsc testnet router address
 
-	function upgradeAdmin() internal view returns (address upgradeAdmin_) {
-		upgradeAdmin_ = diamondStorage().upgradeAdmin;
-	}
+    function upgradeAdmin() internal view returns (address upgradeAdmin_) {
+        upgradeAdmin_ = diamondStorage().upgradeAdmin;
+    }
 
-	function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
-		assembly {
-				ds.slot := 0
-		}
-	}
+    function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
+        assembly {
+            ds.slot := 0
+        }
+    }
 
-	function _isMarketSupported(bytes32  _market) internal view {
-		AppStorageOpen storage ds = diamondStorage(); 
-		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
-	}
+    function _isMarketSupported(bytes32 _market) internal view {
+        AppStorageOpen storage ds = diamondStorage();
+        require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
+    }
 
-	function _getMarketAddress(bytes32 _loanMarket) internal view returns (address) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarketData[_loanMarket].tokenAddress;
-	}
+    function _getMarketAddress(bytes32 _loanMarket) internal view returns (address) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indMarketData[_loanMarket].tokenAddress;
+    }
 
-	function _getMarketDecimal(bytes32 _loanMarket) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarketData[_loanMarket].decimals;
-	}
+    function _getMarketDecimal(bytes32 _loanMarket) internal view returns (uint256) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indMarketData[_loanMarket].decimals;
+    }
 
-	function _minAmountCheck(bytes32 _loanMarket, uint _amount) internal view {
-		
-		AppStorageOpen storage ds = diamondStorage(); 
-		MarketData memory marketData = ds.indMarketData[_loanMarket];
-		
-		require(marketData.minAmount <= _amount, "ERROR: Less than minimum amount");
-	}
+    function _minAmountCheck(bytes32 _loanMarket, uint256 _amount) internal view {
+        AppStorageOpen storage ds = diamondStorage();
+        MarketData memory marketData = ds.indMarketData[_loanMarket];
 
-	function _isMarket2Supported(bytes32  _loanMarket) internal view {
-		require(diamondStorage().token2SupportCheck[_loanMarket] == true, "Secondary Token is not supported");
-	}
+        require(marketData.minAmount <= _amount, "ERROR: Less than minimum amount");
+    }
 
-	function _getMarket2Address(bytes32 _loanMarket) internal view returns (address) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarket2Data[_loanMarket].tokenAddress;
-	}
+    function _isMarket2Supported(bytes32 _loanMarket) internal view {
+        require(diamondStorage().token2SupportCheck[_loanMarket] == true, "Secondary Token is not supported");
+    }
 
-	function _getMarket2Decimal(bytes32 _loanMarket) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
-		return ds.indMarket2Data[_loanMarket].decimals;
-	}
+    function _getMarket2Address(bytes32 _loanMarket) internal view returns (address) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indMarket2Data[_loanMarket].tokenAddress;
+    }
 
-	function _connectMarket(bytes32 _market) internal view returns (address) {
-		
-		AppStorageOpen storage ds = diamondStorage(); 
-		MarketData memory marketData = ds.indMarketData[_market];
-		return marketData.tokenAddress;
-	}
+    function _getMarket2Decimal(bytes32 _loanMarket) internal view returns (uint256) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indMarket2Data[_loanMarket].decimals;
+    }
 
-	function _getCommitment(uint _index) internal view returns (bytes32) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		require(_index < ds.commitment.length, "Commitment Index out of range");
-		return ds.commitment[_index];
-	}
+    function _connectMarket(bytes32 _market) internal view returns (address) {
+        AppStorageOpen storage ds = diamondStorage();
+        MarketData memory marketData = ds.indMarketData[_market];
+        return marketData.tokenAddress;
+    }
 
-	function _getApyTimeLength(bytes32 _commitment) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indAPYRecords[_commitment].time.length;
-	}
+    function _getCommitment(uint256 _index) internal view returns (bytes32) {
+        AppStorageOpen storage ds = diamondStorage();
+        require(_index < ds.commitment.length, "Commitment Index out of range");
+        return ds.commitment[_index];
+    }
 
-	function _getAprTimeLength(bytes32 _commitment) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indAPRRecords[_commitment].time.length;
-	}
+    function _getApyTimeLength(bytes32 _commitment) internal view returns (uint256) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indAPYRecords[_commitment].time.length;
+    }
+
+    function _getAprTimeLength(bytes32 _commitment) internal view returns (uint256) {
+        AppStorageOpen storage ds = diamondStorage();
+        return ds.indAPRRecords[_commitment].time.length;
+    }
 }

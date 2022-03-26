@@ -26,22 +26,15 @@ describe("testing OracleOpen", async () => {
   });
 
   describe("Oracle Open", async () => {
-    const symbolWBNB =
-      "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
-    const symbolUsdt =
-      "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
-    const symbolUsdc =
-      "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
-    const symbolBtc =
-      "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
 
     before(async () => {
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       oracle = await ethers.getContractAt("OracleOpen", diamondAddress);
-      accessRegistry = await ethers.getContractAt(
-        "AccessRegistry",
-        rets["accessRegistryAddress"]
-      );
+      accessRegistry = await ethers.getContractAt("AccessRegistry", rets["accessRegistryAddress"]);
     });
 
     it("Get Latest Price:", async () => {
@@ -67,26 +60,24 @@ describe("testing OracleOpen", async () => {
       await oracle.unpauseOracle();
       expect(await oracle.isPausedOracle()).to.equal(false);
 
-      await expect(oracle.connect(accounts[1]).pauseOracle()).to.be
-        .reverted;
+      await expect(oracle.connect(accounts[1]).pauseOracle()).to.be.reverted;
 
-      await expect(
-        accessRegistry.addAdminRole(adminOracle, accounts[1].address)
-      ).emit(accessRegistry, "AdminRoleDataGranted");
+      await expect(accessRegistry.addAdminRole(adminOracle, accounts[1].address)).emit(
+        accessRegistry,
+        "AdminRoleDataGranted",
+      );
 
-      await expect(
-        accessRegistry.addAdminRole(adminOracle, accounts[1].address)
-      ).to.be.reverted;
+      await expect(accessRegistry.addAdminRole(adminOracle, accounts[1].address)).to.be.reverted;
 
       await oracle.connect(accounts[1]).pauseOracle();
       expect(await oracle.isPausedOracle()).to.equal(true);
 
-      await expect(
-        accessRegistry.removeAdminRole(adminOracle, accounts[1].address)
-      ).emit(accessRegistry, "AdminRoleDataRevoked");
+      await expect(accessRegistry.removeAdminRole(adminOracle, accounts[1].address)).emit(
+        accessRegistry,
+        "AdminRoleDataRevoked",
+      );
 
-      await expect(oracle.connect(accounts[1]).unpauseOracle()).to.be
-        .reverted;
+      await expect(oracle.connect(accounts[1]).unpauseOracle()).to.be.reverted;
       expect(await oracle.isPausedOracle()).to.equal(true);
 
       await oracle.unpauseOracle();

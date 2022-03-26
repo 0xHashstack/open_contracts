@@ -8,59 +8,62 @@ import { IBEP20 } from "../util/IBEP20.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract Reserve is Pausable, IReserve {
-	
-	receive() external payable {
-		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
-	}
-    
-	fallback() external payable {
-		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
-	}
+    receive() external payable {
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
+    }
 
-	function transferAnyBEP20(
-		address _token,
-		address _recipient,
-		uint256 _value) external override nonReentrant authReserve() returns(bool)   
-	{
-		IBEP20(_token).transfer(_recipient, _value);
-		return true;
-	}
+    fallback() external payable {
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
+    }
 
-	function avblMarketReserves(bytes32 _market) external view override returns (uint) {
-		return LibReserve._avblMarketReserves(_market);
-	}
+    function transferAnyBEP20(
+        address _token,
+        address _recipient,
+        uint256 _value
+    ) external override nonReentrant authReserve returns (bool) {
+        IBEP20(_token).transfer(_recipient, _value);
+        return true;
+    }
 
-	function marketReserves(bytes32 _market) external view override returns(uint)	{
-		return LibReserve._marketReserves(_market);
-	}
+    function avblMarketReserves(bytes32 _market) external view override returns (uint256) {
+        return LibReserve._avblMarketReserves(_market);
+    }
 
-	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
-		return LibReserve._marketUtilisation(_market);
-	}
+    function marketReserves(bytes32 _market) external view override returns (uint256) {
+        return LibReserve._marketReserves(_market);
+    }
 
-	function avblReservesDeposit(bytes32 _market) external view override returns(uint) {
-		return LibReserve._avblReservesDeposit(_market);
-	}
+    function marketUtilisation(bytes32 _market) external view override returns (uint256) {
+        return LibReserve._marketUtilisation(_market);
+    }
 
-	function utilisedReservesDeposit(bytes32 _market) external view override returns(uint) {
-    	return LibReserve._utilisedReservesDeposit(_market);
-	}
+    function avblReservesDeposit(bytes32 _market) external view override returns (uint256) {
+        return LibReserve._avblReservesDeposit(_market);
+    }
 
-	modifier authReserve()  {
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminReserve, msg.sender), "ERROR: Not an admin");
-		_;
-	}
+    function utilisedReservesDeposit(bytes32 _market) external view override returns (uint256) {
+        return LibReserve._utilisedReservesDeposit(_market);
+    }
 
-	function pauseReserve() external override authReserve() {
-			_pause();
-	}
-	
-	function unpauseReserve() external override authReserve() {
-		_unpause();   
-	}
+    modifier authReserve() {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        require(
+            IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) ||
+                IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminReserve, msg.sender),
+            "ERROR: Not an admin"
+        );
+        _;
+    }
 
-	function isPausedReserve() external view virtual override returns (bool) {
-		return _paused();
-	}
+    function pauseReserve() external override authReserve {
+        _pause();
+    }
+
+    function unpauseReserve() external override authReserve {
+        _unpause();
+    }
+
+    function isPausedReserve() external view virtual override returns (bool) {
+        return _paused();
+    }
 }

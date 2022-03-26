@@ -1,10 +1,9 @@
 const { task } = require("hardhat/config");
-const { getSelectors, FacetCutAction } = require('./scripts/libraries/diamond.js')
-const utils = require('ethers').utils
-require('hardhat-abi-exporter');
+const { getSelectors, FacetCutAction } = require("./scripts/libraries/diamond.js");
+const utils = require("ethers").utils;
+require("hardhat-abi-exporter");
 require("@nomiclabs/hardhat-waffle");
 require("solidity-coverage");
-
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   console.log("Task run");
@@ -14,8 +13,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-require('hardhat-contract-sizer');
-require('dotenv').config();
+require("hardhat-contract-sizer");
+require("dotenv").config();
 require("@tenderly/hardhat-tenderly");
 
 module.exports = {
@@ -23,57 +22,55 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+        url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       },
-      chainId: 1337
+      chainId: 1337,
     },
     ropsten: {
       chainId: 3,
       url: process.env.API_URL,
       accounts: {
-        mnemonic: process.env.MNEMONIC
+        mnemonic: process.env.MNEMONIC,
       },
-      gas: 2100000, 
-      gasPrice: 8000000000
+      gas: 2100000,
+      gasPrice: 8000000000,
     },
-    
+
     kovan: {
-      accounts: 
-      {
-          mnemonic: process.env.MNEMONIC,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
       },
       url: "https://kovan.infura.io/v3/99b8947af7e14278ae235bb21eb81f53",
       chainId: 42,
       timeout: 200000,
-      gas: 2100000, 
+      gas: 2100000,
       gasPrice: 8000000000,
-      nonce:150
+      nonce: 150,
     },
     bsctestnet: {
-      accounts: 
-      {
-          mnemonic: process.env.MNEMONIC,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
       },
-      url: 'https://nd-400-266-190.p2pify.com/1efac602169fba8d5bf0589315ec436a',
+      url: "https://nd-400-266-190.p2pify.com/1efac602169fba8d5bf0589315ec436a",
       // url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
       timeout: 2000000,
-      gas: 2100000, 
-      gasLimit: 5000000
+      gas: 2100000,
+      gasLimit: 5000000,
     },
-//     harmony: {
-//       url: 'https://api.s0.b.hmny.io',
-//       timeout: 200000,
-//       accounts: [process.env.HARMONY_PRIVATE_KEY],
-//       gas: 2100000, 
-//       gasPrice: 8000000000
-//     },
-//     avax: {
-//       url: 'https://api.avax.network/ext/bc/C/rpc',
-//       timeout: 200000,
-//       accounts: [process.env.PRIVATE_KEY],
-//       chainId: 43114
-//     }
+    //     harmony: {
+    //       url: 'https://api.s0.b.hmny.io',
+    //       timeout: 200000,
+    //       accounts: [process.env.HARMONY_PRIVATE_KEY],
+    //       gas: 2100000,
+    //       gasPrice: 8000000000
+    //     },
+    //     avax: {
+    //       url: 'https://api.avax.network/ext/bc/C/rpc',
+    //       timeout: 200000,
+    //       accounts: [process.env.PRIVATE_KEY],
+    //       chainId: 43114
+    //     }
   },
   solidity: {
     compilers: [
@@ -116,10 +113,10 @@ module.exports = {
     ],
   },
   mocha: {
-    timeout: 200000
+    timeout: 200000,
   },
   tenderly: {
     project: "Open-Protocol Testnet",
     username: "v9hstk",
-  }
+  },
 };

@@ -1,37 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.1; 
+pragma solidity 0.8.1;
+
 interface BEP20 {
     function transfer(address to, uint256 value) external returns (bool);
+
     function balanceOf(address account) external view returns (uint256);
+
     event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
 contract Faucet {
-
-    uint public num = 0;
+    uint256 public num = 0;
     address admin;
 
     bool isReentrant = false;
-    uint public waitTime = 1440 minutes;
+    uint256 public waitTime = 1440 minutes;
 
-    struct TokenLedger    {
+    struct TokenLedger {
         BEP20 token;
-        uint amount;
-        uint balance;
+        uint256 amount;
+        uint256 balance;
     }
 
-    mapping(uint => TokenLedger) tokens; // token id => token ledger.
-    mapping(address => mapping(BEP20 => uint)) airdropRecords; // Address to token to amount of tokens to drip.
+    mapping(uint256 => TokenLedger) tokens; // token id => token ledger.
+    mapping(address => mapping(BEP20 => uint256)) airdropRecords; // Address to token to amount of tokens to drip.
 
-    event TokensIssued(BEP20 indexed token, address indexed account, uint indexed amount, uint  time);
-    event TokenSupportAdded(BEP20 indexed token, uint indexed amount, uint indexed value, uint  time);
+    event TokensIssued(BEP20 indexed token, address indexed account, uint256 indexed amount, uint256 time);
+    event TokenSupportAdded(BEP20 indexed token, uint256 indexed amount, uint256 indexed value, uint256 time);
 
     constructor() {
         admin = msg.sender;
     }
 
     /// UPDATE TOKENS
-    function _updateTokens(address _token,uint _amount, uint _value) public auth() returns (bool)   {
+    function _updateTokens(
+        address _token,
+        uint256 _amount,
+        uint256 _value
+    ) public auth returns (bool) {
         require(_token != address(0), "ERROR: Zero address");
 
         TokenLedger storage td = tokens[num];
@@ -40,14 +46,13 @@ contract Faucet {
         td.balance = _amount; // Faucet balance
 
         num += 1;
-        
+
         emit TokenSupportAdded(td.token, td.amount, td.balance, block.timestamp);
         return true;
     }
 
     /// GET TOKENS
-    function getTokens(uint _index) public payable nonReentrant returns(bool success)   {
-        
+    function getTokens(uint256 _index) public payable nonReentrant returns (bool success) {
         require(msg.sender != address(0), "ERROR: Zero address");
 
         TokenLedger storage td = tokens[_index];
@@ -65,7 +70,7 @@ contract Faucet {
         return success = true;
     }
 
-    modifier nonReentrant {
+    modifier nonReentrant() {
         require(isReentrant == false, "ERROR: Re-entrant");
         isReentrant = true;
         _;

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
+
 interface IAugustusSwapper {
     function simpleSwap(
         address fromToken,
@@ -14,18 +15,12 @@ interface IAugustusSwapper {
         address payable beneficiary,
         string memory referrer,
         bool useReduxToken
-    )
-        external
-        payable
-        returns (uint256 receivedAmount);
+    ) external payable returns (uint256 receivedAmount);
+
     function swapOnUniswap(
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path,
         uint8 referrer
-    )
-        external
-        payable
-        returns (uint256 receivedAmount);
-    
+    ) external payable returns (uint256 receivedAmount);
 }

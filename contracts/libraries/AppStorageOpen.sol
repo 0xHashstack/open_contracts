@@ -9,50 +9,50 @@ struct MarketData {
     address tokenAddress;
     uint256 decimals;
     uint256 chainId;
-    uint minAmount;
+    uint256 minAmount;
 }
 
 // =========== Comptroller structs ===========
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
 /// corresponding time for a particular commitment type.
-struct APY  {
-    bytes32 commitment; 
-    uint[] time; // ledger of time when the APY changes were made.
-    uint[] apyChanges; // ledger of APY changes.
+struct APY {
+    bytes32 commitment;
+    uint256[] time; // ledger of time when the APY changes were made.
+    uint256[] apyChanges; // ledger of APY changes.
 }
 
-struct APR  {
+struct APR {
     bytes32 commitment; // validity
-    uint[] time; // ledger of time when the APR changes were made.
-    uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
+    uint256[] time; // ledger of time when the APR changes were made.
+    uint256[] aprChanges; // Per block.timestamp APR is tabulated in here.
 }
 
 // =========== Deposit structs ===========
 struct SavingsAccount {
-    uint accOpenTime;
-    address account; 
+    uint256 accOpenTime;
+    address account;
     DepositRecords[] deposits;
     YieldLedger[] yield;
 }
 
-struct DepositRecords   {
-    uint id;
+struct DepositRecords {
+    uint256 id;
     bytes32 market;
     bytes32 commitment;
-    uint amount;
-    uint lastUpdate;
+    uint256 amount;
+    uint256 lastUpdate;
     bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
     bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-    uint timelockValidity; // timelock duration
-    uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
+    uint256 timelockValidity; // timelock duration
+    uint256 activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
 }
 
-struct YieldLedger    {
-    uint id;
+struct YieldLedger {
+    uint256 id;
     bytes32 market; //_market this yield is calculated for
-    uint oldLengthAccruedYield; // length of the APY time array.
-    uint oldTime; // last recorded block num. This is when this struct is lastly updated.
-    uint accruedYield; // accruedYield in 
+    uint256 oldLengthAccruedYield; // length of the APY time array.
+    uint256 oldTime; // last recorded block num. This is when this struct is lastly updated.
+    uint256 accruedYield; // accruedYield in
 }
 
 struct ActiveDeposits {
@@ -64,7 +64,10 @@ struct ActiveDeposits {
 }
 // =========== Loan structs ===========
 
-enum STATE {ACTIVE,REPAID}
+enum STATE {
+    ACTIVE,
+    REPAID
+}
 
 struct LoanAccount {
     uint256 accOpenTime;
@@ -139,79 +142,69 @@ struct ActiveLoans {
 // =========== OracleOpen structs =============
 struct PriceData {
     bytes32 market;
-    uint amount;
-    uint price;
+    uint256 amount;
+    uint256 price;
 }
 
 // =========== AccessRegistry structs =============
 
 struct AppStorageOpen {
-    
     IBEP20 token;
-    mapping(bytes4 => uint) facetIndex;
-	address reserveAddress;
+    mapping(bytes4 => uint256) facetIndex;
+    address reserveAddress;
     // ===========  admin addresses ===========
     bytes32 superAdmin; // superAdmin address backed in function setupgradeAdmin()
     address superAdminAddress; // Address of AccessRegistry
-    address upgradeAdmin; 
-
+    address upgradeAdmin;
     // =========== TokenList state variables ===========
     bytes32 adminTokenList;
     address adminTokenListAddress;
     bytes32[] pMarkets; // Primary markets
     bytes32[] sMarkets; // Secondary markets
-
-    mapping (bytes32 => bool) tokenSupportCheck;
-    mapping (bytes32=>uint256) marketIndex;
-    mapping (bytes32 => MarketData) indMarketData;
-
-    mapping (bytes32 => bool) token2SupportCheck;
-    mapping (bytes32=>uint256) market2Index;
-    mapping (bytes32 => MarketData) indMarket2Data;
-
+    mapping(bytes32 => bool) tokenSupportCheck;
+    mapping(bytes32 => uint256) marketIndex;
+    mapping(bytes32 => MarketData) indMarketData;
+    mapping(bytes32 => bool) token2SupportCheck;
+    mapping(bytes32 => uint256) market2Index;
+    mapping(bytes32 => MarketData) indMarket2Data;
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
-    address adminComptrollerAddress;        
+    address adminComptrollerAddress;
     bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
-    uint reserveFactor;
-    uint loanIssuanceFees;
-    uint loanClosureFees;
-    uint loanPreClosureFees;
-    uint depositPreClosureFees;
-    uint maxWithdrawalFactor;
-    uint maxWithdrawalBlockLimit;
-    uint depositWithdrawalFees;
-    uint collateralReleaseFees;
-    uint yieldConversionFees;
-    uint marketSwapFees;
+    uint256 reserveFactor;
+    uint256 loanIssuanceFees;
+    uint256 loanClosureFees;
+    uint256 loanPreClosureFees;
+    uint256 depositPreClosureFees;
+    uint256 maxWithdrawalFactor;
+    uint256 maxWithdrawalBlockLimit;
+    uint256 depositWithdrawalFees;
+    uint256 collateralReleaseFees;
+    uint256 yieldConversionFees;
+    uint256 marketSwapFees;
     mapping(bytes32 => APY) indAPYRecords;
     mapping(bytes32 => APR) indAPRRecords;
-
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
     bytes32 protocolOwnedLiquidator;
     address adminLiquidatorAddress;
-
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
     address adminDepositAddress;
-
-    mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
+    mapping(address => SavingsAccount) savingsPassbook; // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => YieldLedger))) indYieldRecord; // address =>_market => _commitment => depositRecord
     mapping(address => ActiveDeposits) getActiveDeposits;
-
     //  Balance monitoring  - Deposits
-    mapping(bytes32 => uint) marketReservesDeposit; // mapping(market => marketBalance)
-    mapping(bytes32 => uint) marketUtilisationDeposit; // mapping(market => marketBalance)
-
+    mapping(bytes32 => uint256) marketReservesDeposit; // mapping(market => marketBalance)
+    mapping(bytes32 => uint256) marketUtilisationDeposit; // mapping(market => marketBalance)
     // =========== OracleOpen state variables ==============
     bytes32 adminOpenOracle;
     address adminOpenOracleAddress;
     mapping(bytes32 => address) pairAddresses;
     PriceData[] prices;
-    mapping(uint => PriceData) priceData;
-    uint requestEventId;
+    mapping(uint256 => PriceData) priceData;
+    uint256 requestEventId;
     // =========== Loan state variables ============
     bytes32 adminLoan;
     address adminLoanAddress;
@@ -219,11 +212,9 @@ struct AppStorageOpen {
     address adminLoan1Address;
     bytes32 adminLoan2;
     address adminLoan2Address;
-    
     IBEP20 loanToken;
     IBEP20 withdrawToken;
     IBEP20 collateralToken;
-
     // STRUCT Mapping
     mapping(address => LoanAccount) loanPassbook;
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanRecords))) indLoanRecords;
@@ -232,15 +223,12 @@ struct AppStorageOpen {
     mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indAccruedAPY;
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
     mapping(address => ActiveLoans) getActiveLoans;
-
     //  Balance monitoring  - Loan
-    mapping(bytes32 => uint) marketReservesLoan; // mapping(market => marketBalance)
-    mapping(bytes32 => uint) marketUtilisationLoan; // mapping(market => marketBalance)
-
+    mapping(bytes32 => uint256) marketReservesLoan; // mapping(market => marketBalance)
+    mapping(bytes32 => uint256) marketUtilisationLoan; // mapping(market => marketBalance)
     // =========== Reserve state variables ===========
     bytes32 adminReserve;
     address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
-    
 }

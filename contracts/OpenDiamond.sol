@@ -6,15 +6,14 @@ import { LibOracle } from "./libraries/LibOracle.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
 contract OpenDiamond {
-
-    constructor(address _upgradeAdmin, address _diamondCutFacet) payable {        
+    constructor(address _upgradeAdmin, address _diamondCutFacet) payable {
         LibDiamond.setupgradeAdmin(_upgradeAdmin);
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory functionSelectors = new bytes4[](1);
         functionSelectors[0] = IDiamondCut.diamondCut.selector;
         cut[0] = IDiamondCut.FacetCut({
-            facetAddress: _diamondCutFacet, 
+            facetAddress: _diamondCutFacet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: functionSelectors,
             facetId: 0
@@ -36,18 +35,18 @@ contract OpenDiamond {
         assembly {
             // copy function selector and any arguments
             calldatacopy(0, 0, calldatasize())
-             // execute function call using the facet
+            // execute function call using the facet
             let result := delegatecall(gas(), facet, 0, calldatasize(), 0, 0)
             // get any return value
             returndatacopy(0, 0, returndatasize())
             // return any return value or error back to the caller
             switch result
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
     }
 
@@ -55,9 +54,9 @@ contract OpenDiamond {
         LibOracle._addFairPriceAddress(_market, _address);
     }
 
-    function getFairPriceAddress(bytes32 _market) external view returns(address) {
+    function getFairPriceAddress(bytes32 _market) external view returns (address) {
         return LibOracle._getFairPriceAddress(_market);
     }
-    receive() external payable {}
 
+    receive() external payable {}
 }

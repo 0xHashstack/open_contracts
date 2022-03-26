@@ -1,15 +1,20 @@
 ## 🚀 Proposed change
+
 > :
+
 ---
 
 ## 📷 Works?
+
 - [ ] Reference Subtickets Description(if working on subtickets)
-> _paste here_
+  > _paste here_
+
 ---
 
 - [ ] Post logs/screenshots that prove the feature works.
 
 > _paste here_
+
 ---
 
 ## 💣 Want to merge?
@@ -21,5 +26,5 @@
 
 ---
 
-* Make sure that either the branch name and/or the PR title include the Jira ticket key, like `HSH-1234`.
-* Pull request is according to GitFlow: Feature branch -> develop | Bugfix -> develop | Hotfix -> [develop, prod] | develop -> prod | Subfeature -> Feature.
+- Make sure that either the branch name and/or the PR title include the Jira ticket key, like `HSH-1234`.
+- Pull request is according to GitFlow: Feature branch -> develop | Bugfix -> develop | Hotfix -> [develop, prod] | develop -> prod | Subfeature -> Feature.

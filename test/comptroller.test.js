@@ -25,7 +25,6 @@ describe("testing Comptroller", async () => {
   });
 
   describe("Comptroller: Getter Methods", async () => {
-
     const comit_NONE = utils.formatBytes32String("comit_NONE");
     const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
     const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
@@ -36,10 +35,7 @@ describe("testing Comptroller", async () => {
       // deploying relevant contracts
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
-      accessRegistry = await ethers.getContractAt(
-        "AccessRegistry",
-        rets["accessRegistryAddress"]
-      );
+      accessRegistry = await ethers.getContractAt("AccessRegistry", rets["accessRegistryAddress"]);
     });
 
     it("Pause Comptroller", async () => {
@@ -52,19 +48,19 @@ describe("testing Comptroller", async () => {
       await expect(comptroller.connect(accounts[1]).pauseComptroller()).to.be.reverted;
 
       await expect(accessRegistry.addAdminRole(adminComptroller, accounts[1].address)).emit(
-        accessRegistry, "AdminRoleDataGranted"
+        accessRegistry,
+        "AdminRoleDataGranted",
       );
-      
-      await expect(
-        accessRegistry.addAdminRole(adminComptroller, accounts[1].address)
-      ).to.be.reverted;
+
+      await expect(accessRegistry.addAdminRole(adminComptroller, accounts[1].address)).to.be.reverted;
 
       await comptroller.connect(accounts[1]).pauseComptroller();
       expect(await comptroller.isPausedComptroller()).to.equal(true);
 
-      await expect(
-        accessRegistry.removeAdminRole(adminComptroller, accounts[1].address)
-      ).emit(accessRegistry, "AdminRoleDataRevoked");
+      await expect(accessRegistry.removeAdminRole(adminComptroller, accounts[1].address)).emit(
+        accessRegistry,
+        "AdminRoleDataRevoked",
+      );
 
       await expect(comptroller.connect(accounts[1]).unpauseComptroller()).to.be.reverted;
       expect(await comptroller.isPausedComptroller()).to.equal(true);
@@ -74,12 +70,12 @@ describe("testing Comptroller", async () => {
     });
 
     it("Get APR", async () => {
-        let apr;
-        apr = BigNumber.from(await comptroller.getAPR(comit_NONE));
-        expect(apr).to.equal(BigNumber.from(1800));
+      let apr;
+      apr = BigNumber.from(await comptroller.getAPR(comit_NONE));
+      expect(apr).to.equal(BigNumber.from(1800));
 
-        apr = BigNumber.from(await comptroller.getAPR(comit_ONEMONTH));
-        expect(apr).to.equal(BigNumber.from(1500));
+      apr = BigNumber.from(await comptroller.getAPR(comit_ONEMONTH));
+      expect(apr).to.equal(BigNumber.from(1500));
     });
 
     it("Get APY", async () => {
@@ -110,7 +106,6 @@ describe("testing Comptroller", async () => {
 
       apr = await comptroller.getAprLastTime(comit_THREEMONTHS);
       expect(apr).to.not.equal(0);
-
     });
 
     it("Get APY LastTime", async () => {
@@ -242,10 +237,7 @@ describe("testing Comptroller", async () => {
     it("Set APR", async () => {
       await expect(comptroller.connect(accounts[1]).updateAPR(comit_NONE, 2800)).to.be.reverted;
 
-      await expect(
-          comptroller
-          .updateAPR(comit_NONE, 2800)
-        ).emit(comptroller, "APRupdated");
+      await expect(comptroller.updateAPR(comit_NONE, 2800)).emit(comptroller, "APRupdated");
 
       let apy;
       apy = await comptroller.getAPR(comit_NONE);
@@ -256,12 +248,8 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set APY", async () => {
-      await expect(comptroller.connect(accounts[1]).updateAPY(comit_NONE, 2800))
-        .to.be.reverted;
-      await expect(comptroller.updateAPY(comit_NONE, 2800)).emit(
-        comptroller,
-        "APYupdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateAPY(comit_NONE, 2800)).to.be.reverted;
+      await expect(comptroller.updateAPY(comit_NONE, 2800)).emit(comptroller, "APYupdated");
 
       let apy;
       apy = await comptroller.getAPY(comit_NONE);
@@ -272,98 +260,54 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Loan Issuance Fee", async () => {
-      await expect(
-        comptroller.connect(accounts[1]).updateLoanIssuanceFees(2800)
-      ).to.be.reverted;
-      await expect(comptroller.updateLoanIssuanceFees(2800)).emit(
-        comptroller,
-        "LoanIssuanceFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateLoanIssuanceFees(2800)).to.be.reverted;
+      await expect(comptroller.updateLoanIssuanceFees(2800)).emit(comptroller, "LoanIssuanceFeesUpdated");
     });
 
     it("Set Loan Closure Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(2800))
-        .to.be.reverted;
-      await expect(comptroller.updateLoanClosureFees(2800)).emit(
-        comptroller,
-        "LoanClosureFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(2800)).to.be.reverted;
+      await expect(comptroller.updateLoanClosureFees(2800)).emit(comptroller, "LoanClosureFeesUpdated");
     });
 
     it("Set Loan pre Closure Fee", async () => {
-      await expect(
-        comptroller.connect(accounts[1]).updateLoanPreClosureFees(2800)
-      ).to.be.reverted;
-      await expect(comptroller.updateLoanPreClosureFees(2800)).emit(
-        comptroller,
-        "LoanPreClosureFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateLoanPreClosureFees(2800)).to.be.reverted;
+      await expect(comptroller.updateLoanPreClosureFees(2800)).emit(comptroller, "LoanPreClosureFeesUpdated");
     });
 
     it("Set Deposit pre Closure Fee", async () => {
-      await expect(
-        comptroller.connect(accounts[1]).updateDepositPreclosureFees(2800)
-      ).to.be.reverted;
-      await expect(comptroller.updateDepositPreclosureFees(2800)).emit(
-        comptroller,
-        "DepositPreClosureFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateDepositPreclosureFees(2800)).to.be.reverted;
+      await expect(comptroller.updateDepositPreclosureFees(2800)).emit(comptroller, "DepositPreClosureFeesUpdated");
 
       expect(await comptroller.depositPreClosureFees()).to.equal(BigNumber.from(2800));
     });
 
     it("Set Withdrawal Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateWithdrawalFees(2800))
-        .to.be.reverted;
-      await expect(comptroller.updateWithdrawalFees(2800)).emit(
-        comptroller,
-        "DepositWithdrawalFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateWithdrawalFees(2800)).to.be.reverted;
+      await expect(comptroller.updateWithdrawalFees(2800)).emit(comptroller, "DepositWithdrawalFeesUpdated");
 
-      expect(await comptroller.depositWithdrawalFees()).to.equal(
-        BigNumber.from(2800)
-      );
+      expect(await comptroller.depositWithdrawalFees()).to.equal(BigNumber.from(2800));
     });
 
     it("Set Collateral release Fee", async () => {
-      await expect(
-        comptroller.connect(accounts[1]).updateCollateralReleaseFees(2800)
-      ).to.be.reverted;
-      await expect(comptroller.updateCollateralReleaseFees(2800)).emit(
-        comptroller,
-        "CollateralReleaseFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateCollateralReleaseFees(2800)).to.be.reverted;
+      await expect(comptroller.updateCollateralReleaseFees(2800)).emit(comptroller, "CollateralReleaseFeesUpdated");
 
-      expect(await comptroller.collateralReleaseFees()).to.equal(
-        BigNumber.from(2800)
-      );
+      expect(await comptroller.collateralReleaseFees()).to.equal(BigNumber.from(2800));
     });
 
     it("Set Yield Conversion Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateYieldConversion(2800))
-        .to.be.reverted;
-      await expect(comptroller.updateYieldConversion(2800)).emit(
-        comptroller,
-        "YieldConversionFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateYieldConversion(2800)).to.be.reverted;
+      await expect(comptroller.updateYieldConversion(2800)).emit(comptroller, "YieldConversionFeesUpdated");
     });
 
     it("Set MarketSwap Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(2800))
-        .to.be.reverted;
-      await expect(comptroller.updateMarketSwapFees(2800)).emit(
-        comptroller,
-        "MarketSwapFeesUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(2800)).to.be.reverted;
+      await expect(comptroller.updateMarketSwapFees(2800)).emit(comptroller, "MarketSwapFeesUpdated");
     });
 
     it("Set ReserveFactor", async () => {
-      await expect(comptroller.connect(accounts[1]).updateReserveFactor(1)).to
-        .be.reverted;
-      await expect(comptroller.updateReserveFactor(1)).emit(
-        comptroller,
-        "ReserveFactorUpdated"
-      );
+      await expect(comptroller.connect(accounts[1]).updateReserveFactor(1)).to.be.reverted;
+      await expect(comptroller.updateReserveFactor(1)).emit(comptroller, "ReserveFactorUpdated");
 
       expect(await comptroller.getReserveFactor()).to.equal(BigNumber.from(1));
     });
@@ -371,15 +315,9 @@ describe("testing Comptroller", async () => {
     it("Set Max Withdrawal Limit", async () => {
       const x = (await ethers.provider.getBlock()).timestamp;
 
-      await expect(
-        comptroller.connect(accounts[1]).updateMaxWithdrawal(2800, x)
-      ).to.be.reverted;
+      await expect(comptroller.connect(accounts[1]).updateMaxWithdrawal(2800, x)).to.be.reverted;
 
-      await expect(comptroller.updateMaxWithdrawal(2800, x)).emit(
-        comptroller,
-        "MaxWithdrawalUpdated"
-      );
+      await expect(comptroller.updateMaxWithdrawal(2800, x)).emit(comptroller, "MaxWithdrawalUpdated");
     });
-
-  });  
+  });
 });

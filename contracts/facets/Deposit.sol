@@ -7,74 +7,104 @@ import { IDeposit } from "../interfaces/IDeposit.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 
-contract Deposit is Pausable, IDeposit{
+contract Deposit is Pausable, IDeposit {
+    event NewDeposit(
+        address indexed account,
+        bytes32 indexed market,
+        bytes32 commitment,
+        uint256 indexed amount,
+        uint256 depositId,
+        uint256 time
+    );
+    event DepositAdded(
+        address indexed account,
+        bytes32 indexed market,
+        bytes32 commitment,
+        uint256 indexed amount,
+        uint256 depositId,
+        uint256 time
+    );
+    event DepositWithdrawal(address indexed account, uint256 depositId, uint256 indexed amount, uint256 timestamp);
 
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
-	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
-	event DepositWithdrawal(address indexed account, uint256 depositId, uint256 indexed amount,uint timestamp);
-	
-	receive() external payable {
-		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
-	}
-	
-	fallback() external payable {
-		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
-	}
+    receive() external payable {
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
+    }
 
-	function hasAccount(address _account) external view override returns(bool){
-		LibDeposit._hasAccount(_account);
-		return true;
-	}
+    fallback() external payable {
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
+    }
 
-	function getDeposits(address account) external view returns(bytes32[] memory market, bytes32[] memory commitment, uint256[] memory amount, uint256[] memory savingsInterest)	{
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
+    function hasAccount(address _account) external view override returns (bool) {
+        LibDeposit._hasAccount(_account);
+        return true;
+    }
 
-		return (activeDeposits.market, activeDeposits.commitment, activeDeposits.amount, activeDeposits.savingsInterest);
-	}
+    function getDeposits(address account)
+        external
+        view
+        returns (
+            bytes32[] memory market,
+            bytes32[] memory commitment,
+            uint256[] memory amount,
+            uint256[] memory savingsInterest
+        )
+    {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
 
+        return (
+            activeDeposits.market,
+            activeDeposits.commitment,
+            activeDeposits.amount,
+            activeDeposits.savingsInterest
+        );
+    }
 
-	function getDepositInterest(address account, uint256 id) external view returns(uint256 interest)	{
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		uint256 num = id -1;
-		
-		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
-		
-		bytes32 market = activeDeposits.market[num];
-		bytes32 commitment = activeDeposits.commitment[num];
-		uint256 interestFactor = 0;
-		uint256 depositInterest;
+    function getDepositInterest(address account, uint256 id) external view returns (uint256 interest) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        uint256 num = id - 1;
 
-		DepositRecords storage deposit = ds.indDepositRecord[account][market][commitment];
-		YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
+        ActiveDeposits storage activeDeposits = ds.getActiveDeposits[account];
 
-		interestFactor = LibDeposit._getDepositInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
+        bytes32 market = activeDeposits.market[num];
+        bytes32 commitment = activeDeposits.commitment[num];
+        uint256 interestFactor = 0;
+        uint256 depositInterest;
 
-		depositInterest = yield.accruedYield;
-		depositInterest += ((interestFactor*deposit.amount)/(365*86400*10000));		
+        DepositRecords storage deposit = ds.indDepositRecord[account][market][commitment];
+        YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
 
-		return depositInterest;
+        interestFactor = LibDeposit._getDepositInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
 
-	}
-	function hasDeposit(bytes32 _market, bytes32 _commitment) external view override returns(bool) {
-		LibDeposit._hasDeposit(msg.sender,_market, _commitment);
-		return true;
-	}
+        depositInterest = yield.accruedYield;
+        depositInterest += ((interestFactor * deposit.amount) / (365 * 86400 * 10000));
 
-	function hasYield(bytes32 _market, bytes32 _commitment) external view override returns(bool) {
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
-		LibDeposit._hasYield(yield);
-		return true;
-	}
+        return depositInterest;
+    }
 
-/// CREATE DEPOSIT
-	function depositRequest(bytes32 _market, bytes32 _commitment, uint _amount) external override nonReentrant returns(bool) {
-        AppStorageOpen storage ds = LibCommon.diamondStorage(); 
+    function hasDeposit(bytes32 _market, bytes32 _commitment) external view override returns (bool) {
+        LibDeposit._hasDeposit(msg.sender, _market, _commitment);
+        return true;
+    }
+
+    function hasYield(bytes32 _market, bytes32 _commitment) external view override returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
+        LibDeposit._hasYield(yield);
+        return true;
+    }
+
+    /// CREATE DEPOSIT
+    function depositRequest(
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _amount
+    ) external override nonReentrant returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
         preDepositProcess(_market, _amount);
 
-        if (!LibDeposit._hasDeposit(msg.sender, _market, _commitment))    {
+        if (!LibDeposit._hasDeposit(msg.sender, _market, _commitment)) {
             _createNewDeposit(msg.sender, _market, _commitment, _amount);
             return true;
         }
@@ -82,68 +112,78 @@ contract Deposit is Pausable, IDeposit{
         ds.token.transferFrom(msg.sender, address(this), _amount); // change the address(this) to the diamond address.
         _processDeposit(msg.sender, _market, _commitment, _amount);
 
-		LibDeposit._updateReservesDeposit(_market, _amount, 0);
-		emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id, block.timestamp);
+        LibDeposit._updateReservesDeposit(_market, _amount, 0);
+        emit DepositAdded(
+            msg.sender,
+            _market,
+            _commitment,
+            _amount,
+            ds.indDepositRecord[msg.sender][_market][_commitment].id,
+            block.timestamp
+        );
         return true;
     }
 
+    /// WITHRAW DEPOSIT
+    function withdrawDeposit(
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _amount
+    ) external override nonReentrant returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
-/// WITHRAW DEPOSIT
-	function withdrawDeposit (
-		bytes32 _market, 
-		bytes32 _commitment,
-		uint _amount
-	) external override nonReentrant returns(bool) 
-	{
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		
-		LibDeposit._hasAccount(msg.sender);// checks if user has savings account 
-		LibCommon._isMarketSupported(_market);
-		
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
-		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
-		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
+        LibDeposit._hasAccount(msg.sender); // checks if user has savings account
+        LibCommon._isMarketSupported(_market);
 
-		_convertYield(msg.sender, _market, _commitment);
-		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
+        SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
+        DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
+        ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
 
-		if (_commitment != LibCommon._getCommitment(0))	{
-			if (deposit.isTimelockActivated == false)	{
-				deposit.isTimelockActivated = true;
-				deposit.activationTime = block.timestamp;
-				deposit.lastUpdate = block.timestamp;
+        _convertYield(msg.sender, _market, _commitment);
+        require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
-				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
-				savingsAccount.deposits[deposit.id -1].activationTime = block.timestamp;
-				savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
-				return false;
-			}
-			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
-		} 
-		ds.token = IBEP20(LibCommon._connectMarket(_market));
-		require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
-		ds.token.transfer(msg.sender, _amount);
+        if (_commitment != LibCommon._getCommitment(0)) {
+            if (deposit.isTimelockActivated == false) {
+                deposit.isTimelockActivated = true;
+                deposit.activationTime = block.timestamp;
+                deposit.lastUpdate = block.timestamp;
 
-		deposit.amount -= _amount;
-		savingsAccount.deposits[deposit.id -1].amount -= _amount;
+                savingsAccount.deposits[deposit.id - 1].isTimelockActivated = true;
+                savingsAccount.deposits[deposit.id - 1].activationTime = block.timestamp;
+                savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
+                return false;
+            }
+            require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
+        }
+        ds.token = IBEP20(LibCommon._connectMarket(_market));
+        require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
+        ds.token.transfer(msg.sender, _amount);
 
-		activeDeposits.amount[deposit.id-1] -= _amount;
-		activeDeposits.savingsInterest[deposit.id-1] = 0;
+        deposit.amount -= _amount;
+        savingsAccount.deposits[deposit.id - 1].amount -= _amount;
 
-		LibDeposit._updateReservesDeposit(_market, _amount, 1);
-		emit DepositWithdrawal(msg.sender,deposit.id, _amount,  block.timestamp);
-		return true;
-	}
+        activeDeposits.amount[deposit.id - 1] -= _amount;
+        activeDeposits.savingsInterest[deposit.id - 1] = 0;
 
-    function _createNewDeposit(address _sender, bytes32 _market,bytes32 _commitment,uint256 _amount) private {
-        AppStorageOpen storage ds = LibCommon.diamondStorage(); 
+        LibDeposit._updateReservesDeposit(_market, _amount, 1);
+        emit DepositWithdrawal(msg.sender, deposit.id, _amount, block.timestamp);
+        return true;
+    }
+
+    function _createNewDeposit(
+        address _sender,
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _amount
+    ) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
         SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
         DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
         YieldLedger storage yield = ds.indYieldRecord[_sender][_market][_commitment];
-		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_sender];
+        ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_sender];
 
-        LibDeposit._ensureSavingsAccount(_sender,savingsAccount);
+        LibDeposit._ensureSavingsAccount(_sender, savingsAccount);
 
         ds.token.transferFrom(_sender, address(this), _amount);
 
@@ -152,179 +192,193 @@ contract Deposit is Pausable, IDeposit{
         emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id, block.timestamp);
     }
 
-	function _processNewDeposit(
-		// address _account,
-		bytes32 _market,
-		bytes32 _commitment,
-		uint256 _amount,
-		SavingsAccount storage savingsAccount,
-		DepositRecords storage deposit,
-		YieldLedger storage yield,
-		ActiveDeposits storage activeDeposits
-	) private {
-		// SavingsAccount storage savingsAccount = savingsPassbook[_account];
-		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
-		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
+    function _processNewDeposit(
+        // address _account,
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _amount,
+        SavingsAccount storage savingsAccount,
+        DepositRecords storage deposit,
+        YieldLedger storage yield,
+        ActiveDeposits storage activeDeposits
+    ) private {
+        // SavingsAccount storage savingsAccount = savingsPassbook[_account];
+        // DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
+        // YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
 
-		uint id;
+        uint256 id;
 
-		if (savingsAccount.deposits.length == 0) {
-			id = 1;
-		} else {
-			id = savingsAccount.deposits.length + 1;
-		}
+        if (savingsAccount.deposits.length == 0) {
+            id = 1;
+        } else {
+            id = savingsAccount.deposits.length + 1;
+        }
 
-		deposit.id = id;	
-		deposit.market =_market;
-		deposit.commitment = _commitment;
-		deposit.amount = _amount;
-		deposit.lastUpdate =  block.timestamp;
+        deposit.id = id;
+        deposit.market = _market;
+        deposit.commitment = _commitment;
+        deposit.amount = _amount;
+        deposit.lastUpdate = block.timestamp;
 
-		
-		if (_commitment != LibCommon._getCommitment(0)) {
-			yield.id = id;
-			yield.market = bytes32(_market);
-			yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			deposit.isTimelockApplicable = true;
-			deposit.isTimelockActivated = false;
-			deposit.timelockValidity = 86400;
-			deposit.activationTime = 0;
-		} else if (_commitment == LibCommon._getCommitment(0)) {
-			yield.id=  id;
-			yield.market=_market;
-			yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			deposit.isTimelockApplicable = false;
-			deposit.isTimelockActivated = true;
-			deposit.timelockValidity = 0;
-			deposit.activationTime = 0;
-		}
+        if (_commitment != LibCommon._getCommitment(0)) {
+            yield.id = id;
+            yield.market = bytes32(_market);
+            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
+            yield.oldTime = block.timestamp;
+            yield.accruedYield = 0;
+            deposit.isTimelockApplicable = true;
+            deposit.isTimelockActivated = false;
+            deposit.timelockValidity = 86400;
+            deposit.activationTime = 0;
+        } else if (_commitment == LibCommon._getCommitment(0)) {
+            yield.id = id;
+            yield.market = _market;
+            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
+            yield.oldTime = block.timestamp;
+            yield.accruedYield = 0;
+            deposit.isTimelockApplicable = false;
+            deposit.isTimelockActivated = true;
+            deposit.timelockValidity = 0;
+            deposit.activationTime = 0;
+        }
 
-		savingsAccount.deposits.push(deposit);
-		savingsAccount.yield.push(yield);
+        savingsAccount.deposits.push(deposit);
+        savingsAccount.yield.push(yield);
 
-		activeDeposits.id.push(id-1);
-		activeDeposits.market.push(_market);
-		activeDeposits.commitment.push(_commitment);
-		activeDeposits.amount.push(_amount);
-		activeDeposits.savingsInterest.push(yield.accruedYield);
+        activeDeposits.id.push(id - 1);
+        activeDeposits.market.push(_market);
+        activeDeposits.commitment.push(_commitment);
+        activeDeposits.amount.push(_amount);
+        activeDeposits.savingsInterest.push(yield.accruedYield);
+    }
 
-	}
+    function accruedYield(
+        address _account,
+        bytes32 _market,
+        bytes32 _commitment
+    ) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        LibDeposit._hasDeposit(_account, _market, _commitment);
 
-	function accruedYield(address _account,bytes32 _market,bytes32 _commitment) private {
-        
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		LibDeposit._hasDeposit(_account, _market, _commitment);
+        uint256 aggregateYield;
 
-		uint256 aggregateYield;
+        SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
+        DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
+        YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
 
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
+        (yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibDeposit._calcAPY(
+            _commitment,
+            yield.oldLengthAccruedYield,
+            yield.oldTime,
+            aggregateYield
+        );
 
-		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibDeposit._calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
+        aggregateYield = (aggregateYield * deposit.amount) / (365 * 86400 * 10000);
 
-		aggregateYield = (aggregateYield*deposit.amount)/(365*86400*10000);
+        yield.accruedYield += aggregateYield;
+        savingsAccount.yield[deposit.id - 1].accruedYield += aggregateYield;
+    }
 
-		yield.accruedYield += aggregateYield;
-		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;
+    /// DELEGATED CALL - PROCESS DEPOSIT
+    function _processDeposit(
+        address _account,
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _amount
+    ) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
+        DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
+        YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
+        ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_account];
 
-	}
+        uint256 num = deposit.id - 1;
 
-/// DELEGATED CALL - PROCESS DEPOSIT
-	function _processDeposit(
-		address _account,
-		bytes32 _market,
-		bytes32 _commitment,
-		uint256 _amount
-	) private {
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-		ActiveDeposits storage activeDeposits = ds.getActiveDeposits[_account];
+        accruedYield(_account, _market, _commitment);
 
-		uint num = deposit.id - 1;
+        deposit.amount += _amount;
+        deposit.lastUpdate = block.timestamp;
 
-		accruedYield(_account, _market, _commitment);
-		
-		deposit.amount += _amount;
-		deposit.lastUpdate =  block.timestamp;
+        savingsAccount.deposits[num].amount += _amount;
+        savingsAccount.deposits[num].lastUpdate = block.timestamp;
 
+        savingsAccount.yield[num].oldLengthAccruedYield = yield.oldLengthAccruedYield;
+        savingsAccount.yield[num].oldTime = yield.oldTime;
+        savingsAccount.yield[num].accruedYield = yield.accruedYield;
 
-		savingsAccount.deposits[num].amount += _amount;
-		savingsAccount.deposits[num].lastUpdate =  block.timestamp;
+        activeDeposits.market[num] = _market;
+        activeDeposits.commitment[num] = _commitment;
+        activeDeposits.amount[num] += _amount;
+        activeDeposits.savingsInterest[num] = yield.accruedYield;
+    }
 
-		savingsAccount.yield[num].oldLengthAccruedYield = yield.oldLengthAccruedYield;
-		savingsAccount.yield[num].oldTime = yield.oldTime;
-		savingsAccount.yield[num].accruedYield = yield.accruedYield;
+    function preDepositProcess(bytes32 _market, uint256 _amount) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
-		activeDeposits.market[num] = _market;
-		activeDeposits.commitment[num] = _commitment;
-		activeDeposits.amount[num] += _amount;
-		activeDeposits.savingsInterest[num] = yield.accruedYield;
-	}
+        LibCommon._isMarketSupported(_market);
+        ds.token = IBEP20(LibCommon._connectMarket(_market));
+        LibCommon._minAmountCheck(_market, _amount);
+    }
 
-	function preDepositProcess(bytes32 _market,uint256 _amount) private {
-    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
+    function _convertYield(
+        address _account,
+        bytes32 _market,
+        bytes32 _commitment
+    ) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
-		LibCommon._isMarketSupported(_market);
-		ds.token = IBEP20(LibCommon._connectMarket(_market));
-		LibCommon._minAmountCheck(_market, _amount);
-	}
+        LibDeposit._hasAccount(_account);
 
-	function _convertYield(address _account, bytes32 _market, bytes32 _commitment) private	{
-		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
+        SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
+        DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
+        YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
 
-		LibDeposit._hasAccount(_account);
+        LibDeposit._hasYield(yield);
+        accruedYield(_account, _market, _commitment);
 
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
+        deposit.amount += yield.accruedYield;
+        deposit.lastUpdate = block.timestamp;
 
-		LibDeposit._hasYield(yield);
-		accruedYield(_account,_market,_commitment);
+        /// RESETTING THE YIELD.
+        yield.accruedYield = 0;
 
+        savingsAccount.deposits[deposit.id - 1].amount = deposit.amount;
+        savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
+        savingsAccount.yield[deposit.id - 1].accruedYield = 0;
+    }
 
-		deposit.amount += yield.accruedYield;
-		deposit.lastUpdate = block.timestamp;
-		
-		/// RESETTING THE YIELD.
-		yield.accruedYield = 0;
+    function _updateUtilisation(
+        bytes32 _market,
+        uint256 _amount,
+        uint256 _num
+    ) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        if (_num == 0) {
+            ds.marketUtilisationDeposit[_market] += _amount;
+        } else if (_num == 1) {
+            ds.marketUtilisationDeposit[_market] -= _amount;
+        }
+    }
 
-		savingsAccount.deposits[deposit.id -1].amount = deposit.amount;
-		savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
-		savingsAccount.yield[deposit.id-1].accruedYield = 0;
-	}
+    function pauseDeposit() external override authDeposit {
+        _pause();
+    }
 
-	function _updateUtilisation(bytes32 _market, uint _amount, uint _num) private 
-	{
-    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		if (_num == 0)	{
-			ds.marketUtilisationDeposit[_market] += _amount;
-		} else if (_num == 1)	{
-			ds.marketUtilisationDeposit[_market] -= _amount;
-		}
-	}
+    function unpauseDeposit() external override authDeposit {
+        _unpause();
+    }
 
-	function pauseDeposit() external override authDeposit() {
-		_pause();
-	}
-	
-	function unpauseDeposit() external override authDeposit() {
-		_unpause();   
-	}
+    function isPausedDeposit() external view virtual override returns (bool) {
+        return _paused();
+    }
 
-	function isPausedDeposit() external view override virtual returns(bool) {
-		return _paused();
-	}
-
-	modifier authDeposit() {
-    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
-		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminDeposit, msg.sender), "ERROR: Not an admin");
-		_;
-	}
+    modifier authDeposit() {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        require(
+            IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) ||
+                IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminDeposit, msg.sender),
+            "ERROR: Not an admin"
+        );
+        _;
+    }
 }

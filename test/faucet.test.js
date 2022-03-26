@@ -28,7 +28,6 @@ describe("Testing Faucet", async () => {
   });
 
   describe("Test: Deposit (Commit None)", async () => {
-
     const comit_NONE = utils.formatBytes32String("comit_NONE");
 
     before(async () => {
@@ -36,25 +35,13 @@ describe("Testing Faucet", async () => {
     });
 
     it("Faucet Testing", async () => {
-      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(
-        faucet,
-        "TokensIssued"
-      );
+      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(
-        faucet,
-        "TokensIssued"
-      );
+      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(
-        faucet,
-        "TokensIssued"
-      );
+      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(
-        faucet,
-        "TokensIssued"
-      );
+      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
     });
 
     it("Faucet Testing (Timelock-Check)", async () => {
@@ -66,6 +53,5 @@ describe("Testing Faucet", async () => {
 
       await expect(faucet.connect(accounts[1]).getTokens(3)).to.be.reverted;
     });
-
   });
 });
