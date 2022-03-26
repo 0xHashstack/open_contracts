@@ -1,24 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "../util/Pausable.sol";
-import "../libraries/LibOpen.sol";
-
+import { AppStorageOpen, LibCommon, LibReserve } from "../libraries/LibReserve.sol";
+import { Pausable } from "../util/Pausable.sol";
+import { IReserve } from "../interfaces/IReserve.sol";
+import { IBEP20 } from "../util/IBEP20.sol";
+import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract Reserve is Pausable, IReserve {
-
-	constructor() {
-		// AppStorage storage ds = LibOpen.diamondStorage(); 
-			// ds.adminReserveAddress = msg.sender;
-			// ds.reserve = IReserve(msg.sender);
-	}
 	
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
     
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 
 	function transferAnyBEP20(
@@ -30,59 +26,37 @@ contract Reserve is Pausable, IReserve {
 		return true;
 	}
 
-	// function transferMarket(address _token, address _recipient, uint256 _value, uint256 nFacetIndex)
-	// 	public nonReentrant authTransfer(nFacetIndex) returns (bool success) {
-
-	// 	IBEP20(_token).transfer(_recipient, _value);
-	// 	success = true;
-	// }
-
-	// function marketReserves(bytes32 _market) external view returns(uint) {
-	//     _avblReserves(_market);
-	// }
-	// function _avblReserves(bytes32 _market) internal view returns(uint) {
-	//     return loan.reserves(_market) + deposit.reserves(_market);
-	// }
-
 	function avblMarketReserves(bytes32 _market) external view override returns (uint) {
-		return LibOpen._avblMarketReserves(_market);
+		return LibReserve._avblMarketReserves(_market);
 	}
 
 	function marketReserves(bytes32 _market) external view override returns(uint)	{
-		return LibOpen._marketReserves(_market);
+		return LibReserve._marketReserves(_market);
 	}
 
 	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
-		return LibOpen._marketUtilisation(_market);
+		return LibReserve._marketUtilisation(_market);
 	}
 
-/// Duplicate: withdrawCollateral() in Loan.sol
+	function avblReservesDeposit(bytes32 _market) external view override returns(uint) {
+		return LibReserve._avblReservesDeposit(_market);
+	}
 
-// 	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override nonReentrant returns (bool){
-// 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-
-// 		bytes32 collateralMarket;
-// 		uint collateralAmount;
-
-// 		(collateralMarket, collateralAmount) = LibOpen._collateralPointer(_account,_market,_commitment);
-// 		ds.token = IBEP20(LibOpen._connectMarket(collateralMarket));
-// 		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-// 		// ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
-// 		ds.token.transfer(_account, collateralAmount);
-// 		return true;
-//   }
+	function utilisedReservesDeposit(bytes32 _market) external view override returns(uint) {
+    	return LibReserve._utilisedReservesDeposit(_market);
+	}
 
 	modifier authReserve()  {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminReserve, msg.sender), "ERROR: Not an admin");
 		_;
 	}
 
-	function pauseReserve() external override nonReentrant authReserve() {
+	function pauseReserve() external override authReserve() {
 			_pause();
 	}
 	
-	function unpauseReserve() external override nonReentrant authReserve() {
+	function unpauseReserve() external override authReserve() {
 		_unpause();   
 	}
 

@@ -36,7 +36,6 @@ describe("testing OracleOpen", async () => {
       "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
 
     before(async () => {
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       oracle = await ethers.getContractAt("OracleOpen", diamondAddress);
       accessRegistry = await ethers.getContractAt(

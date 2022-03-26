@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-// import "./mockup/IMockBep20.sol";
-import "../util/Pausable.sol";
-import "../libraries/LibOpen.sol";
-import "../libraries/AppStorageOpen.sol";
+import { AppStorageOpen, MarketData, LibCommon } from "../libraries/LibCommon.sol";
+import { Pausable } from "../util/Pausable.sol";
+import { ITokenList } from "../interfaces/ITokenList.sol";
+import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract TokenList is Pausable, ITokenList {  
 
@@ -29,29 +29,29 @@ contract TokenList is Pausable, ITokenList {
   }
 
   receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
     
 	fallback() external payable {
-    payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+    payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 
   function isMarketSupported(bytes32  _market) external view override returns (bool)	{
-		LibOpen._isMarketSupported(_market);
+		LibCommon._isMarketSupported(_market);
 		return true;
 	}
   
   function getMarketAddress(bytes32 _market) external view override returns (address) {
-    return LibOpen._getMarketAddress(_market);
+    return LibCommon._getMarketAddress(_market);
   }
 
   function getMarketDecimal(bytes32 _market) external view override returns (uint) { 
-    return LibOpen._getMarketDecimal(_market);
+    return LibCommon._getMarketDecimal(_market);
   }
   
   // ADD A NEW TOKEN SUPPORT
   function addMarketSupport(bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) external override authTokenList() returns (bool) {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
     MarketData storage marketData = ds.indMarketData[_market];
     
     marketData.market = _market;
@@ -68,11 +68,11 @@ contract TokenList is Pausable, ITokenList {
   }
 
   function minAmountCheck(bytes32 _market, uint _amount) external override view {
-    LibOpen._minAmountCheck(_market, _amount);
+    LibCommon._minAmountCheck(_market, _amount);
   }
 
-  function removeMarketSupport(bytes32 _market) external override  authTokenList() returns(bool) {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+  function removeMarketSupport(bytes32 _market) external override authTokenList() returns(bool) {
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 
     ds.tokenSupportCheck[_market] = false;
         /// CHECKS FOR MARKET SUPPORT
@@ -93,8 +93,8 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
   
-  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_,uint _amount) external override  authTokenList()  returns(bool){
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_, uint _amount) external override  authTokenList()  returns(bool){
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 
     MarketData storage marketData = ds.indMarketData[_market];
 
@@ -110,29 +110,25 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
 
-  // function quantifyAmount(bytes32 _market, uint _amount) external override  view returns (uint amount) {
-  //   // return LibOpen._quantifyAmount(_market, _amount);
-  // }
-
   //SecondaryToken
   function isMarket2Supported(bytes32  _market) external view override returns (bool)	{
-		LibOpen._isMarket2Supported(_market);
+		LibCommon._isMarket2Supported(_market);
 		return true;
 	}
 
   function getMarket2Address(bytes32 _market) external view override returns (address) {
-    return LibOpen._getMarket2Address(_market);
+    return LibCommon._getMarket2Address(_market);
   }
 
   function getMarket2Decimal(bytes32 _market) external view override returns (uint) {
-    return LibOpen._getMarket2Decimal(_market);
+    return LibCommon._getMarket2Decimal(_market);
   }
   
   // ADD A NEW TOKEN SUPPORT
   function addMarket2Support(bytes32 _market,uint256 _decimals,address tokenAddress_) 
     external override  authTokenList returns (bool) 
   {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
     MarketData storage marketData = ds.indMarket2Data[_market];
     
     marketData.market = _market;
@@ -146,8 +142,8 @@ contract TokenList is Pausable, ITokenList {
     return true;
   }
 
-  function removeMarket2Support(bytes32 _market) external override  authTokenList returns(bool) {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+  function removeMarket2Support(bytes32 _market) external override authTokenList returns(bool) {
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
     ds.token2SupportCheck[_market] = false;
     delete ds.indMarket2Data[_market];
 
@@ -168,7 +164,7 @@ contract TokenList is Pausable, ITokenList {
   function updateMarket2Support(bytes32 _market, uint256 _decimals,address tokenAddress_) 
     external override  authTokenList returns(bool)
   { 
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
     MarketData storage marketData = ds.indMarket2Data[_market];
 
     marketData.market = _market;
@@ -193,7 +189,7 @@ contract TokenList is Pausable, ITokenList {
   }
 
 	modifier authTokenList() {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminTokenList, msg.sender), "ERROR: Not an admin");		  _;
 	}
 

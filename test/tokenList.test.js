@@ -11,7 +11,6 @@ let diamondAddress;
 let rets;
 let accounts;
 
-let library;
 let tokenList;
 let accessRegistry;
 
@@ -38,7 +37,6 @@ describe("testing tokenList", async () => {
       "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
 
     before(async () => {
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       accessRegistry = await ethers.getContractAt(
         "AccessRegistry",
@@ -89,10 +87,10 @@ describe("testing tokenList", async () => {
 
     it("Update Primary Market", async () => {
       await expect(
-        tokenList.connect(accounts[1]).updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"])
+        tokenList.connect(accounts[1]).updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"], 100000000)
       ).to.be.reverted;
       await expect(
-        tokenList.updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"])
+        tokenList.updateMarketSupport(symbolBtc, 8, rets["tBtcAddress"], 100000000)
       ).emit(tokenList, "MarketSupportUpdated");
       expect(await tokenList.isMarketSupported(symbolBtc)).to.equal(true);
     });

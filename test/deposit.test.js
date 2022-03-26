@@ -63,7 +63,6 @@ describe("Testing Deposit", async () => {
 
     before(async () => {
       // deploying relevant contracts
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       deposit = await ethers.getContractAt("Deposit", diamondAddress);
       accessRegistry = await ethers.getContractAt(
@@ -565,7 +564,6 @@ describe("Testing Deposit", async () => {
       // fetching accounts
 
       // deploying relevant contracts
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       deposit = await ethers.getContractAt("Deposit", diamondAddress);
 
@@ -1022,7 +1020,6 @@ describe("Testing Deposit", async () => {
       // fetching accounts
 
       // deploying relevant contracts
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       deposit = await ethers.getContractAt("Deposit", diamondAddress);
 

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-import "../util/Pausable.sol";
-// import "./mockup/IMockBep20.sol";
 
-import "../libraries/LibOpen.sol";
-import "../libraries/AppStorageOpen.sol";
+import { AppStorageOpen, APR, APY, LibCommon, LibComptroller } from "../libraries/LibComptroller.sol";
+import { LibReserve } from "../libraries/LibReserve.sol";
+import { Pausable } from "../util/Pausable.sol";
+import { IComptroller } from "../interfaces/IComptroller.sol";
+import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract Comptroller is Pausable, IComptroller {
 	// using Address for address;
@@ -22,70 +23,65 @@ contract Comptroller is Pausable, IComptroller {
 	event YieldConversionFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
 	event MarketSwapFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
 	event MaxWithdrawalUpdated(address indexed admin, uint indexed newFactor, uint indexed newBlockLimit, uint oldFactor, uint oldBlockLimit, uint timestamp);
-
-	constructor() {
-    // 	AppStorageOpen storage ds = LibOpen.diamondStorage();
-	// 	ds.comptroller = IComptroller(msg.sender);
-	}
 	
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 	
 	function getAPR(bytes32 _commitment) external view override returns (uint) {
-		return LibOpen._getAPR(_commitment);
+		return LibComptroller._getAPR(_commitment);
 	}
 	function getAPRInd(bytes32 _commitment, uint _index) external view override returns (uint) {
-		return LibOpen._getAPRInd(_commitment, _index);
+		return LibComptroller._getAPRInd(_commitment, _index);
 	}
 
 	function getAPY(bytes32 _commitment) external view override returns (uint) {
-		return LibOpen._getAPY(_commitment);
+		return LibComptroller._getAPY(_commitment);
 	}
 
 	function getAPYInd(bytes32 _commitment, uint _index) external view override returns (uint) {
-		return LibOpen._getAPYInd(_commitment, _index);
+		return LibComptroller._getAPYInd(_commitment, _index);
 	}
 
 	function getApytime(bytes32 _commitment, uint _index) external view override returns (uint) {
-		return LibOpen._getApytime(_commitment, _index);
+		return LibComptroller._getApytime(_commitment, _index);
 	}
 
 	function getAprtime(bytes32 _commitment, uint _index) external view override returns (uint) {
-    	return LibOpen._getAprtime(_commitment, _index);
+    	return LibComptroller._getAprtime(_commitment, _index);
 	}
 
 	function getApyLastTime(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getApyLastTime(_commitment);
+    	return LibComptroller._getApyLastTime(_commitment);
 	}
 
 	function getAprLastTime(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getAprLastTime(_commitment);
+    	return LibComptroller._getAprLastTime(_commitment);
 	}
 
 	function getApyTimeLength(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getApyTimeLength(_commitment);
+    	return LibCommon._getApyTimeLength(_commitment);
 	}
 
 	function getAprTimeLength(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getAprTimeLength(_commitment);
+    	return LibCommon._getAprTimeLength(_commitment);
 	}
 
 	function getCommitment(uint _index) external view override returns (bytes32) {
-    	return LibOpen._getCommitment(_index);
-	}
-
-	function setCommitment(bytes32 _commitment) external override nonReentrant authComptroller {
-    	LibOpen._setCommitment(_commitment);
+    	return LibCommon._getCommitment(_index);
 	}
 
 	// SETTERS
+	function setCommitment(bytes32 _commitment) external override nonReentrant authComptroller {
+    	LibComptroller._setCommitment(_commitment);
+	}
+
 	function updateAPY(bytes32 _commitment, uint _apy) external override nonReentrant authComptroller() returns (bool) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
 		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
@@ -97,7 +93,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateAPR(bytes32 _commitment, uint _apr) external override nonReentrant authComptroller() returns (bool ) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage();
+		AppStorageOpen storage ds = LibCommon.diamondStorage();
 		APR storage aprUpdate = ds.indAPRRecords[_commitment];
 
 		if(aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
@@ -110,7 +106,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanIssuanceFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.loanIssuanceFees;
 		ds.loanIssuanceFees = fees;
 
@@ -119,7 +115,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanClosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.loanClosureFees;
 		ds.loanClosureFees = fees;
 
@@ -128,7 +124,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanPreClosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.loanPreClosureFees;
 		ds.loanPreClosureFees = fees;
 
@@ -137,11 +133,11 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function depositPreClosureFees() external view override returns (uint) {
-		return LibOpen.diamondStorage().depositPreClosureFees;
+		return LibCommon.diamondStorage().depositPreClosureFees;
 	}
 
-	function updateDepositPreclosureFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+	function updateDepositPreclosureFees(uint fees) external override authComptroller() returns(bool) {
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.depositPreClosureFees;
 		ds.depositPreClosureFees = fees;
 
@@ -150,11 +146,11 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function depositWithdrawalFees() external view override returns (uint) {
-		return LibOpen.diamondStorage().depositWithdrawalFees;
+		return LibCommon.diamondStorage().depositWithdrawalFees;
 	}
 
 	function updateWithdrawalFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.depositWithdrawalFees;
 		ds.depositWithdrawalFees = fees;
 
@@ -163,11 +159,11 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function collateralReleaseFees() external view override returns (uint) {
-		return LibOpen.diamondStorage().collateralReleaseFees;
+		return LibCommon.diamondStorage().collateralReleaseFees;
 	}
 
 	function updateCollateralReleaseFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.collateralReleaseFees;
 		ds.collateralReleaseFees = fees;
 
@@ -176,7 +172,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 	
 	function updateYieldConversion(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.yieldConversionFees;
 		ds.yieldConversionFees = fees;
 
@@ -185,7 +181,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateMarketSwapFees(uint fees) external override nonReentrant authComptroller() returns(bool) {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFees = ds.marketSwapFees;
 		ds.marketSwapFees = fees;
 
@@ -196,7 +192,7 @@ contract Comptroller is Pausable, IComptroller {
 	function updateReserveFactor(uint _reserveFactor) external override nonReentrant authComptroller() returns (bool) {
 	 	// implementing the barebones version for testnet. 
 		//  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldReserveFactor = ds.reserveFactor;
 		ds.reserveFactor = _reserveFactor;
 		 
@@ -207,7 +203,7 @@ contract Comptroller is Pausable, IComptroller {
 // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 	function updateMaxWithdrawal(uint factor, uint blockLimit) external override nonReentrant authComptroller() returns(bool) {
 		
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		uint oldFactor = ds.maxWithdrawalFactor; 
 		uint oldBlockLimit = blockLimit;
 
@@ -219,24 +215,24 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function getReserveFactor() external view override returns (uint256) {
-    	return LibOpen._getReserveFactor();
+    	return LibReserve._getReserveFactor();
 	}
 
 	function updateReservesDeposit(bytes32 _market, uint _amount) external authComptroller {
-		LibOpen._updateReservesDeposit(_market, _amount, 0);
+		LibReserve._updateReservesDeposit(_market, _amount, 0);
 	}
 
 	modifier authComptroller() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage();
+    	AppStorageOpen storage ds = LibCommon.diamondStorage();
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminComptroller, msg.sender), "ERROR: Not an admin");
 		_;
 	}
 
-	function pauseComptroller() external override nonReentrant authComptroller() {
+	function pauseComptroller() external override authComptroller() {
 		_pause();
 	}
 	
-	function unpauseComptroller() external override nonReentrant authComptroller() {
+	function unpauseComptroller() external override authComptroller() {
 		_unpause(); 
 	}
 

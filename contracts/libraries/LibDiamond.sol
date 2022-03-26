@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-pragma experimental ABIEncoderV2;
 
+import { LibCommon, AppStorageOpen } from "./LibCommon.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 
-import { LibOpen } from "./LibOpen.sol";
-import { AppStorageOpen } from "./AppStorageOpen.sol";
 struct FacetAddressAndSelectorPosition {
     address facetAddress;
     uint16 selectorPosition;
@@ -76,7 +74,7 @@ library LibDiamond {
     function addFunctions(address _facetAddress, bytes4[] memory _functionSelectors, uint8 _facetId) internal {
         require(_functionSelectors.length > 0, "LibDiamondCut: No selectors in facet to cut");
         DiamondStorage storage ds = diamondStorage();
-        AppStorageOpen storage ads = LibOpen.diamondStorage();
+        AppStorageOpen storage ads = LibCommon.diamondStorage();
         uint16 selectorCount = uint16(ds.selectors.length);
         require(_facetAddress != address(0), "LibDiamondCut: Add facet can't be address(0)");
         enforceHasContractCode(_facetAddress, "LibDiamondCut: Add facet has no code");
@@ -94,7 +92,7 @@ library LibDiamond {
     function replaceFunctions(address _facetAddress, bytes4[] memory _functionSelectors, uint8 _facetId) internal {
         require(_functionSelectors.length > 0, "LibDiamondCut: No selectors in facet to cut");
         DiamondStorage storage ds = diamondStorage();
-        AppStorageOpen storage ads = LibOpen.diamondStorage();
+        AppStorageOpen storage ads = LibCommon.diamondStorage();
         require(_facetAddress != address(0), "LibDiamondCut: Replace facet can't be address(0)");
         enforceHasContractCode(_facetAddress, "LibDiamondCut: Replace facet has no code");
         for (uint256 selectorIndex; selectorIndex < _functionSelectors.length; selectorIndex++) {

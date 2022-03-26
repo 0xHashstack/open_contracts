@@ -34,7 +34,6 @@ describe("testing Comptroller", async () => {
 
     before(async () => {
       // deploying relevant contracts
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
       accessRegistry = await ethers.getContractAt(
@@ -236,7 +235,6 @@ describe("testing Comptroller", async () => {
 
     before(async () => {
       // deploying relevant contracts
-      library = await ethers.getContractAt("LibOpen", diamondAddress);
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
     });

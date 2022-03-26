@@ -22,10 +22,9 @@ describe(" Complex Test ", function () {
 	let comptroller
 	let deposit
     let loan
-    let loanExt
+    let loan1
 	let oracle
     let reserve
-	let library
 	let liquidator
 	let accounts
 	let upgradeAdmin
@@ -61,13 +60,12 @@ describe(" Complex Test ", function () {
     
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
-		library = await ethers.getContractAt('LibOpen', diamondAddress)
 
 		tokenList = await ethers.getContractAt('TokenList', diamondAddress)
 		comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
 		deposit = await ethers.getContractAt("Deposit", diamondAddress)
 		loan = await ethers.getContractAt("Loan", diamondAddress)
-		loanExt = await ethers.getContractAt("LoanExt", diamondAddress)
+		loan1 = await ethers.getContractAt("Loan1", diamondAddress)
 		oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)

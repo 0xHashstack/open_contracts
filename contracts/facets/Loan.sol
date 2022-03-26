@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "../libraries/LibOpen.sol";
-import "../util/Pausable.sol";
-import "hardhat/console.sol";
-
+import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, CollateralYield, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
+import { Pausable } from "../util/Pausable.sol";
+import { IBEP20 } from "../util/IBEP20.sol";
+import { ILoan } from "../interfaces/ILoan.sol";
+import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract Loan is Pausable, ILoan {
     event AddCollateral(
@@ -21,18 +22,12 @@ contract Loan is Pausable, ILoan {
     );
     event MarketSwapped(address indexed account,bytes32 loanMarket,bytes32 commmitment,bool isSwapped,bytes32 indexed currentMarket,uint256 indexed amount,uint256 timestamp);
 
-    constructor() {
-        // AppStorage storage ds = LibOpen.diamondStorage();
-        // ds.adminLoanAddress = msg.sender;
-        // ds.loan = ILoan(msg.sender);
-    }
-
     receive() external payable {
-        payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
 
     fallback() external payable {
-        payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+        payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
 
     /// Swap loan to a secondary market.
@@ -40,14 +35,14 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         bytes32 _swapMarket
-    ) external override nonReentrant() nonReentrant returns (bool) {
+    ) external override nonReentrant returns (bool) {
         
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
         
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
         
-        LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
+        LibLoan._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
         
         emit MarketSwapped(msg.sender, loanState.loanMarket, _commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
         return true;
@@ -60,9 +55,9 @@ contract Loan is Pausable, ILoan {
         nonReentrant
         returns (bool success)
     {
-        LibOpen._swapToLoan(msg.sender, _loanMarket, _commitment);
+        LibLoan._swapToLoan(msg.sender, _loanMarket, _commitment);
         
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
         
@@ -76,7 +71,7 @@ contract Loan is Pausable, ILoan {
         nonReentrant
         returns (bool)
     {
-        LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
+        LibLoan._withdrawCollateral(msg.sender, _market, _commitment);
         return true;
     }
 
@@ -94,7 +89,7 @@ contract Loan is Pausable, ILoan {
             "ERROR: Mismatch collateral market"
         );
 
-        LibOpen._isMarketSupported(_collateralMarket);
+        LibCommon._isMarketSupported(_collateralMarket);
     }
 
     function addCollateral(
@@ -102,7 +97,7 @@ contract Loan is Pausable, ILoan {
         bytes32 _commitment,
         uint256 _collateralAmount
     ) external override nonReentrant returns (bool) {
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
@@ -117,7 +112,7 @@ contract Loan is Pausable, ILoan {
             collateral
         );
 
-        ds.collateralToken = IBEP20(LibOpen._connectMarket(collateral.market));
+        ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
 
         /// TRIGGER: ds.collateralToken.approve() on the client.
         ds.collateralToken.transferFrom(
@@ -125,16 +120,16 @@ contract Loan is Pausable, ILoan {
             address(this),
             _collateralAmount
         );
-        LibOpen._updateReservesLoan(collateral.market, _collateralAmount, 0);
+        LibReserve._updateReservesLoan(collateral.market, _collateralAmount, 0);
 
         /// UPDATE COLLATERAL IN STORAGE
         collateral.amount += _collateralAmount;
         loanAccount.collaterals[loan.id - 1].amount += _collateralAmount;
         activeLoans.collateralAmount[loan.id - 1] += _collateralAmount; // updating activeLoans
 
-        LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
+        LibLoan._accruedInterest(msg.sender, _loanMarket, _commitment);
         if (collateral.isCollateralisedDeposit)
-            LibOpen._accruedYieldCollateral(loanAccount, collateral, cYield);
+            LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
         emit AddCollateral(
             msg.sender,
@@ -149,9 +144,9 @@ contract Loan is Pausable, ILoan {
         bytes32 _loanMarket,
         bytes32 _commitment,
         uint256 _amount
-    ) external override nonReentrant() nonReentrant returns (bool) {
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
-        LibOpen._hasLoanAccount(msg.sender);
+    ) external override nonReentrant returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        LibLoan._hasLoanAccount(msg.sender);
 
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -160,7 +155,7 @@ contract Loan is Pausable, ILoan {
         CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 		ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
-        LibOpen._checkPermissibleWithdrawal(
+        LibLoan._checkPermissibleWithdrawal(
             msg.sender,
             _amount,
             loanAccount,
@@ -173,7 +168,7 @@ contract Loan is Pausable, ILoan {
 		loanState.currentAmount -= _amount;
 		activeLoans.loanCurrentAmount[loan.id - 1] -= _amount;
 
-        ds.loanToken = IBEP20(LibOpen._connectMarket(loan.market));
+        ds.loanToken = IBEP20(LibCommon._connectMarket(loan.market));
         ds.loanToken.transfer(msg.sender, _amount);
 
         emit WithdrawPartialLoan(msg.sender, loan.id, _amount, block.timestamp);
@@ -182,7 +177,7 @@ contract Loan is Pausable, ILoan {
     }
 
     function getLoanInterest(address account, uint256 id) external view returns(uint256 loanInterest, uint collateralInterest)	{
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		
         ActiveLoans memory activeLoans = ds.getActiveLoans[account];
 		bytes32 market = activeLoans.loanMarket[id-1];
@@ -194,23 +189,22 @@ contract Loan is Pausable, ILoan {
 		DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
         CollateralYield memory cYield = ds.indAccruedAPY[account][market][commitment];
         
-		interestFactor = LibOpen._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);
-        if(commitment != LibOpen._getCommitment(0)){
-            collateralInterestFactor = LibOpen._getDepositInterest(commitment, cYield.oldLengthAccruedYield, cYield.oldTime);
+		interestFactor = LibLoan._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);
+        if(commitment != LibCommon._getCommitment(0)){
+            collateralInterestFactor = LibDeposit._getDepositInterest(commitment, cYield.oldLengthAccruedYield, cYield.oldTime);
             collateralInterest = cYield.accruedYield;
             collateralInterest += ((collateralInterestFactor*(ds.indCollateralRecords[account][market][commitment]).amount)/(365*86400*10000));
         }
         loanInterest = yield.accruedInterest;
 		loanInterest += ((interestFactor*loan.amount)/(365*86400*10000));	
 		return (loanInterest, collateralInterest);
-
 	}
 
-    function pauseLoan() external override nonReentrant authLoan nonReentrant {
+    function pauseLoan() external override authLoan {
         _pause();
     }
 
-    function unpauseLoan() external override nonReentrant authLoan {
+    function unpauseLoan() external override authLoan {
         _unpause();
     }
 
@@ -219,7 +213,7 @@ contract Loan is Pausable, ILoan {
     }
 
     modifier authLoan() {
-        AppStorageOpen storage ds = LibOpen.diamondStorage();
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
         require(
             IAccessRegistry(ds.superAdminAddress).hasAdminRole(
                 ds.superAdmin,

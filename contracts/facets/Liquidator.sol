@@ -1,36 +1,38 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-import "../util/Pausable.sol";
-// import "./mockup/IMockBep20.sol";
-import "../libraries/LibOpen.sol";
 
-contract Liquidator is Pausable, ILiquidator {
-  
-	constructor() {
-		// LibOpen.DiamondStorage storage ds = LibOpen.diamondStorage(); 
-			// ds.adminLiquidatorAddress = msg.sender;
-			// ds.liquidator = ILiquidator(msg.sender);
-			// ds.simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
-	}
-	
+import { AppStorageOpen, LibCommon, LibSwap, LibLiquidation } from "../libraries/LibLiquidation.sol";
+import { Pausable } from "../util/Pausable.sol";
+import { ILiquidator } from "../interfaces/ILiquidator.sol";
+import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
+
+contract Liquidator is Pausable, ILiquidator {	
+	event Liquidation(address indexed account,bytes32 indexed market,bytes32 indexed commitment,uint256 amount,uint256 time);
+
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
+		payable(LibCommon.upgradeAdmin()).transfer(msg.value);
 	}
 	
 	function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override nonReentrant returns (uint256 receivedAmount) {
 			require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
-			receivedAmount = LibOpen._swap(msg.sender, _fromMarket, _toMarket, _fromAmount, _mode);
+			receivedAmount = LibSwap._swap(_fromMarket, _toMarket, _fromAmount, _mode);
 	}
 
-	function pauseLiquidator() external override nonReentrant authLiquidator() {
+	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override authLiquidator() nonReentrant() returns (bool success) {
+		uint256 amount = LibLiquidation._liquidation(account, _market, _commitment);
+		emit Liquidation(account, _market, _commitment, amount, block.timestamp);
+		return true;
+	}
+
+	function pauseLiquidator() external override authLiquidator() {
 			_pause();
 	}
 	
-	function unpauseLiquidator() external override nonReentrant authLiquidator() {
+	function unpauseLiquidator() external override authLiquidator() {
        _unpause();   
 	}
 
@@ -39,7 +41,7 @@ contract Liquidator is Pausable, ILiquidator {
     }
 
 	modifier authLiquidator() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibCommon.diamondStorage(); 
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLiquidator, msg.sender), "ERROR: Not an admin");
 		_;
 	}
