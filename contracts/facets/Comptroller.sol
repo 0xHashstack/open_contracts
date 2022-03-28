@@ -170,16 +170,16 @@ contract Comptroller is Pausable, IComptroller {
         return true;
     }
 
+    // function updateLoanIssuanceFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
+    //     AppStorageOpen storage ds = LibCommon.diamondStorage();
+    //     uint256 oldFees = ds.loanIssuanceFees;
+    //     ds.loanIssuanceFees = fees;
+
+    //     emit LoanIssuanceFeesUpdated(msg.sender, oldFees, ds.loanIssuanceFees, block.timestamp);
+    //     return true;
+    // }
+
     function updateLoanIssuanceFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        uint256 oldFees = ds.loanIssuanceFees;
-        ds.loanIssuanceFees = fees;
-
-        emit LoanIssuanceFeesUpdated(msg.sender, oldFees, ds.loanIssuanceFees, block.timestamp);
-        return true;
-    }
-
-    function updateLoanClosureFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         uint256 oldFees = ds.loanClosureFees;
         ds.loanClosureFees = fees;
