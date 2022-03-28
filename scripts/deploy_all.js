@@ -394,8 +394,8 @@ async function addMarkets(array) {
 
   /// SET FEES IN COMPTROLLER
     console.log("Implementing fees in Comptroller")
-  // await comptroller.updateLoanIssuanceFees();
-  // console.log("updateWithdrawalFees is set");
+  await comptroller.updateLoanIssuanceFees("10");
+  console.log("updateWithdrawalFees is set");
   // await comptroller.updateLoanPreClosureFees();
   // console.log("updateLoanPreClosureFees is set");
   await comptroller.updateDepositPreclosureFees("36"); // Set fee to 0.36%
