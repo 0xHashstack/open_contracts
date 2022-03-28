@@ -804,7 +804,7 @@ describe("testing Loans", async () => {
     });
   });
 
-  describe.only("USDT Test: Loan", async () => {
+  describe("USDT Test: Loan", async () => {
     const symbolWbnb = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
     const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // Usdt.t
     const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
