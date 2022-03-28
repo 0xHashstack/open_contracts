@@ -54,6 +54,11 @@ library LibLoan1 {
         loan.isSwapped = false;
         loan.lastUpdate = block.timestamp;
         loan.owner = msg.sender;
+        loan.initialMarketPrice = LibOracle._getQuote(_loanMarket);
+
+        if (loan.id == 1) {
+            ds.borrowers.push(msg.sender);
+        }
 
         /// UPDATING ACTIVELOANS RECORDS
         activeLoans.loanMarket.push(_loanMarket);
@@ -87,6 +92,7 @@ library LibLoan1 {
         collateral.market = _collateralMarket;
         collateral.commitment = _commitment;
         collateral.amount = _collateralAmount;
+        collateral.initialAmount = _collateralAmount;
 
         /// UPDATING LoanAccount
         loanAccount.loans.push(loan);
@@ -184,8 +190,13 @@ library LibLoan1 {
 
         uint256 rF = LibReserve._getReserveFactor() * LibReserve._avblMarketReserves(_loanMarket);
 
-        uint256 usdLoan = (LibOracle._getLatestPrice(_loanMarket)) * _loanAmount;
-        uint256 usdCollateral = (LibOracle._getLatestPrice(_collateralMarket)) * _collateralAmount;
+        uint256 usdLoan = (LibOracle._getQuote(_loanMarket)) * _loanAmount;
+        uint256 usdCollateral = (LibOracle._getQuote(_collateralMarket)) * _collateralAmount;
+
+        console.log("permissible data below");
+        console.log(usdLoan);
+        console.log(usdCollateral);
+        console.log("permissible data above");
 
         require(LibReserve._avblMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
         require((usdLoan * 100) / usdCollateral <= 300, "ERROR: Insufficient collateral");

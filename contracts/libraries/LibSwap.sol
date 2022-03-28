@@ -3,6 +3,7 @@ pragma solidity 0.8.1;
 
 import "./LibCommon.sol";
 import { IPancakeRouter01 } from "../interfaces/IPancakeRouter01.sol";
+import "hardhat/console.sol";
 
 library LibSwap {
     function _getMarketAddress(bytes32 _loanMarket) internal view returns (address) {
@@ -24,9 +25,7 @@ library LibSwap {
         if (_fromMarket == _toMarket) return _fromAmount;
         address addrFromMarket;
         address addrToMarket;
-        // bytes32 cake;
         address addrCake;
-        // bytes32 cake =  ;
 
         if (_mode == 0) {
             addrFromMarket = _getMarketAddress(_fromMarket);
@@ -48,7 +47,6 @@ library LibSwap {
 
         //WBNB as other test tokens
         address[] memory path;
-        // if (addrFromMarket == WBNB || addrToMarket == WBNB) {
         if (_mode != 2) {
             path = new address[](2);
             path[0] = addrFromMarket;
@@ -77,15 +75,13 @@ library LibSwap {
         address _tokenOut,
         uint256 _amountIn,
         uint256 _mode
-    ) private view returns (uint256) {
-        // bytes32 cake;
+    ) internal view returns (uint256) {
         address addrCake;
-        // cake =  ;
         addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
         require(addrCake != address(0), "CAKE Address can not be zero.");
 
         address[] memory path;
-        //if (_tokenIn == WBNB || _tokenOut == WBNB) {
+
         if (_mode != 2) {
             path = new address[](2);
             path[0] = _tokenIn;
@@ -97,12 +93,13 @@ library LibSwap {
             path[2] = _tokenOut;
         }
 
+        console.log("fetching amount out using pancake swap");
+
         // same length as path
         uint256[] memory amountOutMins = IPancakeRouter01(LibCommon.PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
             _amountIn,
             path
         );
-
         return amountOutMins[path.length - 1];
     }
 }

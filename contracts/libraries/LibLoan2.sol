@@ -42,7 +42,8 @@ library LibLoan2 {
             loanState,
             collateral,
             deductibleInterest,
-            cYield
+            cYield,
+            false
         );
 
         /// CONVERT remnantAmount into collateralAmount
@@ -53,6 +54,7 @@ library LibLoan2 {
         delete loan.market;
         delete loan.commitment;
         delete loan.amount;
+        delete loan.initialMarketPrice;
 
         /// UPDATING LoanState
         delete loanState.loanMarket;
@@ -123,6 +125,7 @@ library LibLoan2 {
             delete collateral.timelockValidity;
             delete collateral.isTimelockActivated;
             delete collateral.activationTime;
+            delete collateral.initialAmount;
 
             /// LOAN STATE
             delete loanState.id;
@@ -186,15 +189,10 @@ library LibLoan2 {
         LoanRecords storage loan,
         LoanState storage loanState,
         CollateralRecords storage collateral,
-        /*loanAccount,
-		loan,
-		loanState,
-		collateral*/
         DeductibleInterest storage deductibleInterest,
-        CollateralYield storage cYield
+        CollateralYield storage cYield,
+        bool liquidationEvent
     ) internal returns (uint256) {
-        // AppStorageOpen storage ds = diamondStorage();
-
         bytes32 _commitment;
         uint256 _remnantAmount;
         uint256 _collateralAmount;
@@ -204,7 +202,7 @@ library LibLoan2 {
         _collateralAmount = 0;
 
         /// convert collateral into loan market to add to the repayAmount
-        _collateralAmount = collateral.amount; /*- deductibleInterest.accruedInterest*/
+        _collateralAmount = collateral.amount - deductibleInterest.accruedInterest;
         if (_commitment == LibCommon._getCommitment(2)) _collateralAmount += cYield.accruedYield;
 
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);
@@ -241,9 +239,11 @@ library LibLoan2 {
         delete loanAccount.accruedAPR[num];
         delete loanAccount.accruedAPY[num];
 
-        loanAccount.collaterals[num].isCollateralisedDeposit = false;
-        loanAccount.collaterals[num].activationTime = block.timestamp;
-        loanAccount.collaterals[num].isTimelockActivated = true;
+        if (!liquidationEvent) {
+            loanAccount.collaterals[num].isCollateralisedDeposit = false;
+            loanAccount.collaterals[num].activationTime = block.timestamp;
+            loanAccount.collaterals[num].isTimelockActivated = true;
+        }
 
         return _remnantAmount;
     }

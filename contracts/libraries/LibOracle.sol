@@ -2,6 +2,7 @@
 pragma solidity 0.8.1;
 
 import "./LibCommon.sol";
+import "./LibSwap.sol";
 import { AggregatorV3Interface } from "../interfaces/AggregatorV3Interface.sol";
 
 library LibOracle {
@@ -16,6 +17,19 @@ library LibOracle {
         require(priceCheck != 0, "ERROR: Latest Price Fetch Failure");
 
         return priceCheck;
+    }
+
+    function _getQuote(bytes32 _market) internal view returns (uint256) {
+        uint256 _amountIn = 10**LibCommon._getMarketDecimal(_market);
+        console.log("check decimal here");
+        console.log(_amountIn);
+        return
+            LibSwap._getAmountOutMin(
+                LibSwap._getMarketAddress(_market),
+                LibSwap._getMarketAddress(0x555344432e740000000000000000000000000000000000000000000000000000),
+                _amountIn,
+                2
+            );
     }
 
     function _getFairPrice(uint256 _requestId) internal view returns (uint256) {

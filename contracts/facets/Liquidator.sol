@@ -37,10 +37,25 @@ contract Liquidator is Pausable, ILiquidator {
         address account,
         bytes32 _market,
         bytes32 _commitment
-    ) external override authLiquidator nonReentrant returns (bool success) {
-        uint256 amount = LibLiquidation._liquidation(account, _market, _commitment);
+    ) external override nonReentrant returns (bool success) {
+        uint256 amount = LibLiquidation._liquidation(msg.sender, account, _market, _commitment);
         emit Liquidation(account, _market, _commitment, amount, block.timestamp);
         return true;
+    }
+
+    function liquidableLoans(uint256 _indexFrom, uint256 _indexTo)
+        external
+        view
+        override
+        returns (
+            bytes32[] memory loanMarket,
+            bytes32[] memory loanCommitment,
+            uint256[] memory loanAmount,
+            bytes32[] memory collateralMarket,
+            uint256[] memory collateralAmount
+        )
+    {
+        return LibLiquidation._liquidableLoans(_indexFrom, _indexTo);
     }
 
     function pauseLiquidator() external override authLiquidator {

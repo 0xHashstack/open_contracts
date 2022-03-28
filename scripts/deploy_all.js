@@ -21,7 +21,6 @@ async function deployDiamond() {
   mkdirSync("abi/frontend", { recursive: true });
   mkdirSync("abi/backend", { recursive: true });
 
-  const superAdmin = 0x41636365737352656769737472792e61646d696e000000000000000000000000;
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
   //   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
   //     if(err) {

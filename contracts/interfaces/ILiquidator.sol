@@ -18,6 +18,17 @@ interface ILiquidator {
         bytes32 _commitment
     ) external returns (bool success);
 
+    function liquidableLoans(uint256 _indexFrom, uint256 _indexTo)
+        external
+        view
+        returns (
+            bytes32[] memory loanMarket,
+            bytes32[] memory loanCommitment,
+            uint256[] memory loanAmount,
+            bytes32[] memory collateralMarket,
+            uint256[] memory collateralAmount
+        );
+
     function pauseLiquidator() external;
 
     function unpauseLiquidator() external;

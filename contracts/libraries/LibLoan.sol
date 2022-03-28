@@ -238,6 +238,7 @@ library LibLoan {
         delete collateral.timelockValidity;
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;
+        delete collateral.initialAmount;
 
         /// LOAN STATE
         delete loanState.id;
