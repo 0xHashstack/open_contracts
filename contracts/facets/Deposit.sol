@@ -141,35 +141,57 @@ contract Deposit is Pausable, IDeposit {
         SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
         DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
         ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
-
+        uint _amountPostFees;
+        uint _amountPostPreFees;
         _convertYield(msg.sender, _market, _commitment);
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
         if (_commitment != LibCommon._getCommitment(0)) {
-            if (deposit.isTimelockActivated == false) {
-                deposit.isTimelockActivated = true;
-                deposit.activationTime = block.timestamp;
-                deposit.lastUpdate = block.timestamp;
+            // if (deposit.isTimelockActivated == false) {
+            //     deposit.isTimelockActivated = true;
+            //     deposit.activationTime = block.timestamp;
+            //     deposit.lastUpdate = block.timestamp;
 
-                savingsAccount.deposits[deposit.id - 1].isTimelockActivated = true;
-                savingsAccount.deposits[deposit.id - 1].activationTime = block.timestamp;
-                savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
-                return false;
-            }
-            require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
-        }
+            //     savingsAccount.deposits[deposit.id - 1].isTimelockActivated = true;
+            //     savingsAccount.deposits[deposit.id - 1].activationTime = block.timestamp;
+            //     savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
+            //     return false;
+                    uint PreClosurefees = (LibCommon.diamondStorage().depositPreClosureFees)*_amount/10000;
+                    console.log("PreClosurefees is :",PreClosurefees);
+                    require(_amount> PreClosurefees, "PreClosurefees is greater than amount");
+                    _amountPostPreFees = _amount - PreClosurefees;
+                    require(_amountPostPreFees > 0, "Amount Post pre Fees cannot be 0 ");
+                    console.log("_amountPostPreFees is :",_amountPostPreFees);
+                    // require(_amountPostFees>_amount, "Amount Post Fees cannot be lesser than amount");       
+            
+            
+            // require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
         ds.token = IBEP20(LibCommon._connectMarket(_market));
+        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
+        uint fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amountPostPreFees/10000;
+        console.log("Fees is :",fees);
+        console.log("Amount is :",_amount);
+        require(_amount>fees, "Fees is greater than amount");
+        _amountPostFees = _amountPostPreFees- fees;
+        require(_amountPostFees > 0, "Amount Post Fees cannot be 0 ");
+        console.log("amount Post Fees is :",_amountPostFees);
+        // require(_amountPostFees>_amount, "Amount Post Fees cannot be lesser than amount");
+        ds.token.transfer(msg.sender, _amountPostFees);
+        }
+        else
+        {
         require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
         uint fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amount/10000;
         console.log("Fees is :",fees);
         console.log("Amount is :",_amount);
         require(_amount>fees, "Fees is greater than amount");
-        uint _amountPostFees = _amount - fees;
+        _amountPostFees = _amount - fees;
         require(_amountPostFees > 0, "Amount Post Fees cannot be 0 ");
         console.log("_amountPostFees is :",_amountPostFees);
-        require(_amountPostFees>_amount, "Amount Post Fees cannot be lesser than amount");
-        ds.token.transfer(msg.sender, _amountPostFees);
-
+        // require(_amountPostFees>_amount, "Amount Post Fees cannot be lesser than amount");
+        ds.token.transfer(msg.sender, _amountPostFees);   
+        }
+        
         deposit.amount -= _amount;
         console.log(" deposit.amount is : ",  deposit.amount);
         savingsAccount.deposits[deposit.id - 1].amount -= _amount;

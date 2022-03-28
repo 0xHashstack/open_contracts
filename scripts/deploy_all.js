@@ -373,9 +373,9 @@ async function addMarkets(array) {
   // console.log("updateWithdrawalFees is set");
   // await comptroller.updateLoanPreClosureFees();
   // console.log("updateLoanPreClosureFees is set");
-  // await comptroller.updateDepositPreclosureFees();
-  // console.log("updateDepositPreclosureFees is set");
-  await comptroller.updateWithdrawalFees("17");
+  await comptroller.updateDepositPreclosureFees("36"); // Set fee to 0.36%
+  console.log("updateDepositPreclosureFees is set");
+  await comptroller.updateWithdrawalFees("17"); // Set fee to 0.17%
   console.log("updateWithdrawalFees is set");
   // await comptroller.updateCollateralReleaseFees();
   // console.log("updateCollateralReleaseFees is set");
