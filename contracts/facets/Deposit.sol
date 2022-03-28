@@ -7,6 +7,9 @@ import { IDeposit } from "../interfaces/IDeposit.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 
+import "hardhat/console.sol";
+
+
 contract Deposit is Pausable, IDeposit {
     event NewDeposit(
         address indexed account,
@@ -156,10 +159,19 @@ contract Deposit is Pausable, IDeposit {
             require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
         }
         ds.token = IBEP20(LibCommon._connectMarket(_market));
-        require(_amount >= 0, "ERROR: You cannot transfer 0 amount");
-        ds.token.transfer(msg.sender, _amount);
+        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
+        uint fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amount/10000;
+        console.log("Fees is :",fees);
+        console.log("Amount is :",_amount);
+        require(_amount>fees, "Fees is greater than amount");
+        uint _amountPostFees = _amount - fees;
+        require(_amountPostFees > 0, "Amount Post Fees cannot be 0 ");
+        console.log("_amountPostFees is :",_amountPostFees);
+        require(_amountPostFees>_amount, "Amount Post Fees cannot be lesser than amount");
+        ds.token.transfer(msg.sender, _amountPostFees);
 
         deposit.amount -= _amount;
+        console.log(" deposit.amount is : ",  deposit.amount);
         savingsAccount.deposits[deposit.id - 1].amount -= _amount;
 
         activeDeposits.amount[deposit.id - 1] -= _amount;
