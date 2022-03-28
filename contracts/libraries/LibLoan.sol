@@ -93,7 +93,7 @@ library LibLoan {
         bytes32 _commitment /*authContract(LOAN_ID)*/
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-
+        uint256 marketSwapFees;
         _hasLoanAccount(_account);
         LibCommon._isMarketSupported(_market);
 
@@ -113,6 +113,10 @@ library LibLoan {
         LibCommon._isMarket2Supported(loanState.currentMarket);
 
         uint256 num = loan.id - 1;
+        marketSwapFees = (LibCommon.diamondStorage().marketSwapFees)*loanState.currentAmount/1000;
+        console.log("marketSwapFees is : ", marketSwapFees);
+        loanState.currentAmount = loanState.currentAmount-(marketSwapFees);
+        console.log("loan amount is : ", loanState.currentAmount);
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
         loan.isSwapped = false;
@@ -151,7 +155,7 @@ library LibLoan {
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         _hasLoanAccount(_sender);
-
+        uint256 marketSwapFees;
         LibCommon._isMarketSupported(_loanMarket);
         LibCommon._isMarket2Supported(_swapMarket);
 
@@ -167,7 +171,10 @@ library LibLoan {
 
         uint256 _swappedAmount;
         uint256 num = loan.id - 1;
-
+        marketSwapFees = (LibCommon.diamondStorage().marketSwapFees)*loanState.currentAmount/1000;
+        console.log("marketSwapFees is : ", marketSwapFees);
+        loanState.currentAmount = loanState.currentAmount-(marketSwapFees);
+        console.log("loan amount is : ", loanState.currentAmount);
         _swappedAmount = LibSwap._swap(loan.market, _swapMarket, loanState.currentAmount, 0);
 
         /// Updating LoanRecord

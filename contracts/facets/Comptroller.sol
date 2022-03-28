@@ -257,6 +257,10 @@ contract Comptroller is Pausable, IComptroller {
         return true;
     }
 
+     function marketSwapFees() external view returns (uint256) {
+        return LibCommon.diamondStorage().marketSwapFees;
+    }
+
     function updateReserveFactor(uint256 _reserveFactor) external override nonReentrant authComptroller returns (bool) {
         // implementing the barebones version for testnet.
         //  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
