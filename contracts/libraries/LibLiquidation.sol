@@ -76,11 +76,11 @@ library LibLiquidation {
         console.log("collateral current amount====", collateralCurrentAmount);
 
         if (debtCategory == 1) {
-            return ((106 * loanState.actualLoanAmount) / 100) <= (loanCurrentAmount + collateralCurrentAmount);
+            return ((106 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else if (debtCategory == 2) {
-            return ((105 * loanState.actualLoanAmount) / 100) <= (loanCurrentAmount + collateralCurrentAmount);
+            return ((105 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else {
-            return ((104 * loanState.actualLoanAmount) / 100) <= (loanCurrentAmount + collateralCurrentAmount);
+            return ((104 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         }
     }
 
@@ -104,7 +104,14 @@ library LibLiquidation {
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
         LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
-        collateral.amount = collateral.amount - deductibleInterest.accruedInterest;
+        collateral.amount =
+            collateral.amount -
+            LibSwap._getAmountOutMin(
+                LibSwap._getMarketAddress(loan.market),
+                LibSwap._getMarketAddress(collateral.market),
+                deductibleInterest.accruedInterest,
+                2
+            );
         if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
 
         delete deductibleInterest.id;

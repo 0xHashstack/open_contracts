@@ -201,7 +201,14 @@ library LibLoan2 {
         _collateralAmount = 0;
 
         /// convert collateral into loan market to add to the repayAmount
-        _collateralAmount = collateral.amount - deductibleInterest.accruedInterest;
+        _collateralAmount =
+            collateral.amount -
+            LibSwap._getAmountOutMin(
+                LibSwap._getMarketAddress(loan.market),
+                LibSwap._getMarketAddress(collateral.market),
+                deductibleInterest.accruedInterest,
+                2
+            );
         if (_commitment == LibCommon._getCommitment(2)) _collateralAmount += cYield.accruedYield;
 
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);

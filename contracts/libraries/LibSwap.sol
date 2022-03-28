@@ -76,6 +76,9 @@ library LibSwap {
         uint256 _amountIn,
         uint256 _mode
     ) internal view returns (uint256) {
+        if (_amountIn == 0) {
+            return 0;
+        }
         address addrCake;
         addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
         require(addrCake != address(0), "CAKE Address can not be zero.");
