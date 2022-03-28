@@ -86,7 +86,6 @@ struct LoanRecords {
     bool isSwapped; //true or false. Update when a loan is swapped
     uint256 lastUpdate; // block.timestamp
     address owner;
-    uint256 initialMarketPrice;
 }
 
 struct LoanState {

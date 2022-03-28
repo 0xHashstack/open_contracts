@@ -833,7 +833,7 @@ describe("testing Loans", async () => {
       pancakeRouter = await ethers.getContractAt("PancakeRouter", pancakeRouterAddr);
     });
 
-    it("Check Liquidation", async () => {
+    it.skip("Check Liquidation", async () => {
       const loanAmount = 70000000000000;
       const collateralAmount = 200000000;
       const accounts = await ethers.getSigners();
@@ -858,6 +858,65 @@ describe("testing Loans", async () => {
       const lpTokenAmount = Math.floor(Math.sqrt(100000000000000 * 15000000000) - 10 ** 3);
       const pancakeFactory = await ethers.getContractAt("PancakeFactory", pancakeFactoryAddress);
       const lpAddress = await pancakeFactory.getPair(rets["tBtcAddress"], rets["tCakeAddress"]);
+
+      console.log("lp address=====", lpAddress);
+      const lpToken = await ethers.getContractAt("BEP20Token", lpAddress);
+      const lpTokenBalance = await lpToken.balanceOf(upgradeAdmin.address);
+      console.log("lp token balance=====", lpTokenBalance);
+
+      console.log("lp token amount to approve=====", lpTokenAmount);
+
+      await lpToken.connect(upgradeAdmin).approve(pancakeRouter.address, lpTokenAmount);
+
+      // await pancakeRouter
+      // .connect(upgradeAdmin)
+      // .removeLiquidity(
+      //   rets["tBtcAddress"],
+      //   rets["tCakeAddress"],
+      //   lpTokenAmount,
+      //   1,
+      //   1,
+      //   upgradeAdmin.address,
+      //   Date.now() + 60 * 30,
+      //   { gasLimit: 8000000 },
+      // );
+
+      await expect(liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdc, comit_ONEMONTH)).emit(
+        liquidator,
+        "Liquidation",
+      );
+
+      // await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
+      // await expect(loan.connect(accounts[1]).addCollateral(symbolUsdc, comit_NONE, collateralAmount)).to.be.reverted;
+
+      // await expect(loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_NONE, symbolCAKE)).to.be.reverted;
+    });
+
+    it.skip("Check Liquidation", async () => {
+      const loanAmount = 500000000000;
+      const collateralAmount = 600000000000;
+      const accounts = await ethers.getSigners();
+      const upgradeAdmin = accounts[0];
+
+      const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
+      await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
+      await expect(
+        loan1.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolUsdc, collateralAmount),
+      ).emit(loan1, "NewLoan");
+
+      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.equal(
+        reserveBalance.add(BigNumber.from(collateralAmount)),
+      );
+
+      // fetching amount out using pancake swap
+      // loan market price==== 99600380
+      // fetching amount out using pancake swap
+      // collateral market price==== 39530864193608
+
+      const pancakeFactoryAddress = await pancakeRouter.factory();
+      const lpTokenAmount = Math.floor(Math.sqrt(10000000000000 * 1000000000000) - 10 ** 3);
+      const pancakeFactory = await ethers.getContractAt("PancakeFactory", pancakeFactoryAddress);
+      const lpAddress = await pancakeFactory.getPair(rets["tUsdcAddress"], rets["tCakeAddress"]);
 
       console.log("lp address=====", lpAddress);
       const lpToken = await ethers.getContractAt("BEP20Token", lpAddress);

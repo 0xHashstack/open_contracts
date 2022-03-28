@@ -54,7 +54,6 @@ library LibLoan2 {
         delete loan.market;
         delete loan.commitment;
         delete loan.amount;
-        delete loan.initialMarketPrice;
 
         /// UPDATING LoanState
         delete loanState.loanMarket;
@@ -221,25 +220,25 @@ library LibLoan2 {
             _remnantAmount = (_repayAmount - loan.amount);
         }
 
-        delete deductibleInterest.id;
-        delete deductibleInterest.market;
-        delete deductibleInterest.oldLengthAccruedInterest;
-        delete deductibleInterest.oldTime;
-        delete deductibleInterest.accruedInterest;
-
-        //DELETING CollateralYield
-        delete cYield.id;
-        delete cYield.market;
-        delete cYield.commitment;
-        delete cYield.oldLengthAccruedYield;
-        delete cYield.oldTime;
-        delete cYield.accruedYield;
-
         // / UPDATING RECORDS IN LOANACCOUNT
         delete loanAccount.accruedAPR[num];
         delete loanAccount.accruedAPY[num];
 
         if (!liquidationEvent) {
+            delete deductibleInterest.id;
+            delete deductibleInterest.market;
+            delete deductibleInterest.oldLengthAccruedInterest;
+            delete deductibleInterest.oldTime;
+            delete deductibleInterest.accruedInterest;
+
+            //DELETING CollateralYield
+            delete cYield.id;
+            delete cYield.market;
+            delete cYield.commitment;
+            delete cYield.oldLengthAccruedYield;
+            delete cYield.oldTime;
+            delete cYield.accruedYield;
+
             loanAccount.collaterals[num].isCollateralisedDeposit = false;
             loanAccount.collaterals[num].activationTime = block.timestamp;
             loanAccount.collaterals[num].isTimelockActivated = true;

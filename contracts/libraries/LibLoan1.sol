@@ -54,7 +54,6 @@ library LibLoan1 {
         loan.isSwapped = false;
         loan.lastUpdate = block.timestamp;
         loan.owner = msg.sender;
-        loan.initialMarketPrice = LibOracle._getQuote(_loanMarket);
 
         if (loan.id == 1) {
             ds.borrowers.push(msg.sender);

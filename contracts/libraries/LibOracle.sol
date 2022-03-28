@@ -21,11 +21,13 @@ library LibOracle {
 
     function _getQuote(bytes32 _market) internal view returns (uint256) {
         uint256 _amountIn = 10**LibCommon._getMarketDecimal(_market);
-        console.log("check decimal here");
-        console.log(_amountIn);
+        address marketAddress = LibSwap._getMarketAddress(_market);
+        if (marketAddress == address(0)) {
+            marketAddress = LibSwap._getMarket2Address(_market);
+        }
         return
             LibSwap._getAmountOutMin(
-                LibSwap._getMarketAddress(_market),
+                marketAddress,
                 LibSwap._getMarketAddress(0x555344432e740000000000000000000000000000000000000000000000000000),
                 _amountIn,
                 2
