@@ -42,12 +42,12 @@ library LibLoan {
         );
 
         deductibleUSDValue =
-            (((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * LibOracle._getLatestPrice(_loanMarket)) *
+            (((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * LibOracle._getQuote(_loanMarket)) *
                 aggregateYield) /
             (365 * 86400 * 10000);
         ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest +=
             deductibleUSDValue /
-            LibOracle._getLatestPrice(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
+            LibOracle._getQuote(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
         ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest = oldLengthAccruedInterest;
         ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime = oldTime;
 
@@ -323,9 +323,9 @@ library LibLoan {
         }
 
         /// FETCH USDT PRICES
-        usdCollateral = LibOracle._getLatestPrice(collateral.market);
-        usdLoan = LibOracle._getLatestPrice(loan.market);
-        usdLoanCurrent = LibOracle._getLatestPrice(loanState.currentMarket);
+        usdCollateral = LibOracle._getQuote(collateral.market);
+        usdLoan = LibOracle._getQuote(loan.market);
+        usdLoanCurrent = LibOracle._getQuote(loanState.currentMarket);
 
         /// Permissible withdrawal amount calculation in the loanMarket.
         // permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);

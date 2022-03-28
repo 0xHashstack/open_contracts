@@ -6,7 +6,7 @@ import "./LibSwap.sol";
 import { AggregatorV3Interface } from "../interfaces/AggregatorV3Interface.sol";
 
 library LibOracle {
-    // function _getLatestPrice(bytes32 _market) internal view returns (uint256) {
+    // function _getQuote(bytes32 _market) internal view returns (uint256) {
     //     // Chainlink price
     //     AppStorageOpen storage ds = LibCommon.diamondStorage();
 

@@ -2,8 +2,9 @@
 pragma solidity 0.8.1;
 
 interface IOracleOpen {
-    function getLatestPrice(bytes32 _market) external returns (uint256);
-
+    // function getLatestPrice(bytes32 _market) external returns (uint256);
+    function getQuote(bytes32 _market)external returns (uint256);
+    
     function getFairPrice(uint256 _requestId) external returns (uint256);
 
     // function liquidationTrigger(address account, uint loanId) external returns (bool);

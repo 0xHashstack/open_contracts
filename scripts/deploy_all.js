@@ -6,6 +6,7 @@ const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
 const fs = require("fs");
+const { Console } = require("console");
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -166,6 +167,7 @@ async function addMarkets(array) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+  const OracleOpen = await ethers.getContractAt("OracleOpen", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32
@@ -183,13 +185,13 @@ async function addMarkets(array) {
   const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
   /// CHAINLINK ORACLE ADDRESSES ADDED
-  console.log("Add fairPrice addresses");
-  await diamond.addFairPriceAddress(symbolWBNB, "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526");
-  await diamond.addFairPriceAddress(symbolUsdt, "0xEca2605f0BCF2BA5966372C99837b1F182d3D620");
-  await diamond.addFairPriceAddress(symbolUsdc, "0x90c069C4538adAc136E051052E14c1cD799C41B7");
-  await diamond.addFairPriceAddress(symbolBtc, "0x5741306c21795FdCBb9b265Ea0255F499DFe515C");
-  await diamond.addFairPriceAddress(symbolSxp, "0x678AC35ACbcE272651874E782DB5343F9B8a7D66");
-  await diamond.addFairPriceAddress(symbolCAKE, "0x81faeDDfeBc2F8Ac524327d70Cf913001732224C");
+  // console.log("Add fairPrice addresses");
+  // await diamond.addFairPriceAddress(symbolWBNB, "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526");
+  // await diamond.addFairPriceAddress(symbolUsdt, "0xEca2605f0BCF2BA5966372C99837b1F182d3D620");
+  // await diamond.addFairPriceAddress(symbolUsdc, "0x90c069C4538adAc136E051052E14c1cD799C41B7");
+  // await diamond.addFairPriceAddress(symbolBtc, "0x5741306c21795FdCBb9b265Ea0255F499DFe515C");
+  // await diamond.addFairPriceAddress(symbolSxp, "0x678AC35ACbcE272651874E782DB5343F9B8a7D66");
+  // await diamond.addFairPriceAddress(symbolCAKE, "0x81faeDDfeBc2F8Ac524327d70Cf913001732224C");
 
   /// SET COMMITMENT PERIOD
   console.log("setCommitment begin");
@@ -263,6 +265,23 @@ async function addMarkets(array) {
         WBNB: ${tWBNBAddress}
         SXP: ${tSxpAddress}
         CAKE: ${tCakeAddress}`);
+
+        /// PRINTING PRICE OF ASSETS
+  // console.log("Prices of assets");
+  // const BigNumber.from.usdcPrice = await OracleOpen.getQuote(0x555344432e740000000000000000000000000000000000000000000000000000);
+  // console.log("Price of btc : ",BigNumber.from.usdcPrice)
+  // console.log('quotes got');
+  // const btcPrice = await OracleOpen.getQuote(0x4254432e74000000000000000000000000000000000000000000000000000000);
+  // console.log("Price of btc : ",btcPrice)
+  // const wbnbPrice = await OracleOpen.getQuote(0x57424e4200000000000000000000000000000000000000000000000000000000);
+  // console.log("Price of btc : ",wbnbPrice)
+  // const sxpPrice = await OracleOpen.getQuote(0x5358500000000000000000000000000000000000000000000000000000000000);
+  // console.log("Price of btc : ",sxpPrice)
+  // const cakePrice = await OracleOpen.getQuote(0x43414b4500000000000000000000000000000000000000000000000000000000);
+  // console.log("Price of btc : ",cakePrice)
+
+  // console.log("Prices of assets Printed");
+
 
   /// APPROVING TOKENS FOR DIAMOND
   console.log("Approval diamond");

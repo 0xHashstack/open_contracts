@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import { STATE, ActiveLoans, AppStorageOpen, LibCommon, LibReserve, LibLoan, LibLoan1 } from "../libraries/LibLoan1.sol";
+import { STATE, ActiveLoans, AppStorageOpen, LibCommon, LibReserve, LibLoan, LibLoan1, LibOracle } from "../libraries/LibLoan1.sol";
 import { Pausable } from "../util/Pausable.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 import { ILoan1 } from "../interfaces/ILoan1.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
+
+import { OracleOpen } from "contracts/facets/OracleOpen.sol";
+
+import "hardhat/console.sol";
+
 
 contract Loan1 is Pausable, ILoan1 {
     event NewLoan(
@@ -89,6 +94,31 @@ contract Loan1 is Pausable, ILoan1 {
             _collateralMarket,
             _collateralAmount
         );
+        uint256 usdcPrice;
+        uint256 wbnbPrice;
+        uint256 btcPrice;
+        uint256 sxpPrice;
+        uint256 cakePrice;
+
+          console.log("Prices of assets");
+
+        usdcPrice = LibOracle._getQuote(0x555344432e740000000000000000000000000000000000000000000000000000);
+        console.log("Price of usdc : ",usdcPrice);
+
+        btcPrice = LibOracle._getQuote(0x4254432e74000000000000000000000000000000000000000000000000000000);
+        console.log("Price of btc : ",btcPrice);
+        
+        wbnbPrice = LibOracle._getQuote(0x57424e4200000000000000000000000000000000000000000000000000000000);
+        console.log("Price of wbnb : ",wbnbPrice);
+        
+        // sxpPrice = LibOracle._getQuote(0x5358500000000000000000000000000000000000000000000000000000000000);
+        // console.log("Price of sxp : ",sxpPrice);
+        
+        // cakePrice = LibOracle._getQuote(0x43414b4500000000000000000000000000000000000000000000000000000000);
+        // console.log("Price of cake : ",cakePrice);
+
+        console.log("Prices of assets Printed");
+
         emit NewLoan(
             msg.sender,
             _loanMarket,
@@ -101,6 +131,7 @@ contract Loan1 is Pausable, ILoan1 {
         );
         return true;
     }
+
 
     function pauseLoan1() external override authLoan1 {
         _pause();
