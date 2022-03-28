@@ -143,6 +143,7 @@ contract Deposit is Pausable, IDeposit {
         ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
         uint _amountPostFees;
         uint _amountPostPreFees;
+        uint fees;
         
         _convertYield(msg.sender, _market, _commitment);
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
@@ -182,7 +183,7 @@ contract Deposit is Pausable, IDeposit {
             
             // require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
             /* NOW IT DEDUCTS DEPOSIT WITHDRAW FEE */
-            uint fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amountPostPreFees/10000;
+            fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amountPostPreFees/10000;
             console.log("Fees is :",fees);
             console.log("Amount is :",_amount);
             require(_amount>fees, "Fees is greater than amount");
@@ -207,7 +208,7 @@ contract Deposit is Pausable, IDeposit {
         else
         {
         require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
-        uint fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amount/10000;
+        fees = (LibCommon.diamondStorage().depositWithdrawalFees)*_amount/10000;
         console.log("Fees is :",fees);
         console.log("Amount is :",_amount);
         require(_amount>fees, "Fees is greater than amount");

@@ -81,6 +81,8 @@ contract Loan1 is Pausable, ILoan1 {
         bytes32 _collateralMarket,
         uint256 _collateralAmount
     ) external override nonReentrant returns (bool) {
+        uint256 LoanIssuanceFees;
+        // LoanIssuanceFees = LibCommon.diamondStorage().loanIssuanceFees;
         uint256 loanId = LibLoan1._loanRequest(
             msg.sender,
             _loanMarket,
@@ -88,7 +90,10 @@ contract Loan1 is Pausable, ILoan1 {
             _loanAmount,
             _collateralMarket,
             _collateralAmount
-        );
+        );   
+        /// BELOW FUNCTIONS ARE DONE IN LIB, I HAVE WRITTEN THEM HERE JUST FOR THE EVENTS
+        LoanIssuanceFees = (LibCommon.diamondStorage().loanIssuanceFees)*_loanAmount/1000; 
+        _loanAmount = _loanAmount - LoanIssuanceFees;    
         emit NewLoan(
             msg.sender,
             _loanMarket,
