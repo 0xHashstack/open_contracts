@@ -104,11 +104,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         _;
     }
 
-    function pauseAccessRegistry() external override  onlyAdmin {
+    function pauseAccessRegistry() external override onlyAdmin {
         _pause();
     }
 
-    function unpauseAccessRegistry() external override  onlyAdmin {
+    function unpauseAccessRegistry() external override onlyAdmin {
         _unpause();
     }
 

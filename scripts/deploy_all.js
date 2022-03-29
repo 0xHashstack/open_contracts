@@ -6,7 +6,6 @@ const utils = require("ethers").utils;
 const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
 const fs = require("fs");
-const { Console } = require("console");
 
 async function main() {
   const diamondAddress = await deployDiamond();
@@ -167,7 +166,6 @@ async function addMarkets(array) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
-  const OracleOpen = await ethers.getContractAt("OracleOpen", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32

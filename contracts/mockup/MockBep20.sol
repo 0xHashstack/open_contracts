@@ -79,11 +79,11 @@ contract MockBep20 is Context {
         return "Contract is not paused";
     }
 
-    function pause() external  auth {
+    function pause() external auth {
         _pause();
     }
 
-    function unpause() external  auth {
+    function unpause() external auth {
         _unpause();
     }
 
