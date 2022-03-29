@@ -184,15 +184,6 @@ async function addMarkets(array) {
   const comit_ONEMONTH = "0x636f6d69745f4f4e454d4f4e5448000000000000000000000000000000000000";
   const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
-  /// CHAINLINK ORACLE ADDRESSES ADDED
-  // console.log("Add fairPrice addresses");
-  // await diamond.addFairPriceAddress(symbolWBNB, "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526");
-  // await diamond.addFairPriceAddress(symbolUsdt, "0xEca2605f0BCF2BA5966372C99837b1F182d3D620");
-  // await diamond.addFairPriceAddress(symbolUsdc, "0x90c069C4538adAc136E051052E14c1cD799C41B7");
-  // await diamond.addFairPriceAddress(symbolBtc, "0x5741306c21795FdCBb9b265Ea0255F499DFe515C");
-  // await diamond.addFairPriceAddress(symbolSxp, "0x678AC35ACbcE272651874E782DB5343F9B8a7D66");
-  // await diamond.addFairPriceAddress(symbolCAKE, "0x81faeDDfeBc2F8Ac524327d70Cf913001732224C");
-
   /// SET COMMITMENT PERIOD
   console.log("setCommitment begin");
   await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
@@ -266,23 +257,6 @@ async function addMarkets(array) {
         SXP: ${tSxpAddress}
         CAKE: ${tCakeAddress}`);
 
-        /// PRINTING PRICE OF ASSETS
-  // console.log("Prices of assets");
-  // const BigNumber.from.usdcPrice = await OracleOpen.getQuote(0x555344432e740000000000000000000000000000000000000000000000000000);
-  // console.log("Price of btc : ",BigNumber.from.usdcPrice)
-  // console.log('quotes got');
-  // const btcPrice = await OracleOpen.getQuote(0x4254432e74000000000000000000000000000000000000000000000000000000);
-  // console.log("Price of btc : ",btcPrice)
-  // const wbnbPrice = await OracleOpen.getQuote(0x57424e4200000000000000000000000000000000000000000000000000000000);
-  // console.log("Price of btc : ",wbnbPrice)
-  // const sxpPrice = await OracleOpen.getQuote(0x5358500000000000000000000000000000000000000000000000000000000000);
-  // console.log("Price of btc : ",sxpPrice)
-  // const cakePrice = await OracleOpen.getQuote(0x43414b4500000000000000000000000000000000000000000000000000000000);
-  // console.log("Price of btc : ",cakePrice)
-
-  // console.log("Prices of assets Printed");
-
-
   /// APPROVING TOKENS FOR DIAMOND
   console.log("Approval diamond");
   await tbtc.approve(diamondAddress, "5000000000000000000000000");
@@ -291,16 +265,6 @@ async function addMarkets(array) {
   await tsxp.approve(diamondAddress, "5000000000000000000000000");
   await tcake.approve(diamondAddress, "5000000000000000000000000");
   await twbnb.approve(diamondAddress, "5000000000000000000000000");
-
-  /// MARKET ADDRESSES ADDED
-
-  // console.log("Add fairPrice addresses");
-  // await diamond.addFairPriceAddress(symbolWBNB, tWBNBAddress);
-  // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress);
-  // await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
-  // await diamond.addFairPriceAddress(symbolBtc, tBtcAddress);
-  // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
-  // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
@@ -346,12 +310,6 @@ async function addMarkets(array) {
         CAKE: ${symbolCAKE}: ${tCakeAddress}`);
   console.log("secondary markets added");
   // console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
-
-  /// TRANSFERRING TOKENS TO UPGRADEADMIN
-  await tusdt.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDT
-  await tusdc.transfer(upgradeAdmin.address, "2000000000000000000000000000"); // 2 billion USDC
-  await tbtc.transfer(upgradeAdmin.address, "4200000000000000000000000"); // 4.2 million BTC
-  await twbnb.transfer(upgradeAdmin.address, "18000000000000000000000000"); // 18 million BNB
 
   /// TRANSFERRING TOKENS TO DIAMOND(RESERVES)
   await tusdt.transfer(diamondAddress, "2000000000000000000000000000");
@@ -478,16 +436,15 @@ async function provideLiquidity(rets) {
   const tsxp = await ethers.getContractAt("BEP20Token", rets["tSxpAddress"]);
 
   const pancakeRouter = await ethers.getContractAt("PancakeRouter", pancakeRouterAddr);
-  // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
-  /// USDC-CAKE LIQUIDITY
-  await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+  /// USDC-WBNB LIQUIDITY
+  await tusdc.approve(pancakeRouterAddr, "400000000000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "1000000000000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdc.address,
-    tcake.address,
-    "10000000000000000000000000",
+    twbnb.address,
+    "400000000000000000000000000",
     "1000000000000000000000000",
     1,
     1,
@@ -496,16 +453,16 @@ async function provideLiquidity(rets) {
     { gasLimit: 8000000 },
   );
 
-  console.log("USDC <-> CAKE LP done");
+  console.log("USDC <-> WBNB LP done");
 
-  /// USDT-CAKE LIQUIDITY
-  await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+  /// USDT-WBNB LIQUIDITY
+  await tusdt.approve(pancakeRouterAddr, "400000000000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "1000000000000000000000000");
 
   await pancakeRouter.addLiquidity(
     tusdt.address,
-    tcake.address,
-    "10000000000000000000000000",
+    twbnb.address,
+    "400000000000000000000000000",
     "1000000000000000000000000",
     1,
     1,
@@ -513,113 +470,57 @@ async function provideLiquidity(rets) {
     Date.now() + 60 * 30,
     { gasLimit: 8000000 },
   );
-  console.log("USDT <-> CAKE LP done");
+  console.log("USDT <-> WBNB LP done");
 
-  /// BTC-CAKE LIQUIDITY
-  await tbtc.approve(pancakeRouterAddr, "1200000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "50000000000000000000000000");
+  /// BTC-WBNB LIQUIDITY
+  await tbtc.approve(pancakeRouterAddr, "100000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "10000000000000000000000");
 
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       tbtc.address,
-      tcake.address,
-      "120000000000000000000",
-      "5000000000000000000000000",
-      1,
-      1,
-      upgradeAdmin.address,
-      Date.now() + 60 * 30,
-      { gasLimit: 8000000 },
-    );
-  console.log("BTC <-> CAKE LP done");
-
-  /// WBNB-CAKE LIQUIDITY
-  await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
-  await tcake.approve(pancakeRouterAddr, "2500000000000000000000");
-
-  await pancakeRouter
-    .connect(upgradeAdmin)
-    .addLiquidity(
       twbnb.address,
+      "100000000000000000000",
+      "10000000000000000000000",
+      1,
+      1,
+      upgradeAdmin.address,
+      Date.now() + 60 * 30,
+      { gasLimit: 8000000 },
+    );
+  console.log("BTC <-> WBNB LP done");
+
+  /// CAKE-WBNB LIQUIDITY
+  await tcake.approve(pancakeRouterAddr, "250000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "5000000000000000000");
+
+  await pancakeRouter
+    .connect(upgradeAdmin)
+    .addLiquidity(
       tcake.address,
-      "5000000000000000000",
-      "250000000000000000000",
-      1,
-      1,
-      upgradeAdmin.address,
-      Date.now() + 60 * 30,
-      { gasLimit: 8000000 },
-    );
-  console.log("WBNB <-> CAKE LP done");
-
-  // LP FOR SXP
-
-  /// USDC-SXP LIQUIDITY
-  await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
-
-  await pancakeRouter.addLiquidity(
-    tusdc.address,
-    tsxp.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
-    1,
-    1,
-    upgradeAdmin.address,
-    Date.now() + 60 * 30,
-    { gasLimit: 8000000 },
-  );
-
-  console.log("USDC <-> SXP LP done");
-
-  /// USDT-SXP LIQUIDITY
-  await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "10000000000000000000000000");
-
-  await pancakeRouter.addLiquidity(
-    tusdt.address,
-    tsxp.address,
-    "10000000000000000000000000",
-    "1000000000000000000000000",
-    1,
-    1,
-    upgradeAdmin.address,
-    Date.now() + 60 * 30,
-    { gasLimit: 8000000 },
-  );
-  console.log("USDT <-> SXP LP done");
-
-  /// BTC-SXP LIQUIDITY
-  await tbtc.approve(pancakeRouterAddr, "1200000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "50000000000000000000000000");
-
-  await pancakeRouter
-    .connect(upgradeAdmin)
-    .addLiquidity(
-      tbtc.address,
-      tsxp.address,
-      "120000000000000000000",
-      "5000000000000000000000000",
-      1,
-      1,
-      upgradeAdmin.address,
-      Date.now() + 60 * 30,
-      { gasLimit: 8000000 },
-    );
-  console.log("BTC <-> SXP LP done");
-
-  /// WBNB-SXP LIQUIDITY
-  await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
-  await tsxp.approve(pancakeRouterAddr, "2500000000000000000000");
-
-  await pancakeRouter
-    .connect(upgradeAdmin)
-    .addLiquidity(
       twbnb.address,
-      tsxp.address,
-      "5000000000000000000",
       "250000000000000000000",
+      "5000000000000000000",
+      1,
+      1,
+      upgradeAdmin.address,
+      Date.now() + 60 * 30,
+      { gasLimit: 8000000 },
+    );
+  console.log("CAKE <-> WBNB LP done");
+
+  /// SXP-WBNB LIQUIDITY
+  await tsxp.approve(pancakeRouterAddr, "1000000000000000000000");
+  await twbnb.approve(pancakeRouterAddr, "5000000000000000000");
+
+  await pancakeRouter
+    .connect(upgradeAdmin)
+    .addLiquidity(
+      tsxp.address,
+      twbnb.address,
+      "1000000000000000000000",
+      "5000000000000000000",
       1,
       1,
       upgradeAdmin.address,

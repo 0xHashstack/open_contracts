@@ -6,21 +6,14 @@ import "./LibSwap.sol";
 import { AggregatorV3Interface } from "../interfaces/AggregatorV3Interface.sol";
 
 library LibOracle {
-    // function _getQuote(bytes32 _market) internal view returns (uint256) {
-    //     // Chainlink price
-    //     AppStorageOpen storage ds = LibCommon.diamondStorage();
-
-    //     require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
-    //     (, int256 price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-
-    //     uint256 priceCheck = uint256(price);
-    //     require(priceCheck != 0, "ERROR: Latest Price Fetch Failure");
-
-    //     return priceCheck;
-    // }
-
     function _getQuote(bytes32 _market) internal view returns (uint256) {
+        if (_market == 0x555344542e740000000000000000000000000000000000000000000000000000) {
+            return 10**LibCommon._getMarketDecimal(_market);
+        }
         uint256 _amountIn = 10**LibCommon._getMarketDecimal(_market);
+        if (_amountIn == 1) {
+            _amountIn = 10**LibCommon._getMarket2Decimal(_market);
+        }
         address marketAddress = LibSwap._getMarketAddress(_market);
         if (marketAddress == address(0)) {
             marketAddress = LibSwap._getMarket2Address(_market);
@@ -28,9 +21,8 @@ library LibOracle {
         return
             LibSwap._getAmountOutMin(
                 marketAddress,
-                LibSwap._getMarketAddress(0x555344432e740000000000000000000000000000000000000000000000000000),
-                _amountIn,
-                2
+                LibSwap._getMarketAddress(0x555344542e740000000000000000000000000000000000000000000000000000),
+                _amountIn
             );
     }
 

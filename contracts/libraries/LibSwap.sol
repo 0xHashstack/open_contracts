@@ -25,7 +25,10 @@ library LibSwap {
         if (_fromMarket == _toMarket) return _fromAmount;
         address addrFromMarket;
         address addrToMarket;
-        address addrCake;
+        address addrWbnb;
+
+        addrWbnb = _getMarketAddress(0x57424e4200000000000000000000000000000000000000000000000000000000);
+        require(addrWbnb != address(0), "WBNB Address can not be zero.");
 
         if (_mode == 0) {
             addrFromMarket = _getMarketAddress(_fromMarket);
@@ -36,8 +39,6 @@ library LibSwap {
         } else if (_mode == 2) {
             addrFromMarket = _getMarketAddress(_fromMarket);
             addrToMarket = _getMarketAddress(_toMarket);
-            addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
-            require(addrCake != address(0), "CAKE Address can not be zero.");
         }
 
         require(addrFromMarket != address(0) && addrToMarket != address(0), "Swap Address can not be zero.");
@@ -45,16 +46,16 @@ library LibSwap {
         //PancakeSwap
         IBEP20(addrFromMarket).approve(LibCommon.PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
-        //WBNB as other test tokens
         address[] memory path;
-        if (_mode != 2) {
+
+        if (addrFromMarket == addrWbnb || addrToMarket == addrWbnb) {
             path = new address[](2);
             path[0] = addrFromMarket;
             path[1] = addrToMarket;
         } else {
             path = new address[](3);
             path[0] = addrFromMarket;
-            path[1] = addrCake;
+            path[1] = addrWbnb;
             path[2] = addrToMarket;
         }
 
@@ -62,7 +63,7 @@ library LibSwap {
         uint256[] memory ret;
         ret = IPancakeRouter01(LibCommon.PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
             _fromAmount,
-            _getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount, _mode),
+            _getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),
             path,
             address(this),
             block.timestamp + 15
@@ -73,38 +74,33 @@ library LibSwap {
     function _getAmountOutMin(
         address _tokenIn,
         address _tokenOut,
-        uint256 _amountIn,
-        uint256 _mode
+        uint256 _amountIn
     ) internal view returns (uint256) {
         if (_amountIn == 0) {
             return 0;
         }
-        address addrCake;
-        addrCake = _getMarket2Address(0x43414b4500000000000000000000000000000000000000000000000000000000);
-        require(addrCake != address(0), "CAKE Address can not be zero.");
+        address addrWbnb;
+        addrWbnb = _getMarketAddress(0x57424e4200000000000000000000000000000000000000000000000000000000);
+        require(addrWbnb != address(0), "WBNB Address can not be zero.");
 
         address[] memory path;
 
-        if (_mode != 2) {
+        if (_tokenIn == addrWbnb || _tokenOut == addrWbnb) {
             path = new address[](2);
             path[0] = _tokenIn;
             path[1] = _tokenOut;
         } else {
             path = new address[](3);
             path[0] = _tokenIn;
-            path[1] = addrCake;
+            path[1] = addrWbnb;
             path[2] = _tokenOut;
         }
-
-        console.log("fetching amount out using pancake swap");
 
         // same length as path
         uint256[] memory amountOutMins = IPancakeRouter01(LibCommon.PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
             _amountIn,
             path
         );
-
-        
         return amountOutMins[path.length - 1];
     }
 }

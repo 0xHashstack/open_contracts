@@ -30,6 +30,8 @@ describe("testing OracleOpen", async () => {
     const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
     const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
     const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
 
     before(async () => {
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
@@ -37,19 +39,25 @@ describe("testing OracleOpen", async () => {
       accessRegistry = await ethers.getContractAt("AccessRegistry", rets["accessRegistryAddress"]);
     });
 
-    it("Get Latest Price:", async () => {
+    it("Get Quote Price:", async () => {
       let x;
-      x = BigNumber.from(await oracle.getLatestPrice(symbolBtc));
-      expect(x).to.not.equal(BigNumber.from(0));
+      x = await oracle.getQuote(symbolBtc);
+      expect(x).to.equal(BigNumber.from("39442594409611838746145"));
 
-      x = BigNumber.from(await oracle.getLatestPrice(symbolUsdt));
-      expect(x).to.not.equal(BigNumber.from(0));
+      x = await oracle.getQuote(symbolUsdt);
+      expect(x).to.equal(BigNumber.from("1000000000000000000"));
 
-      x = BigNumber.from(await oracle.getLatestPrice(symbolUsdc));
-      expect(x).to.not.equal(BigNumber.from(0));
+      x = BigNumber.from(await oracle.getQuote(symbolUsdc));
+      expect(x).to.equal(BigNumber.from("996003995034910118"));
 
-      x = BigNumber.from(await oracle.getLatestPrice(symbolWBNB));
-      expect(x).to.not.equal(BigNumber.from(0));
+      x = BigNumber.from(await oracle.getQuote(symbolWBNB));
+      expect(x).to.equal(BigNumber.from("399199601598797604399"));
+
+      x = BigNumber.from(await oracle.getQuote(symbolSxp));
+      expect(x).to.equal(BigNumber.from("1990021948185361737"));
+
+      x = BigNumber.from(await oracle.getQuote(symbolCAKE));
+      expect(x).to.equal(BigNumber.from("7936349932974838741"));
     });
 
     it("Pause:", async () => {

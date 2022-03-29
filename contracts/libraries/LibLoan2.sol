@@ -206,8 +206,7 @@ library LibLoan2 {
             LibSwap._getAmountOutMin(
                 LibSwap._getMarketAddress(loan.market),
                 LibSwap._getMarketAddress(collateral.market),
-                deductibleInterest.accruedInterest,
-                2
+                deductibleInterest.accruedInterest
             );
         if (_commitment == LibCommon._getCommitment(2)) _collateralAmount += cYield.accruedYield;
 

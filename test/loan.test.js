@@ -664,23 +664,6 @@ describe("testing Loans", async () => {
       expect(BigNumber.from(await bepSxp.balanceOf(diamondAddress))).to.gt(BigNumber.from(reserveBal));
     });
 
-    // it("Swap to Loan", async () => {
-    //   const reserveBalance = BigNumber.from(
-    //     await bepWbnb.balanceOf(diamondAddress)
-    //   );
-    //   const reserveBal = await bepSxp.balanceOf(diamondAddress);
-    //   await expect(
-    //     loan.connect(accounts[1]).swapToLoan(symbolWbnb, comit_ONEMONTH)
-    //   ).emit(loan, "MarketSwapped");
-
-    //   expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.gt(
-    //     BigNumber.from(reserveBalance)
-    //   );
-    //   expect(BigNumber.from(await bepSxp.balanceOf(diamondAddress))).to.lt(
-    //     BigNumber.from(reserveBal)
-    //   );
-    // });
-
     it("Wbnb Withdraw Loan", async () => {
       const withdrawAmount = 15000000;
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
@@ -737,8 +720,6 @@ describe("testing Loans", async () => {
     });
 
     it("Pause Loan1", async () => {
-      expect(await loan1.utilisedReservesLoan(symbolBtc)).to.not.equal(BigNumber.from(0));
-
       const adminLoan1 = utils.formatBytes32String("adminLoan1");
       await loan1.pauseLoan1();
       expect(await loan1.isPausedLoan1()).to.equal(true);

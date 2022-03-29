@@ -15,12 +15,10 @@ contract OracleOpen is Pausable, IOracleOpen {
         payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
 
-    // function getLatestPrice(bytes32 _market) external view override returns (uint256) {
-    //     return LibOracle._getQuote(_market);
-    // }
- function getQuote(bytes32 _market) external view override returns (uint256){
-        LibOracle._getQuote(_market);
+    function getQuote(bytes32 _market) external view override returns (uint256) {
+        return LibOracle._getQuote(_market);
     }
+
     function getFairPrice(uint256 _requestId) external view override returns (uint256) {
         return LibOracle._getFairPrice(_requestId);
     }

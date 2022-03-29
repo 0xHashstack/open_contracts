@@ -60,16 +60,14 @@ library LibLiquidation {
             loanCurrentAmount = LibSwap._getAmountOutMin(
                 LibSwap._getMarket2Address(loanState.currentMarket),
                 LibSwap._getMarketAddress(loanState.loanMarket),
-                loanState.currentAmount,
-                1
+                loanState.currentAmount
             );
         }
 
         collateralCurrentAmount = LibSwap._getAmountOutMin(
             LibSwap._getMarketAddress(collateral.market),
             LibSwap._getMarketAddress(loanState.loanMarket),
-            collateral.amount,
-            2
+            collateral.amount
         );
 
         console.log("loan current amount====", loanCurrentAmount);
@@ -109,8 +107,7 @@ library LibLiquidation {
             LibSwap._getAmountOutMin(
                 LibSwap._getMarketAddress(loan.market),
                 LibSwap._getMarketAddress(collateral.market),
-                deductibleInterest.accruedInterest,
-                2
+                deductibleInterest.accruedInterest
             );
         if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
 
