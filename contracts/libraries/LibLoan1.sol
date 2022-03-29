@@ -37,6 +37,7 @@ library LibLoan1 {
         bytes32 _collateralMarket,
         uint256 _collateralAmount
     ) internal returns (uint256 loanId) {
+        uint256 LoanIssuanceFees;
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -46,6 +47,8 @@ library LibLoan1 {
         CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
+        LoanIssuanceFees = (LibCommon.diamondStorage().loanIssuanceFees)*_loanAmount/1000;
+        console.log("LoanIssuanceFees is : ", LoanIssuanceFees);
         /// UPDATING LoanRecords
         loan.id = loanAccount.loans.length + 1;
         loan.market = _loanMarket;
@@ -58,7 +61,8 @@ library LibLoan1 {
         if (loan.id == 1) {
             ds.borrowers.push(msg.sender);
         }
-
+        _loanAmount = _loanAmount - LoanIssuanceFees;
+        console.log("_loanAmount is :", _loanAmount);
         /// UPDATING ACTIVELOANS RECORDS
         activeLoans.loanMarket.push(_loanMarket);
         activeLoans.loanCommitment.push(_commitment);
