@@ -221,11 +221,15 @@ library LibLoan {
         LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
+        uint256 collateralWithdrawFees;
 
         /// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
         require(loan.id != 0, "ERROR: Loan does not exist");
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
         require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
+
+        collateralWithdrawFees = (LibCommon.diamondStorage().collateralReleaseFees)*collateral.amount/1000;
+        collateral.amount = collateral.amount - collateralWithdrawFees;
 
         ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
         ds.collateralToken.transfer(_sender, collateral.amount);

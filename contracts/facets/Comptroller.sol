@@ -195,10 +195,9 @@ contract Comptroller is Pausable, IComptroller {
         uint256 oldFees = ds.loanClosureFees;
         ds.loanClosureFees = fees;
 
-        emit LoanClosureFeesUpdated(msg.sender, oldFees, ds.loanIssuanceFees, block.timestamp);
+        emit LoanClosureFeesUpdated(msg.sender, oldFees, ds.loanClosureFees, block.timestamp);
         return true;
     }
-
     function loanIssuanceFees() external view returns (uint256) {
         return LibCommon.diamondStorage().loanIssuanceFees;
     }

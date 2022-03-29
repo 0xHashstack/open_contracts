@@ -371,14 +371,14 @@ async function addMarkets(array) {
     console.log("Implementing fees in Comptroller")
   await comptroller.updateLoanIssuanceFees("10");
   console.log("updateWithdrawalFees is set");
-  // await comptroller.updateLoanPreClosureFees();
-  // console.log("updateLoanPreClosureFees is set");
+  await comptroller.updateloanClosureFees("5"); // set fee to 0.05%
+  console.log("updateWithdrawalFees is set");
   await comptroller.updateDepositPreclosureFees("36"); // Set fee to 0.36%
   console.log("updateDepositPreclosureFees is set");
   await comptroller.updateWithdrawalFees("17"); // Set fee to 0.17%
   console.log("updateWithdrawalFees is set");
-  // await comptroller.updateCollateralReleaseFees();
-  // console.log("updateCollateralReleaseFees is set");
+  await comptroller.updateCollateralReleaseFees("10"); // set fee to 0.1%
+  console.log("updateCollateralReleaseFees is set");
   await comptroller.updateMarketSwapFees("5"); // Set fee to 0.05%
   console.log("updateMarketSwapFees is set");
   // await comptroller.updateReserveFactor();
