@@ -190,7 +190,7 @@ contract Comptroller is Pausable, IComptroller {
     function loanClosureFees() external view returns (uint256) {
         return LibCommon.diamondStorage().loanIssuanceFees;
     }
-    function updateloanClosureFees(uint256 fees) external nonReentrant authComptroller returns (bool) {
+    function updateloanClosureFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         uint256 oldFees = ds.loanClosureFees;
         ds.loanClosureFees = fees;
