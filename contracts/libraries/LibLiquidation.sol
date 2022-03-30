@@ -176,19 +176,9 @@ library LibLiquidation {
                 true
             );
 
-            if (_getDebtCategory(loan, collateral) == 1) {
-                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
+            collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
+            LibReserve._updateReservesDeposit(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
 
-                LibReserve._updateReservesLoan(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
-            } else if (_getDebtCategory(loan, collateral) == 2) {
-                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
-
-                LibReserve._updateReservesLoan(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
-            } else {
-                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
-
-                LibReserve._updateReservesDeposit(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0); // 30% of remnant amount
-            }
             console.log("final transfer collateral amount", collateral.amount);
             IBEP20(LibCommon._connectMarket(collateral.market)).transfer(
                 liquidator,

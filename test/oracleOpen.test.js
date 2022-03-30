@@ -42,22 +42,22 @@ describe("testing OracleOpen", async () => {
     it("Get Quote Price:", async () => {
       let x;
       x = await oracle.getQuote(symbolBtc);
-      expect(x).to.equal(BigNumber.from("39442594409611838746145"));
+      expect(x).to.equal(BigNumber.from("3944259440650"));
 
       x = await oracle.getQuote(symbolUsdt);
-      expect(x).to.equal(BigNumber.from("1000000000000000000"));
+      expect(x).to.equal(BigNumber.from("100000000"));
 
       x = BigNumber.from(await oracle.getQuote(symbolUsdc));
-      expect(x).to.equal(BigNumber.from("996003995034910118"));
+      expect(x).to.equal(BigNumber.from("99600000"));
 
       x = BigNumber.from(await oracle.getQuote(symbolWBNB));
-      expect(x).to.equal(BigNumber.from("399199601598797604399"));
+      expect(x).to.equal(BigNumber.from("39919960159"));
 
       x = BigNumber.from(await oracle.getQuote(symbolSxp));
-      expect(x).to.equal(BigNumber.from("1990021948185361737"));
+      expect(x).to.equal(BigNumber.from("199001997"));
 
       x = BigNumber.from(await oracle.getQuote(symbolCAKE));
-      expect(x).to.equal(BigNumber.from("7936349932974838741"));
+      expect(x).to.equal(BigNumber.from("793634733"));
     });
 
     it("Pause:", async () => {
