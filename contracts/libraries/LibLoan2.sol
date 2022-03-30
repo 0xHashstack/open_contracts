@@ -112,14 +112,15 @@ library LibLoan2 {
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
         } else {
             /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
-            uint256 collateralWithdrawFees = ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) /
-                1000;
-            collateral.amount = collateral.amount - collateralWithdrawFees;
-
+            // uint256 collateralWithdrawFees = ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) /
+            //     1000;
+            // collateral.amount = collateral.amount - collateralWithdrawFees;
+            collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+            
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
             ds.collateralToken.transfer(msg.sender, collateral.amount);
             /// REMOVED BELOW EMIT FOR NOW BECAUSE OF STACK TOO DEEP
-            // emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id);
+            emit LibLoan.WithdrawCollateral(msg.sender, collateral.market, collateral.amount, loan.id);
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
 
