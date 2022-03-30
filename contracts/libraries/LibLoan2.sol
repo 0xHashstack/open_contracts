@@ -28,15 +28,15 @@ library LibLoan2 {
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
         CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
-        // uint256 loanClosureFees;
+        // uint256 LoanClosureFees;
         // uint256 collateralWithdrawFees;
         /// TRANSFER FUNDS TO PROTOCOL FROM USER
         if (_repayAmount != 0) {
             ds.loanToken = IBEP20(LibCommon._connectMarket(_loanMarket));
             ds.loanToken.transferFrom(msg.sender, address(this), _repayAmount);
         }
-        uint256 loanClosureFees = (LibCommon.diamondStorage().loanClosureFees * _repayAmount) / 10000;
-        _repayAmount = _repayAmount - loanClosureFees;
+        uint256 LoanClosureFees = (LibCommon.diamondStorage().LoanClosureFees * _repayAmount) / 10000;
+        _repayAmount = _repayAmount - LoanClosureFees;
         /// CALCULATE REMNANT AMOUNT
         remnantAmount = _repaymentProcess(
             loan.id - 1,

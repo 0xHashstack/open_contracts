@@ -43,8 +43,8 @@ describe("testing fees in Comptroller", async () => {
       });
   
       it("Set Loan Closure Fee", async () => {
-        await expect(comptroller.connect(accounts[1]).updateloanClosureFees(5)).to.be.reverted;
-        await expect(comptroller.updateloanClosureFees(5)).emit(comptroller, "LoanClosureFeesUpdated");
+        await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(5)).to.be.reverted;
+        await expect(comptroller.updateLoanClosureFees(5)).emit(comptroller, "LoanClosureFeesUpdated");
       });
   
       it("Set Deposit pre Closure Fee", async () => {
