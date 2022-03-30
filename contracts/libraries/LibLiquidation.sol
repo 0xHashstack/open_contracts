@@ -106,7 +106,7 @@ library LibLiquidation {
         require(loan.id != 0, "ERROR: Loan does not exist");
 
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
-        LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
+        if (collateral.isCollateralisedDeposit) LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
         console.log("collateral amount, loan amount 1");
         console.log(collateral.amount);
@@ -204,11 +204,15 @@ library LibLiquidation {
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;
         delete collateral.initialAmount;
+        /// LOAN STATE
+        delete loanState.id;
+        delete loanState.loanMarket;
+        delete loanState.actualLoanAmount;
+        delete loanState.currentMarket;
+        delete loanState.currentAmount;
+        delete loanState.state;
 
-        /// LOAN ACCOUNT
-        delete loanAccount.loans[loan.id - 1];
-        delete loanAccount.collaterals[loan.id - 1];
-        delete loanAccount.loanState[loan.id - 1];
+        _fillLoanArrayGap(account, loan);
 
         /// LOAN RECORDS
         delete loan.id;
@@ -218,15 +222,54 @@ library LibLiquidation {
         delete loan.isSwapped;
         delete loan.lastUpdate;
 
-        /// LOAN STATE
-        delete loanState.id;
-        delete loanState.loanMarket;
-        delete loanState.actualLoanAmount;
-        delete loanState.currentMarket;
-        delete loanState.currentAmount;
-        delete loanState.state;
-
         return loanAmount;
+    }
+
+    function _fillLoanArrayGap(address account, LoanRecords memory loan) private {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        LoanAccount storage loanAccount = ds.loanPassbook[account];
+        ActiveLoans storage activeLoans = ds.getActiveLoans[account];
+
+        LoanRecords memory lastLoanAccountLoan = loanAccount.loans[loanAccount.loans.length - 1];
+        loanAccount.loans[loan.id - 1] = lastLoanAccountLoan;
+        loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccount.loans.length - 1];
+        loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccount.loans.length - 1];
+        loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccount.loans.length - 1];
+        loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccount.loans.length - 1];
+        loanAccount.loans.pop();
+        loanAccount.loanState.pop();
+        loanAccount.accruedAPR.pop();
+        loanAccount.collaterals.pop();
+        loanAccount.accruedAPY.pop();
+
+        activeLoans.loanMarket[loan.id - 1] = activeLoans.loanMarket[activeLoans.loanMarket.length - 1];
+        activeLoans.loanCommitment[loan.id - 1] = activeLoans.loanCommitment[activeLoans.loanMarket.length - 1];
+        activeLoans.loanAmount[loan.id - 1] = activeLoans.loanAmount[activeLoans.loanMarket.length - 1];
+        activeLoans.collateralMarket[loan.id - 1] = activeLoans.collateralMarket[activeLoans.loanMarket.length - 1];
+        activeLoans.collateralAmount[loan.id - 1] = activeLoans.collateralAmount[activeLoans.loanMarket.length - 1];
+        activeLoans.isSwapped[loan.id - 1] = activeLoans.isSwapped[activeLoans.loanMarket.length - 1];
+        activeLoans.loanCurrentMarket[loan.id - 1] = activeLoans.loanCurrentMarket[activeLoans.loanMarket.length - 1];
+        activeLoans.loanCurrentAmount[loan.id - 1] = activeLoans.loanCurrentAmount[activeLoans.loanMarket.length - 1];
+        activeLoans.collateralYield[loan.id - 1] = activeLoans.collateralYield[activeLoans.loanMarket.length - 1];
+        activeLoans.borrowInterest[loan.id - 1] = activeLoans.borrowInterest[activeLoans.loanMarket.length - 1];
+        activeLoans.state[loan.id - 1] = activeLoans.state[activeLoans.loanMarket.length - 1];
+        activeLoans.loanMarket.pop();
+        activeLoans.loanCommitment.pop();
+        activeLoans.loanAmount.pop();
+        activeLoans.collateralMarket.pop();
+        activeLoans.collateralAmount.pop();
+        activeLoans.isSwapped.pop();
+        activeLoans.loanCurrentMarket.pop();
+        activeLoans.loanCurrentAmount.pop();
+        activeLoans.collateralYield.pop();
+        activeLoans.borrowInterest.pop();
+        activeLoans.state.pop();
+
+        // update loan id of the swapped record
+        LoanRecords storage lastLoan = ds.indLoanRecords[lastLoanAccountLoan.owner][lastLoanAccountLoan.market][
+            lastLoanAccountLoan.commitment
+        ];
+        lastLoan.id = loan.id;
     }
 
     function _liquidableLoans(uint256 _indexFrom)

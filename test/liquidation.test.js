@@ -43,7 +43,7 @@ describe("Liquidation", async () => {
     await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
   });
 
-  describe("Liquidation", async () => {
+  describe("Unit tests", async () => {
     const symbolWbnb = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
     const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // Usdt.t
     const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
@@ -73,7 +73,75 @@ describe("Liquidation", async () => {
     });
 
     describe("Community liquidation", async () => {
-      it("DC3 Liquidation", async () => {
+      it("Should fail if liquidator not eligible", async () => {
+        const loanAmount = ethers.utils.parseUnits("80000", TOKENS_DECIMAL);
+        const collateralAmount = ethers.utils.parseUnits("1", TOKENS_DECIMAL);
+        const accounts = await ethers.getSigners();
+        const upgradeAdmin = accounts[0];
+
+        await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
+        await expect(
+          loan1.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolBtc, collateralAmount),
+        ).emit(loan1, "NewLoan");
+
+        // Decrease price so that loan gets liquidable
+        await bepBtc
+          .connect(accounts[0])
+          .approve(pancakeRouter.address, ethers.utils.parseUnits("1000", TOKENS_DECIMAL));
+        await pancakeRouter
+          .connect(accounts[0])
+          .swapExactTokensForTokens(
+            ethers.utils.parseUnits("1000", TOKENS_DECIMAL),
+            1,
+            [rets["tBtcAddress"], rets["tWBNBAddress"]],
+            upgradeAdmin.address,
+            Date.now() + 1000 * 60 * 10,
+          );
+
+        await bepUsdc.connect(accounts[0]).approve(diamondAddress, loanAmount);
+        expect(
+          liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdc, comit_ONEMONTH),
+        ).to.be.revertedWith("Liquidator criteria not met!");
+      });
+
+      it.skip("Non Liquidable loan", async () => {
+        const loanAmount = ethers.utils.parseUnits("10", TOKENS_DECIMAL);
+        const collateralAmount = ethers.utils.parseUnits("7", TOKENS_DECIMAL);
+        const accounts = await ethers.getSigners();
+        const upgradeAdmin = accounts[0];
+
+        const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
+        await bepWbnb.connect(accounts[1]).approve(diamondAddress, collateralAmount);
+        await expect(
+          loan1.connect(accounts[1]).loanRequest(symbolWbnb, comit_ONEMONTH, loanAmount, symbolWbnb, collateralAmount),
+        ).emit(loan1, "NewLoan");
+
+        // make liquidator eligible
+        const depositAmount = ethers.utils.parseUnits("2500", TOKENS_DECIMAL);
+
+        await bepUsdt.connect(accounts[0]).approve(diamondAddress, depositAmount);
+        await deposit.connect(accounts[0]).depositRequest(symbolUsdt, comit_TWOWEEKS, depositAmount);
+
+        expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
+          reserveBalance.add(BigNumber.from(collateralAmount)),
+        );
+
+        let prevLoanAssetBalance = await bepWbnb.balanceOf(accounts[0].address);
+        let prevDiamondLoanAssetBalance = await bepWbnb.balanceOf(diamondAddress);
+
+        await bepWbnb.connect(accounts[0]).approve(diamondAddress, loanAmount);
+        expect(
+          liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolWbnb, comit_ONEMONTH),
+        ).to.be.revertedWith("Liquidation price not hit");
+
+        let postLoanAssetBalance = await bepWbnb.balanceOf(accounts[0].address);
+        let postDiamondLoanAssetBalance = await bepWbnb.balanceOf(diamondAddress);
+
+        expect(prevLoanAssetBalance).to.eq(postLoanAssetBalance);
+        expect(prevDiamondLoanAssetBalance).to.eq(postDiamondLoanAssetBalance);
+      });
+
+      it.skip("DC3 Liquidation", async () => {
         const loanAmount = ethers.utils.parseUnits("80000", TOKENS_DECIMAL);
         const collateralAmount = ethers.utils.parseUnits("1", TOKENS_DECIMAL);
         const accounts = await ethers.getSigners();
@@ -161,146 +229,7 @@ describe("Liquidation", async () => {
           "post coll asset balance diamond=====",
           ethers.utils.formatUnits(laterDiamondCollateralAssetBalance, TOKENS_DECIMAL),
         );
-        expect(laterCollateralAssetBalance).to.be.gt(prevCollateralAssetBalance);
-      });
-
-      it.skip("DC2 Liquidation", async () => {
-        const loanAmount = ethers.utils.parseUnits("10", TOKENS_DECIMAL);
-        const collateralAmount = ethers.utils.parseUnits("7", TOKENS_DECIMAL);
-        const accounts = await ethers.getSigners();
-        const upgradeAdmin = accounts[0];
-
-        const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
-        // console.log('bnb balance below');
-        // console.log(await bepWbnb.balanceOf(accounts[1].address));
-        await bepWbnb.connect(accounts[1]).approve(diamondAddress, collateralAmount);
-        await expect(
-          loan1.connect(accounts[1]).loanRequest(symbolWbnb, comit_ONEMONTH, loanAmount, symbolWbnb, collateralAmount),
-        ).emit(loan1, "NewLoan");
-
-        // make liquidator eligible
-        const depositAmount = ethers.utils.parseUnits("2500", TOKENS_DECIMAL);
-
-        await bepUsdt.connect(accounts[0]).approve(diamondAddress, depositAmount);
-        await deposit.connect(accounts[0]).depositRequest(symbolUsdt, comit_TWOWEEKS, depositAmount);
-
-        expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
-          reserveBalance.add(BigNumber.from(collateralAmount)),
-        );
-
-        console.log("quote before swap:", ethers.utils.formatEther(await oracle.getQuote(symbolWbnb)));
-
-        // Decrease price so that loan gets liquidated
-        await bepWbnb
-          .connect(accounts[0])
-          .approve(pancakeRouter.address, ethers.utils.parseUnits("100000000", TOKENS_DECIMAL));
-        await pancakeRouter
-          .connect(accounts[0])
-          .swapExactTokensForTokens(
-            ethers.utils.parseUnits("100000000", TOKENS_DECIMAL),
-            1,
-            [rets["tWBNBAddress"], rets["tUsdtAddress"]],
-            upgradeAdmin.address,
-            Date.now() + 1000 * 60 * 10,
-          );
-
-        console.log("quote after swap:", ethers.utils.formatEther(await oracle.getQuote(symbolUsdt)));
-
-        let prevLoanAssetBalance = await bepWbnb.balanceOf(accounts[0].address);
-
-        let prevDiamondLoanAssetBalance = await bepWbnb.balanceOf(diamondAddress);
-
-        console.log("prev loan asset balance=====", ethers.utils.formatUnits(prevLoanAssetBalance, TOKENS_DECIMAL));
-
-        console.log(
-          "prev loan asset balance diamond=====",
-          ethers.utils.formatUnits(prevDiamondLoanAssetBalance, TOKENS_DECIMAL),
-        );
-
-        await bepWbnb.connect(accounts[0]).approve(diamondAddress, loanAmount);
-        await expect(liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolWbnb, comit_ONEMONTH)).emit(
-          liquidator,
-          "Liquidation",
-        );
-
-        let laterLoanAssetBalance = await bepWbnb.balanceOf(accounts[0].address);
-
-        let laterDiamondLoanAssetBalance = await bepWbnb.balanceOf(diamondAddress);
-
-        console.log("prev loan asset balance=====", ethers.utils.formatUnits(laterLoanAssetBalance, TOKENS_DECIMAL));
-        console.log(
-          "prev loan asset balance diamond=====",
-          ethers.utils.formatUnits(laterDiamondLoanAssetBalance, TOKENS_DECIMAL),
-        );
-        expect(laterCollateralAssetBalance).to.be.gt(prevCollateralAssetBalance);
-      });
-
-      it.skip("DC1 Liquidation", async () => {
-        const loanAmount = ethers.utils.parseUnits("2800", TOKENS_DECIMAL);
-        const collateralAmount = ethers.utils.parseUnits("3000", TOKENS_DECIMAL);
-        const accounts = await ethers.getSigners();
-        const upgradeAdmin = accounts[0];
-
-        const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
-        await bepUsdt.connect(accounts[1]).approve(diamondAddress, collateralAmount);
-        await expect(
-          loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, loanAmount, symbolUsdt, collateralAmount),
-        ).emit(loan1, "NewLoan");
-
-        // make liquidator eligible
-        const depositAmount = ethers.utils.parseUnits("2500", TOKENS_DECIMAL);
-
-        await bepUsdt.connect(accounts[0]).approve(diamondAddress, depositAmount);
-        await deposit.connect(accounts[0]).depositRequest(symbolUsdt, comit_TWOWEEKS, depositAmount);
-
-        expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
-          reserveBalance.add(BigNumber.from(collateralAmount)),
-        );
-
-        console.log("quote before swap:", ethers.utils.formatEther(await oracle.getQuote(symbolUsdt)));
-
-        // Decrease price so that loan gets liquidated
-        await bepUsdt
-          .connect(accounts[0])
-          .approve(pancakeRouter.address, ethers.utils.parseUnits("1000", TOKENS_DECIMAL));
-        await pancakeRouter
-          .connect(accounts[0])
-          .swapExactTokensForTokens(
-            ethers.utils.parseUnits("1000", TOKENS_DECIMAL),
-            1,
-            [rets["tUsdtAddress"], rets["tWBNBAddress"]],
-            upgradeAdmin.address,
-            Date.now() + 1000 * 60 * 10,
-          );
-
-        console.log("quote after swap:", ethers.utils.formatEther(await oracle.getQuote(symbolUsdt)));
-
-        let prevLoanAssetBalance = await bepUsdt.balanceOf(accounts[0].address);
-
-        let prevDiamondLoanAssetBalance = await bepUsdt.balanceOf(diamondAddress);
-
-        console.log("prev loan asset balance=====", ethers.utils.formatUnits(prevLoanAssetBalance, TOKENS_DECIMAL));
-
-        console.log(
-          "prev loan asset balance diamond=====",
-          ethers.utils.formatUnits(prevDiamondLoanAssetBalance, TOKENS_DECIMAL),
-        );
-
-        await bepUsdt.connect(accounts[0]).approve(diamondAddress, loanAmount);
-        await expect(liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdt, comit_ONEMONTH)).emit(
-          liquidator,
-          "Liquidation",
-        );
-
-        let laterLoanAssetBalance = await bepUsdt.balanceOf(accounts[0].address);
-
-        let laterDiamondLoanAssetBalance = await bepUsdt.balanceOf(diamondAddress);
-
-        console.log("prev loan asset balance=====", ethers.utils.formatUnits(laterLoanAssetBalance, TOKENS_DECIMAL));
-        console.log(
-          "prev loan asset balance diamond=====",
-          ethers.utils.formatUnits(laterDiamondLoanAssetBalance, TOKENS_DECIMAL),
-        );
+        // TODO: check liquidator balance
         expect(laterCollateralAssetBalance).to.be.gt(prevCollateralAssetBalance);
       });
     });
