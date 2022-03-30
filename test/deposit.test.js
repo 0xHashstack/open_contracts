@@ -91,7 +91,7 @@ describe("Testing Deposit", async () => {
 
     // USDT Deposits
     it("USDT New Deposit", async () => {
-      const depositAmount = 50000000000; // 500 (8-0's) 500 USDT
+      const depositAmount = ethers.utils.parseUnits("500", DECIMALS[symbolUsdt]); // 500 (8-0's) 500 USDT
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 

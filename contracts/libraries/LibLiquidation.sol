@@ -13,9 +13,7 @@ library LibLiquidation {
         DepositRecords[] memory deposits = ds.savingsPassbook[liquidator].deposits;
         uint256 usdDeposited;
         for (uint256 i = 0; i < deposits.length; i++) {
-            console.log("validate liquidator ====");
             usdDeposited += (LibOracle._getQuote(deposits[i].market)) * deposits[i].amount;
-            console.log(usdDeposited);
             if (usdDeposited >= 2500) break;
         }
 
@@ -70,14 +68,22 @@ library LibLiquidation {
             collateral.amount
         );
 
+        console.log("debt category====", debtCategory);
         console.log("loan current amount====", loanCurrentAmount);
         console.log("collateral current amount====", collateralCurrentAmount);
+        console.log("loan initial amount====", loanState.actualLoanAmount);
 
         if (debtCategory == 1) {
+            console.log("left hand", ((106 * loanState.actualLoanAmount) / 100));
+            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((106 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else if (debtCategory == 2) {
+            console.log("left hand", ((105 * loanState.actualLoanAmount) / 100));
+            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((105 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else {
+            console.log("left hand", ((104 * loanState.actualLoanAmount) / 100));
+            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((104 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         }
     }
@@ -102,6 +108,11 @@ library LibLiquidation {
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
         LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
+        console.log("collateral amount, loan amount 1");
+        console.log(collateral.amount);
+        console.log(loan.amount);
+        console.log(loanState.currentAmount);
+
         collateral.amount =
             collateral.amount -
             LibSwap._getAmountOutMin(
@@ -110,6 +121,11 @@ library LibLiquidation {
                 deductibleInterest.accruedInterest
             );
         if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
+
+        console.log("collateral amount, loan amount 2");
+        console.log(collateral.amount);
+        console.log(loan.amount);
+        console.log(loanState.currentAmount);
 
         delete deductibleInterest.id;
         delete deductibleInterest.market;
@@ -124,8 +140,6 @@ library LibLiquidation {
         delete cYield.oldLengthAccruedYield;
         delete cYield.oldTime;
         delete cYield.accruedYield;
-
-        // uint8 debtCategory = _getDebtCategory(loan, collateral);
 
         if (!_validLoanLiquidation(loanState, collateral, _getDebtCategory(loan, collateral))) {
             revert("Liquidation price not hit");
@@ -163,38 +177,28 @@ library LibLiquidation {
             );
 
             if (_getDebtCategory(loan, collateral) == 1) {
-                collateral.amount = LibSwap._swap(
-                    loan.market,
-                    collateral.market,
-                    remnantAmount - ((18 * loan.amount) / 1000),
-                    2
-                );
+                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
 
-                LibReserve._updateReservesLoan(collateral.market, ((18 * loan.amount) / 1000), 0);
-                console.log("protocol fee==========", ((18 * loan.amount) / 1000));
+                LibReserve._updateReservesLoan(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
             } else if (_getDebtCategory(loan, collateral) == 2) {
-                collateral.amount = LibSwap._swap(
-                    loan.market,
-                    collateral.market,
-                    remnantAmount - ((15 * loan.amount) / 1000),
-                    2
-                );
+                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
 
-                LibReserve._updateReservesLoan(collateral.market, ((15 * loan.amount) / 1000), 0);
-                console.log("protocol fee==========", ((15 * loan.amount) / 1000));
+                LibReserve._updateReservesLoan(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
             } else {
-                collateral.amount = LibSwap._swap(
-                    loan.market,
-                    collateral.market,
-                    remnantAmount - ((12 * loan.amount) / 1000),
-                    2
-                );
+                collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
 
-                LibReserve._updateReservesLoan(collateral.market, ((12 * loan.amount) / 1000), 0);
-                console.log("protocol fee==========", ((12 * loan.amount) / 1000));
+                LibReserve._updateReservesDeposit(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0); // 30% of remnant amount
             }
-
-            IBEP20(LibCommon._connectMarket(collateral.market)).transfer(liquidator, collateral.amount);
+            console.log("final transfer collateral amount", collateral.amount);
+            IBEP20(LibCommon._connectMarket(collateral.market)).transfer(
+                liquidator,
+                collateral.amount +
+                    LibSwap._getAmountOutMin(
+                        LibSwap._getMarketAddress(loan.market),
+                        LibSwap._getMarketAddress(collateral.market),
+                        loan.amount
+                    )
+            );
         }
 
         LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
@@ -212,9 +216,9 @@ library LibLiquidation {
         delete collateral.initialAmount;
 
         /// LOAN ACCOUNT
-        delete loanAccount.loans[loan.id];
-        delete loanAccount.collaterals[loan.id];
-        delete loanAccount.loanState[loan.id];
+        delete loanAccount.loans[loan.id - 1];
+        delete loanAccount.collaterals[loan.id - 1];
+        delete loanAccount.loanState[loan.id - 1];
 
         /// LOAN RECORDS
         delete loan.id;
@@ -249,6 +253,7 @@ library LibLiquidation {
     {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
 
+        // TODO: in frontend its showing up an empty data records
         address[] memory loanOwner = new address[](100);
         bytes32[] memory loanMarket = new bytes32[](100);
         bytes32[] memory loanCommitment = new bytes32[](100);

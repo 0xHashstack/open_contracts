@@ -70,12 +70,10 @@ library LibLoan {
         CollateralRecords storage collateral,
         CollateralYield storage cYield
     ) internal {
-        bytes32 _commitment = cYield.commitment;
         uint256 aggregateYield;
-        uint256 num = collateral.id - 1;
 
         (cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield) = LibDeposit._calcAPY(
-            _commitment,
+            cYield.commitment,
             cYield.oldLengthAccruedYield,
             cYield.oldTime,
             aggregateYield
@@ -84,7 +82,7 @@ library LibLoan {
         aggregateYield = (collateral.amount * aggregateYield) / (365 * 86400 * 10000);
 
         cYield.accruedYield += aggregateYield;
-        loanAccount.accruedAPY[num].accruedYield += aggregateYield;
+        loanAccount.accruedAPY[collateral.id - 1].accruedYield += aggregateYield;
     }
 
     function _swapToLoan(

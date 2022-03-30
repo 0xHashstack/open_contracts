@@ -79,6 +79,9 @@ library LibSwap {
         if (_amountIn == 0) {
             return 0;
         }
+        if (_tokenIn == _tokenOut) {
+            return _amountIn;
+        }
         address addrWbnb;
         addrWbnb = _getMarketAddress(0x57424e4200000000000000000000000000000000000000000000000000000000);
         require(addrWbnb != address(0), "WBNB Address can not be zero.");
