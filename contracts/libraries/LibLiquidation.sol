@@ -35,13 +35,10 @@ library LibLiquidation {
         }
 
         if (((loanMarketPrice * loan.amount) / (collateralMarketPrice * collateral.initialAmount)) <= 1) {
-            // DC 1
             return uint8(1);
         } else if (((loanMarketPrice * loan.amount) / (collateralMarketPrice * collateral.initialAmount)) <= 2) {
-            // DC 2
             return uint8(2);
         } else {
-            // DC 3
             return uint8(3);
         }
     }
@@ -68,22 +65,11 @@ library LibLiquidation {
             collateral.amount
         );
 
-        console.log("debt category====", debtCategory);
-        console.log("loan current amount====", loanCurrentAmount);
-        console.log("collateral current amount====", collateralCurrentAmount);
-        console.log("loan initial amount====", loanState.actualLoanAmount);
-
         if (debtCategory == 1) {
-            console.log("left hand", ((106 * loanState.actualLoanAmount) / 100));
-            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((106 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else if (debtCategory == 2) {
-            console.log("left hand", ((105 * loanState.actualLoanAmount) / 100));
-            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((105 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         } else {
-            console.log("left hand", ((104 * loanState.actualLoanAmount) / 100));
-            console.log("right hand", (loanCurrentAmount + collateralCurrentAmount));
             return ((104 * loanState.actualLoanAmount) / 100) >= (loanCurrentAmount + collateralCurrentAmount);
         }
     }
@@ -108,24 +94,24 @@ library LibLiquidation {
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
         if (collateral.isCollateralisedDeposit) LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
-        console.log("collateral amount, loan amount 1");
-        console.log(collateral.amount);
-        console.log(loan.amount);
-        console.log(loanState.currentAmount);
-
-        collateral.amount =
-            collateral.amount -
+        if (
             LibSwap._getAmountOutMin(
                 LibSwap._getMarketAddress(loan.market),
                 LibSwap._getMarketAddress(collateral.market),
                 deductibleInterest.accruedInterest
-            );
+            ) > collateral.amount
+        ) {
+            collateral.amount = 0;
+        } else {
+            collateral.amount =
+                collateral.amount -
+                LibSwap._getAmountOutMin(
+                    LibSwap._getMarketAddress(loan.market),
+                    LibSwap._getMarketAddress(collateral.market),
+                    deductibleInterest.accruedInterest
+                );
+        }
         if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
-
-        console.log("collateral amount, loan amount 2");
-        console.log(collateral.amount);
-        console.log(loan.amount);
-        console.log(loanState.currentAmount);
 
         delete deductibleInterest.id;
         delete deductibleInterest.market;
@@ -179,7 +165,6 @@ library LibLiquidation {
             collateral.amount = LibSwap._swap(loan.market, collateral.market, (70 * remnantAmount) / 100, 2);
             LibReserve._updateReservesDeposit(collateral.market, remnantAmount - ((70 * remnantAmount) / 100), 0);
 
-            console.log("final transfer collateral amount", collateral.amount);
             IBEP20(LibCommon._connectMarket(collateral.market)).transfer(
                 liquidator,
                 collateral.amount +
