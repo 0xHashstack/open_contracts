@@ -42,12 +42,12 @@ library LibLoan {
         );
 
         deductibleUSDValue =
-            (((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * LibOracle._getLatestPrice(_loanMarket)) *
+            (((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * LibOracle._getQuote(_loanMarket)) *
                 aggregateYield) /
             (365 * 86400 * 10000);
         ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest +=
             deductibleUSDValue /
-            LibOracle._getLatestPrice(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
+            LibOracle._getQuote(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
         ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest = oldLengthAccruedInterest;
         ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime = oldTime;
 
@@ -70,12 +70,10 @@ library LibLoan {
         CollateralRecords storage collateral,
         CollateralYield storage cYield
     ) internal {
-        bytes32 _commitment = cYield.commitment;
         uint256 aggregateYield;
-        uint256 num = collateral.id - 1;
 
         (cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield) = LibDeposit._calcAPY(
-            _commitment,
+            cYield.commitment,
             cYield.oldLengthAccruedYield,
             cYield.oldTime,
             aggregateYield
@@ -84,7 +82,7 @@ library LibLoan {
         aggregateYield = (collateral.amount * aggregateYield) / (365 * 86400 * 10000);
 
         cYield.accruedYield += aggregateYield;
-        loanAccount.accruedAPY[num].accruedYield += aggregateYield;
+        loanAccount.accruedAPY[collateral.id - 1].accruedYield += aggregateYield;
     }
 
     function _swapToLoan(
@@ -93,7 +91,7 @@ library LibLoan {
         bytes32 _commitment /*authContract(LOAN_ID)*/
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-
+        uint256 marketSwapFees;
         _hasLoanAccount(_account);
         LibCommon._isMarketSupported(_market);
 
@@ -108,11 +106,12 @@ library LibLoan {
             loan.isSwapped == true && loanState.currentMarket != loan.market,
             "ERROR: Swapped market does not exist"
         );
-        // require(loan.isSwapped == true, "Swapped market does not exist");
 
         LibCommon._isMarket2Supported(loanState.currentMarket);
 
         uint256 num = loan.id - 1;
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
+        loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
         loan.isSwapped = false;
@@ -140,7 +139,6 @@ library LibLoan {
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
-        // emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
     function _swapLoan(
@@ -151,7 +149,7 @@ library LibLoan {
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         _hasLoanAccount(_sender);
-
+        uint256 marketSwapFees;
         LibCommon._isMarketSupported(_loanMarket);
         LibCommon._isMarket2Supported(_swapMarket);
 
@@ -167,7 +165,10 @@ library LibLoan {
 
         uint256 _swappedAmount;
         uint256 num = loan.id - 1;
-
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
+        console.log("marketSwapFees is : ", marketSwapFees);
+        loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
+        console.log("loan amount is : ", loanState.currentAmount);
         _swappedAmount = LibSwap._swap(loan.market, _swapMarket, loanState.currentAmount, 0);
 
         /// Updating LoanRecord
@@ -196,7 +197,6 @@ library LibLoan {
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
 
-        // emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
     function _withdrawCollateral(
@@ -220,13 +220,16 @@ library LibLoan {
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
         require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
 
+    
+        collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+
         ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
         ds.collateralToken.transfer(_sender, collateral.amount);
 
         bytes32 collateralMarket = collateral.market;
         uint256 collateralAmount = collateral.amount;
 
-        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
+        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id,block.timestamp);
 
         /// UPDATING STORAGE RECORDS FOR LOAN
         /// COLLATERAL RECORDS
@@ -238,6 +241,7 @@ library LibLoan {
         delete collateral.timelockValidity;
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;
+        delete collateral.initialAmount;
 
         /// LOAN STATE
         delete loanState.id;
@@ -322,9 +326,9 @@ library LibLoan {
         }
 
         /// FETCH USDT PRICES
-        usdCollateral = LibOracle._getLatestPrice(collateral.market);
-        usdLoan = LibOracle._getLatestPrice(loan.market);
-        usdLoanCurrent = LibOracle._getLatestPrice(loanState.currentMarket);
+        usdCollateral = LibOracle._getQuote(collateral.market);
+        usdLoan = LibOracle._getQuote(loan.market);
+        usdLoanCurrent = LibOracle._getQuote(loanState.currentMarket);
 
         /// Permissible withdrawal amount calculation in the loanMarket.
         // permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);

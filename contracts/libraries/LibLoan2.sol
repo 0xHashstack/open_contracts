@@ -28,11 +28,14 @@ library LibLoan2 {
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
         CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
+
         /// TRANSFER FUNDS TO PROTOCOL FROM USER
         if (_repayAmount != 0) {
             ds.loanToken = IBEP20(LibCommon._connectMarket(_loanMarket));
             ds.loanToken.transferFrom(_sender, address(this), _repayAmount);
         }
+
+        _repayAmount = _repayAmount - (LibCommon.diamondStorage().loanClosureFees * _repayAmount) / 10000;
         /// CALCULATE REMNANT AMOUNT
         remnantAmount = _repaymentProcess(
             loan.id - 1,
@@ -42,7 +45,8 @@ library LibLoan2 {
             loanState,
             collateral,
             deductibleInterest,
-            cYield
+            cYield,
+            false
         );
 
         /// CONVERT remnantAmount into collateralAmount
@@ -106,11 +110,14 @@ library LibLoan2 {
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
         } else {
-            /// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
+            /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
+     
+            collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+            
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
             ds.collateralToken.transfer(_sender, collateral.amount);
 
-            emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id, block.timestamp);
+            emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id,block.timestamp);
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
 
@@ -123,6 +130,7 @@ library LibLoan2 {
             delete collateral.timelockValidity;
             delete collateral.isTimelockActivated;
             delete collateral.activationTime;
+            delete collateral.initialAmount;
 
             /// LOAN STATE
             delete loanState.id;
@@ -186,15 +194,10 @@ library LibLoan2 {
         LoanRecords storage loan,
         LoanState storage loanState,
         CollateralRecords storage collateral,
-        /*loanAccount,
-		loan,
-		loanState,
-		collateral*/
         DeductibleInterest storage deductibleInterest,
-        CollateralYield storage cYield
+        CollateralYield storage cYield,
+        bool liquidationEvent
     ) internal returns (uint256) {
-        // AppStorageOpen storage ds = diamondStorage();
-
         bytes32 _commitment;
         uint256 _remnantAmount;
         uint256 _collateralAmount;
@@ -204,7 +207,13 @@ library LibLoan2 {
         _collateralAmount = 0;
 
         /// convert collateral into loan market to add to the repayAmount
-        _collateralAmount = collateral.amount; /*- deductibleInterest.accruedInterest*/
+        _collateralAmount =
+            collateral.amount -
+            LibSwap._getAmountOutMin(
+                LibSwap._getMarketAddress(loan.market),
+                LibSwap._getMarketAddress(collateral.market),
+                deductibleInterest.accruedInterest
+            );
         if (_commitment == LibCommon._getCommitment(2)) _collateralAmount += cYield.accruedYield;
 
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);
@@ -223,27 +232,29 @@ library LibLoan2 {
             _remnantAmount = (_repayAmount - loan.amount);
         }
 
-        delete deductibleInterest.id;
-        delete deductibleInterest.market;
-        delete deductibleInterest.oldLengthAccruedInterest;
-        delete deductibleInterest.oldTime;
-        delete deductibleInterest.accruedInterest;
-
-        //DELETING CollateralYield
-        delete cYield.id;
-        delete cYield.market;
-        delete cYield.commitment;
-        delete cYield.oldLengthAccruedYield;
-        delete cYield.oldTime;
-        delete cYield.accruedYield;
-
         // / UPDATING RECORDS IN LOANACCOUNT
         delete loanAccount.accruedAPR[num];
         delete loanAccount.accruedAPY[num];
 
-        loanAccount.collaterals[num].isCollateralisedDeposit = false;
-        loanAccount.collaterals[num].activationTime = block.timestamp;
-        loanAccount.collaterals[num].isTimelockActivated = true;
+        if (!liquidationEvent) {
+            delete deductibleInterest.id;
+            delete deductibleInterest.market;
+            delete deductibleInterest.oldLengthAccruedInterest;
+            delete deductibleInterest.oldTime;
+            delete deductibleInterest.accruedInterest;
+
+            //DELETING CollateralYield
+            delete cYield.id;
+            delete cYield.market;
+            delete cYield.commitment;
+            delete cYield.oldLengthAccruedYield;
+            delete cYield.oldTime;
+            delete cYield.accruedYield;
+
+            loanAccount.collaterals[num].isCollateralisedDeposit = false;
+            loanAccount.collaterals[num].activationTime = block.timestamp;
+            loanAccount.collaterals[num].isTimelockActivated = true;
+        }
 
         return _remnantAmount;
     }

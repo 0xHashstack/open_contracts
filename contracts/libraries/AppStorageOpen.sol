@@ -100,6 +100,7 @@ struct CollateralRecords {
     uint256 id;
     bytes32 market;
     bytes32 commitment;
+    uint256 initialAmount;
     uint256 amount;
     bool isCollateralisedDeposit;
     uint256 timelockValidity;
@@ -226,6 +227,7 @@ struct AppStorageOpen {
     //  Balance monitoring  - Loan
     mapping(bytes32 => uint256) marketReservesLoan; // mapping(market => marketBalance)
     mapping(bytes32 => uint256) marketUtilisationLoan; // mapping(market => marketBalance)
+    address[] borrowers;
     // =========== Reserve state variables ===========
     bytes32 adminReserve;
     address adminReserveAddress;

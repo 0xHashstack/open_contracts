@@ -23,24 +23,30 @@ contract Liquidator is Pausable, ILiquidator {
         payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
 
-    function swap(
-        bytes32 _fromMarket,
-        bytes32 _toMarket,
-        uint256 _fromAmount,
-        uint8 _mode
-    ) external override nonReentrant returns (uint256 receivedAmount) {
-        require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
-        receivedAmount = LibSwap._swap(_fromMarket, _toMarket, _fromAmount, _mode);
-    }
-
     function liquidation(
         address account,
         bytes32 _market,
         bytes32 _commitment
-    ) external override authLiquidator nonReentrant returns (bool success) {
-        uint256 amount = LibLiquidation._liquidation(account, _market, _commitment);
+    ) external override nonReentrant returns (bool success) {
+        uint256 amount = LibLiquidation._liquidation(msg.sender, account, _market, _commitment);
         emit Liquidation(account, _market, _commitment, amount, block.timestamp);
         return true;
+    }
+
+    function liquidableLoans(uint256 _indexFrom)
+        external
+        view
+        override
+        returns (
+            address[] memory loanOwner,
+            bytes32[] memory loanMarket,
+            bytes32[] memory loanCommitment,
+            uint256[] memory loanAmount,
+            bytes32[] memory collateralMarket,
+            uint256[] memory collateralAmount
+        )
+    {
+        return LibLiquidation._liquidableLoans(_indexFrom);
     }
 
     function pauseLiquidator() external override authLiquidator {

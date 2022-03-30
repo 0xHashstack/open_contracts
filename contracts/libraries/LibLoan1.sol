@@ -37,6 +37,7 @@ library LibLoan1 {
         bytes32 _collateralMarket,
         uint256 _collateralAmount
     ) internal returns (uint256 loanId) {
+        uint256 LoanIssuanceFees;
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -46,6 +47,7 @@ library LibLoan1 {
         CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
+        LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 1000;
         /// UPDATING LoanRecords
         loan.id = loanAccount.loans.length + 1;
         loan.market = _loanMarket;
@@ -55,6 +57,11 @@ library LibLoan1 {
         loan.lastUpdate = block.timestamp;
         loan.owner = msg.sender;
 
+        if (loan.id == 1) {
+            ds.borrowers.push(msg.sender);
+        }
+        _loanAmount = _loanAmount - LoanIssuanceFees;
+        console.log("_loanAmount is :", _loanAmount);
         /// UPDATING ACTIVELOANS RECORDS
         activeLoans.loanMarket.push(_loanMarket);
         activeLoans.loanCommitment.push(_commitment);
@@ -87,6 +94,7 @@ library LibLoan1 {
         collateral.market = _collateralMarket;
         collateral.commitment = _commitment;
         collateral.amount = _collateralAmount;
+        collateral.initialAmount = _collateralAmount;
 
         /// UPDATING LoanAccount
         loanAccount.loans.push(loan);
@@ -184,8 +192,13 @@ library LibLoan1 {
 
         uint256 rF = LibReserve._getReserveFactor() * LibReserve._avblMarketReserves(_loanMarket);
 
-        uint256 usdLoan = (LibOracle._getLatestPrice(_loanMarket)) * _loanAmount;
-        uint256 usdCollateral = (LibOracle._getLatestPrice(_collateralMarket)) * _collateralAmount;
+        uint256 usdLoan = (LibOracle._getQuote(_loanMarket)) * _loanAmount;
+        uint256 usdCollateral = (LibOracle._getQuote(_collateralMarket)) * _collateralAmount;
+
+        console.log("permissible data below");
+        console.log(usdLoan);
+        console.log(usdCollateral);
+        console.log("permissible data above");
 
         require(LibReserve._avblMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
         require((usdLoan * 100) / usdCollateral <= 300, "ERROR: Insufficient collateral");
