@@ -189,6 +189,7 @@ contract Deposit is Pausable, IDeposit {
         ds.token.transfer(msg.sender, _amountPostFees);
         /// NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
         deposit.amount -= _amount;
+        console.log(" deposit.amount is : ",  deposit.amount);
         savingsAccount.deposits[deposit.id - 1].amount -= _amount;
 
         activeDeposits.amount[deposit.id - 1] -= _amount;
@@ -197,7 +198,8 @@ contract Deposit is Pausable, IDeposit {
         LibDeposit._updateReservesDeposit(_market, _amount, 1);
         emit DepositWithdrawal(msg.sender, deposit.id, _amountPostFees, block.timestamp);
         return true;
-    }
+        }
+    
 
     function _createNewDeposit(
         address _sender,

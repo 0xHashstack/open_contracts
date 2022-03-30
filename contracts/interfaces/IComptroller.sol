@@ -32,7 +32,7 @@ interface IComptroller {
 
     function updateLoanIssuanceFees(uint256 fees) external returns (bool success);
 
-    function updateLoanClosureFees(uint256 fees) external returns (bool success);
+    function updateloanClosureFees(uint256 fees) external returns (bool success);
 
     function updateLoanPreClosureFees(uint256 fees) external returns (bool success);
 
