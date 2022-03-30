@@ -5,6 +5,7 @@ const utils = require("ethers").utils;
 
 const { deployDiamond, provideLiquidity } = require("../scripts/deploy_all.js");
 const { addMarkets } = require("../scripts/deploy_all.js");
+const TOKENS_DECIMAL = 8;
 
 let diamondAddress;
 let rets;
@@ -91,7 +92,7 @@ describe("Testing Deposit", async () => {
 
     // USDT Deposits
     it("USDT New Deposit", async () => {
-      const depositAmount = 500000000000000000000; // 500 (8-0's) 500 USDT
+      const depositAmount = ethers.utils.parseUnits("500", TOKENS_DECIMAL); // 500 (8-0's) 500 USDT
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 

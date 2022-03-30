@@ -7,6 +7,8 @@ const { getSelectors, FacetCutAction } = require("./libraries/diamond.js");
 const { mkdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
 const fs = require("fs");
 
+const TOKENS_DECIMAL = 8;
+
 async function main() {
   const diamondAddress = await deployDiamond();
   const rets = await addMarkets(diamondAddress);
@@ -212,37 +214,37 @@ async function addMarkets(array) {
   const Mockup = await ethers.getContractFactory("BEP20Token");
 
   /// DEPLOY BTC.T
-  const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, "2100000000000000"); // 21 million BTC
+  const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", TOKENS_DECIMAL, 21000000); // 21 million BTC
   await tbtc.deployed();
   const tBtcAddress = tbtc.address;
   console.log("tBTC deployed: ", tbtc.address);
 
   /// DEPLOY USDC.T
-  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 8, "1000000000000000000"); // 10 billion USDC
+  const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", TOKENS_DECIMAL, 10000000000); // 10 billion USDC
   await tusdc.deployed();
   const tUsdcAddress = tusdc.address;
   console.log("tUSDC deployed: ", tusdc.address);
 
   /// DEPLOY USDT.T
-  const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 8, "1000000000000000000"); // 10 billion USDT
+  const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", TOKENS_DECIMAL, 10000000000); // 10 billion USDT
   await tusdt.deployed();
   const tUsdtAddress = tusdt.address;
   console.log("tUSDT deployed: ", tusdt.address);
 
   /// DEPLOY SXP.T
-  const tsxp = await Mockup.deploy("SXP", "SXP.t", 8, "100000000000000000"); // 1 billion SXP
+  const tsxp = await Mockup.deploy("SXP", "SXP.t", TOKENS_DECIMAL, 1000000000); // 1 billion SXP
   await tsxp.deployed();
   const tSxpAddress = tsxp.address;
   console.log("tSxp deployed: ", tsxp.address);
 
   /// DEPLOY CAKE.T
-  const tcake = await Mockup.deploy("CAKE", "CAKE.t", 8, "270000000000000000"); // 2.7 billion CAKE
+  const tcake = await Mockup.deploy("CAKE", "CAKE.t", TOKENS_DECIMAL, 2700000000); // 2.7 billion CAKE
   await tcake.deployed();
   const tCakeAddress = tcake.address;
   console.log("tCake deployed: ", tcake.address);
 
   /// DEPLOY WBNB.T
-  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 8, "9000000000000000"); // 90 million WBNB
+  const twbnb = await Mockup.deploy("WBNB", "WBNB.t", TOKENS_DECIMAL, 90000000); // 90 million WBNB
   await twbnb.deployed();
   const tWBNBAddress = twbnb.address;
   console.log("tWBNB deployed: ", twbnb.address);
@@ -257,12 +259,12 @@ async function addMarkets(array) {
 
   /// APPROVING TOKENS FOR DIAMOND
   console.log("Approval diamond");
-  await tbtc.approve(diamondAddress, "5000000000000000000000000");
-  await tusdc.approve(diamondAddress, "5000000000000000000000000");
-  await tusdt.approve(diamondAddress, "5000000000000000000000000");
-  await tsxp.approve(diamondAddress, "5000000000000000000000000");
-  await tcake.approve(diamondAddress, "5000000000000000000000000");
-  await twbnb.approve(diamondAddress, "5000000000000000000000000");
+  await tbtc.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
+  await tusdc.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
+  await tusdt.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
+  await tsxp.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
+  await tcake.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
+  await twbnb.approve(diamondAddress, ethers.utils.parseUnits("5000000", TOKENS_DECIMAL));
 
   /// ADD PRIMARY MARKETS & MINAMOUNT()
   // console.log("addMarket & minAmount");
@@ -275,23 +277,25 @@ async function addMarkets(array) {
   console.log("Min Amount Implemented");
 
   // 100 USDT [minAmount]
-  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt, 18, tUsdtAddress, minUSDT, {
+  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt, TOKENS_DECIMAL, tUsdtAddress, minUSDT, {
     gasLimit: 800000,
   });
   console.log(`tUSDT added ${minUSDT}`);
 
   // 100 USDC [minAmount]
-  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc, 18, tUsdcAddress, minUSDC, {
+  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc, TOKENS_DECIMAL, tUsdcAddress, minUSDC, {
     gasLimit: 800000,
   });
   console.log(`tUSDC added ${minUSDC}`);
 
   // 0.1 BTC [minAmount]
-  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc, 18, tBtcAddress, minBTC, { gasLimit: 800000 });
+  await tokenList
+    .connect(upgradeAdmin)
+    .addMarketSupport(symbolBtc, TOKENS_DECIMAL, tBtcAddress, minBTC, { gasLimit: 800000 });
   console.log(`tBTC added ${minBTC}`);
 
   // 0.25 BNB [minAmount]
-  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB, 18, tWBNBAddress, minBNB, {
+  await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB, TOKENS_DECIMAL, tWBNBAddress, minBNB, {
     gasLimit: 800000,
   });
   console.log(`twBNB added ${minBNB}`);
@@ -300,8 +304,10 @@ async function addMarkets(array) {
 
   /// ADD SECONDARY MARKETS
   console.log("adding secondary markets");
-  await tokenList.connect(upgradeAdmin).addMarket2Support(symbolSxp, 18, tSxpAddress, { gasLimit: 800000 });
-  await tokenList.connect(upgradeAdmin).addMarket2Support(symbolCAKE, 18, tCakeAddress, { gasLimit: 800000 });
+  await tokenList.connect(upgradeAdmin).addMarket2Support(symbolSxp, TOKENS_DECIMAL, tSxpAddress, { gasLimit: 800000 });
+  await tokenList
+    .connect(upgradeAdmin)
+    .addMarket2Support(symbolCAKE, TOKENS_DECIMAL, tCakeAddress, { gasLimit: 800000 });
 
   console.log(`Secondary markets
         SXP: ${symbolSxp}: ${tSxpAddress}
@@ -310,16 +316,24 @@ async function addMarkets(array) {
   // console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
 
   /// TRANSFERRING TOKENS TO DIAMOND(RESERVES)
-  await tusdt.transfer(diamondAddress, "200000000000000000"); //200mn
-  await tusdc.transfer(diamondAddress, "200000000000000000");//200mn
-  await tbtc.transfer(diamondAddress, "420000000000000"); //4.2mn
-  await twbnb.transfer(diamondAddress, "1800000000000000"); //18mn
+  await tusdt.transfer(diamondAddress, ethers.utils.parseUnits("2000000000", TOKENS_DECIMAL));
+  await tusdc.transfer(diamondAddress, ethers.utils.parseUnits("2000000000", TOKENS_DECIMAL));
+  await tbtc.transfer(diamondAddress, ethers.utils.parseUnits("4200000", TOKENS_DECIMAL));
+  await twbnb.transfer(diamondAddress, ethers.utils.parseUnits("18000000", TOKENS_DECIMAL));
 
   // UPDATE AVAILABLE RESERVES
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolBtc, "420000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdc, "200000000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolUsdt, "200000000000000000");
-  await comptroller.connect(upgradeAdmin).updateReservesDeposit(symbolWBNB, "1800000000000000");
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolUsdt, ethers.utils.parseUnits("2000000000", TOKENS_DECIMAL));
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolUsdc, ethers.utils.parseUnits("2000000000", TOKENS_DECIMAL));
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolBtc, ethers.utils.parseUnits("4200000", TOKENS_DECIMAL));
+  await comptroller
+    .connect(upgradeAdmin)
+    .updateReservesDeposit(symbolWBNB, ethers.utils.parseUnits("18000000", TOKENS_DECIMAL));
 
   /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
@@ -329,42 +343,42 @@ async function addMarkets(array) {
 
   const faucetAddress = faucet.address;
   /// TRANSFERRING TOKENS TO FAUCET
-  await tusdt.transfer(faucet.address, "600000000000000000"); // 6 billion USDT
+  await tusdt.transfer(faucet.address, ethers.utils.parseUnits("6000000000", TOKENS_DECIMAL)); // 6 billion USDT
   console.log("6000000000 tusdt transfered to faucet. Token being :", tUsdtAddress);
   console.log(await tusdt.balanceOf(faucet.address));
 
-  await tusdc.transfer(faucet.address, "600000000000000000"); // 6 billion USDC
+  await tusdc.transfer(faucet.address, ethers.utils.parseUnits("6000000000", TOKENS_DECIMAL)); // 6 billion USDC
   console.log("6000000000 tusdc transfered to faucet. Token being :", tUsdcAddress);
   console.log(await tusdc.balanceOf(faucet.address));
 
-  await tbtc.transfer(faucet.address, "1260000000000000");
+  await tbtc.transfer(faucet.address, ethers.utils.parseUnits("12600000", TOKENS_DECIMAL));
   console.log("12600000 tbtc transfered to faucet. Token being :", tBtcAddress); // 12.6 million BTC
   console.log(await tbtc.balanceOf(faucet.address));
 
-  await twbnb.transfer(faucet.address, "5400000000000000"); // 54 million BNB
+  await twbnb.transfer(faucet.address, ethers.utils.parseUnits("54000000", TOKENS_DECIMAL)); // 54 million BNB
   console.log("54000000 twbnb transfered to faucet. Token being :", tWBNBAddress);
   console.log(await twbnb.balanceOf(faucet.address));
 
   /// UPADTING FAUCET BALANCE & FUNDS_LEAK
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdtAddress,
-    "600000000000000000", // 6 billion USDT
-    "1000000000000", // 10000 USDT
+    ethers.utils.parseUnits("6000000000", TOKENS_DECIMAL), // 6 billion USDT
+    ethers.utils.parseUnits("10000", TOKENS_DECIMAL), // 10000 USDT
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdcAddress,
-    "600000000000000000", // 6 billion USDC
-    "1000000000000", // 10000 USDC
+    ethers.utils.parseUnits("6000000000", TOKENS_DECIMAL), // 6 billion USDC
+    ethers.utils.parseUnits("10000", TOKENS_DECIMAL), // 10000 USDC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tBtcAddress,
-    "1260000000000000", // 12.6 million BTC
-    "500000000", // 5 BTC
+    ethers.utils.parseUnits("12600000", TOKENS_DECIMAL), // 12.6 million BTC
+    ethers.utils.parseUnits("5", TOKENS_DECIMAL), // 5 BTC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tWBNBAddress,
-    "5400000000000000", // 54 million BNB
-    "10000000000", // 100 BNB
+    ethers.utils.parseUnits("54000000", TOKENS_DECIMAL), // 54 million BNB
+    ethers.utils.parseUnits("100", TOKENS_DECIMAL), // 100 BNB
   );
 
   /// SET FEES IN COMPTROLLER
@@ -456,14 +470,14 @@ async function provideLiquidity(rets) {
   const pancakeRouter = await ethers.getContractAt("PancakeRouter", pancakeRouterAddr);
 
   /// USDC-WBNB LIQUIDITY
-  await tusdc.approve(pancakeRouterAddr, "40000000000000000");
-  await twbnb.approve(pancakeRouterAddr, "100000000000000");
+  await tusdc.approve(pancakeRouterAddr, ethers.utils.parseUnits("400000000", TOKENS_DECIMAL));
+  await twbnb.approve(pancakeRouterAddr, ethers.utils.parseUnits("1000000", TOKENS_DECIMAL));
 
   await pancakeRouter.addLiquidity(
     tusdc.address,
     twbnb.address,
-    "40000000000000000",
-    "100000000000000",
+    ethers.utils.parseUnits("400000000", TOKENS_DECIMAL),
+    ethers.utils.parseUnits("1000000", TOKENS_DECIMAL),
     1,
     1,
     upgradeAdmin.address,
@@ -474,14 +488,14 @@ async function provideLiquidity(rets) {
   console.log("USDC <-> WBNB LP done");
 
   /// USDT-WBNB LIQUIDITY
-  await tusdt.approve(pancakeRouterAddr, "40000000000000000");
-  await twbnb.approve(pancakeRouterAddr, "100000000000000");
+  await tusdt.approve(pancakeRouterAddr, ethers.utils.parseUnits("400000000", TOKENS_DECIMAL));
+  await twbnb.approve(pancakeRouterAddr, ethers.utils.parseUnits("1000000", TOKENS_DECIMAL));
 
   await pancakeRouter.addLiquidity(
     tusdt.address,
     twbnb.address,
-    "40000000000000000",
-    "100000000000000",
+    ethers.utils.parseUnits("400000000", TOKENS_DECIMAL),
+    ethers.utils.parseUnits("1000000", TOKENS_DECIMAL),
     1,
     1,
     upgradeAdmin.address,
@@ -491,16 +505,16 @@ async function provideLiquidity(rets) {
   console.log("USDT <-> WBNB LP done");
 
   /// BTC-WBNB LIQUIDITY
-  await tbtc.approve(pancakeRouterAddr, "10000000000");
-  await twbnb.approve(pancakeRouterAddr, "1000000000000");
+  await tbtc.approve(pancakeRouterAddr, ethers.utils.parseUnits("100", TOKENS_DECIMAL));
+  await twbnb.approve(pancakeRouterAddr, ethers.utils.parseUnits("10000", TOKENS_DECIMAL));
 
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       tbtc.address,
       twbnb.address,
-      "10000000000",
-      "1000000000000",
+      ethers.utils.parseUnits("100", TOKENS_DECIMAL),
+      ethers.utils.parseUnits("10000", TOKENS_DECIMAL),
       1,
       1,
       upgradeAdmin.address,
@@ -510,16 +524,16 @@ async function provideLiquidity(rets) {
   console.log("BTC <-> WBNB LP done");
 
   /// CAKE-WBNB LIQUIDITY
-  await tcake.approve(pancakeRouterAddr, "25000000000");
-  await twbnb.approve(pancakeRouterAddr, "500000000");
+  await tcake.approve(pancakeRouterAddr, ethers.utils.parseUnits("250", TOKENS_DECIMAL));
+  await twbnb.approve(pancakeRouterAddr, ethers.utils.parseUnits("5", TOKENS_DECIMAL));
 
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       tcake.address,
       twbnb.address,
-      "25000000000",
-      "500000000",
+      ethers.utils.parseUnits("250", TOKENS_DECIMAL),
+      ethers.utils.parseUnits("5", TOKENS_DECIMAL),
       1,
       1,
       upgradeAdmin.address,
@@ -529,16 +543,16 @@ async function provideLiquidity(rets) {
   console.log("CAKE <-> WBNB LP done");
 
   /// SXP-WBNB LIQUIDITY
-  await tsxp.approve(pancakeRouterAddr, "100000000000");
-  await twbnb.approve(pancakeRouterAddr, "500000000");
+  await tsxp.approve(pancakeRouterAddr, ethers.utils.parseUnits("1000", TOKENS_DECIMAL));
+  await twbnb.approve(pancakeRouterAddr, ethers.utils.parseUnits("5", TOKENS_DECIMAL));
 
   await pancakeRouter
     .connect(upgradeAdmin)
     .addLiquidity(
       tsxp.address,
       twbnb.address,
-      "100000000000",
-      "500000000",
+      ethers.utils.parseUnits("1000", TOKENS_DECIMAL),
+      ethers.utils.parseUnits("5", TOKENS_DECIMAL),
       1,
       1,
       upgradeAdmin.address,
