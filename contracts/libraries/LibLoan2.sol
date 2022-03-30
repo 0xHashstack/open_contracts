@@ -35,8 +35,8 @@ library LibLoan2 {
             ds.loanToken = IBEP20(LibCommon._connectMarket(_loanMarket));
             ds.loanToken.transferFrom(msg.sender, address(this), _repayAmount);
         }
-        uint256 loanClosureFees = LibCommon.diamondStorage().loanClosureFees*_repayAmount/10000;
-        _repayAmount = _repayAmount- loanClosureFees;
+        uint256 loanClosureFees = (LibCommon.diamondStorage().loanClosureFees * _repayAmount) / 10000;
+        _repayAmount = _repayAmount - loanClosureFees;
         /// CALCULATE REMNANT AMOUNT
         remnantAmount = _repaymentProcess(
             loan.id - 1,
@@ -112,7 +112,8 @@ library LibLoan2 {
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
         } else {
             /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
-            uint256 collateralWithdrawFees = (LibCommon.diamondStorage().collateralReleaseFees)*collateral.amount/1000;
+            uint256 collateralWithdrawFees = ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) /
+                1000;
             collateral.amount = collateral.amount - collateralWithdrawFees;
 
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));

@@ -47,7 +47,7 @@ library LibLoan1 {
         CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
-        LoanIssuanceFees = (LibCommon.diamondStorage().loanIssuanceFees)*_loanAmount/1000;
+        LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 1000;
         console.log("LoanIssuanceFees is : ", LoanIssuanceFees);
         /// UPDATING LoanRecords
         loan.id = loanAccount.loans.length + 1;

@@ -113,9 +113,9 @@ library LibLoan {
         LibCommon._isMarket2Supported(loanState.currentMarket);
 
         uint256 num = loan.id - 1;
-        marketSwapFees = (LibCommon.diamondStorage().marketSwapFees)*loanState.currentAmount/1000;
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
         console.log("marketSwapFees is : ", marketSwapFees);
-        loanState.currentAmount = loanState.currentAmount-(marketSwapFees);
+        loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
         console.log("loan amount is : ", loanState.currentAmount);
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
@@ -171,9 +171,9 @@ library LibLoan {
 
         uint256 _swappedAmount;
         uint256 num = loan.id - 1;
-        marketSwapFees = (LibCommon.diamondStorage().marketSwapFees)*loanState.currentAmount/1000;
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
         console.log("marketSwapFees is : ", marketSwapFees);
-        loanState.currentAmount = loanState.currentAmount-(marketSwapFees);
+        loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
         console.log("loan amount is : ", loanState.currentAmount);
         _swappedAmount = LibSwap._swap(loan.market, _swapMarket, loanState.currentAmount, 0);
 
@@ -228,7 +228,7 @@ library LibLoan {
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
         require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
 
-        collateralWithdrawFees = (LibCommon.diamondStorage().collateralReleaseFees)*collateral.amount/1000;
+        collateralWithdrawFees = ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
         collateral.amount = collateral.amount - collateralWithdrawFees;
 
         ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));

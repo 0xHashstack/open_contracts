@@ -187,9 +187,11 @@ contract Comptroller is Pausable, IComptroller {
         emit LoanIssuanceFeesUpdated(msg.sender, oldFees, ds.loanIssuanceFees, block.timestamp);
         return true;
     }
+
     function loanClosureFees() external view returns (uint256) {
         return LibCommon.diamondStorage().loanIssuanceFees;
     }
+
     function updateloanClosureFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         uint256 oldFees = ds.loanClosureFees;
@@ -198,9 +200,11 @@ contract Comptroller is Pausable, IComptroller {
         emit LoanClosureFeesUpdated(msg.sender, oldFees, ds.loanClosureFees, block.timestamp);
         return true;
     }
+
     function loanIssuanceFees() external view returns (uint256) {
         return LibCommon.diamondStorage().loanIssuanceFees;
     }
+
     function updateLoanPreClosureFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         uint256 oldFees = ds.loanPreClosureFees;
@@ -267,7 +271,7 @@ contract Comptroller is Pausable, IComptroller {
         return true;
     }
 
-     function marketSwapFees() external view returns (uint256) {
+    function marketSwapFees() external view returns (uint256) {
         return LibCommon.diamondStorage().marketSwapFees;
     }
 
