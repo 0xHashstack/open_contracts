@@ -48,7 +48,6 @@ library LibLoan1 {
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
         LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 1000;
-        console.log("LoanIssuanceFees is : ", LoanIssuanceFees);
         /// UPDATING LoanRecords
         loan.id = loanAccount.loans.length + 1;
         loan.market = _loanMarket;

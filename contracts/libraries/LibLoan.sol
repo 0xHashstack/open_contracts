@@ -111,9 +111,7 @@ library LibLoan {
 
         uint256 num = loan.id - 1;
         marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
-        console.log("marketSwapFees is : ", marketSwapFees);
         loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
-        console.log("loan amount is : ", loanState.currentAmount);
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
         loan.isSwapped = false;
