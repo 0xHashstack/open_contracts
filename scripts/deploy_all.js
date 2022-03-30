@@ -381,6 +381,26 @@ async function addMarkets(array) {
     ethers.utils.parseUnits("100", TOKENS_DECIMAL), // 100 BNB
   );
 
+  /// SET FEES IN COMPTROLLER
+    console.log("Implementing fees in Comptroller")
+  await comptroller.updateLoanIssuanceFees("10");
+  console.log("updateWithdrawalFees is set");
+  await comptroller.updateLoanClosureFees("5"); // set fee to 0.05%
+  console.log("updateWithdrawalFees is set");
+  await comptroller.updateDepositPreclosureFees("36"); // Set fee to 0.36%
+  console.log("updateDepositPreclosureFees is set");
+  await comptroller.updateWithdrawalFees("10"); // Set fee to 0.1%
+  console.log("updateWithdrawalFees is set");
+  await comptroller.updateCollateralReleaseFees("10"); // set fee to 0.1%
+  console.log("updateCollateralReleaseFees is set");
+  await comptroller.updateMarketSwapFees("5"); // Set fee to 0.05%
+  console.log("updateMarketSwapFees is set");
+  // await comptroller.updateReserveFactor();
+  // console.log("updateReserveFactor is set");
+  console.log("Fees implemented in Comptroller")
+
+
+
   console.log("ALL ENV USED IN UI");
 
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);

@@ -28,11 +28,14 @@ library LibLoan2 {
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
         CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
+
         /// TRANSFER FUNDS TO PROTOCOL FROM USER
         if (_repayAmount != 0) {
             ds.loanToken = IBEP20(LibCommon._connectMarket(_loanMarket));
             ds.loanToken.transferFrom(_sender, address(this), _repayAmount);
         }
+
+        _repayAmount = _repayAmount - (LibCommon.diamondStorage().loanClosureFees * _repayAmount) / 10000;
         /// CALCULATE REMNANT AMOUNT
         remnantAmount = _repaymentProcess(
             loan.id - 1,
@@ -107,11 +110,14 @@ library LibLoan2 {
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
         } else {
-            /// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
+            /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
+     
+            collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+            
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
             ds.collateralToken.transfer(_sender, collateral.amount);
 
-            emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id, block.timestamp);
+            emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id,block.timestamp);
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
 
