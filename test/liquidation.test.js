@@ -25,6 +25,7 @@ let bepWbnb;
 let bepCake;
 let bepSxp;
 let pancakeRouter;
+let swapAmount;
 
 describe("Liquidation", async () => {
   before(async () => {
@@ -81,8 +82,13 @@ describe("Liquidation", async () => {
 
         await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
         await expect(
-          loan1.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolBtc, collateralAmount),
+          loan1.connect(accounts[1]).loanRequest(symbolUsdc, comit_NONE, loanAmount, symbolBtc, collateralAmount),
         ).emit(loan1, "NewLoan");
+
+        swapAmount = await pancakeRouter.getAmountsOut(ethers.utils.parseUnits("1000", TOKENS_DECIMAL), [
+          rets["tBtcAddress"],
+          rets["tWBNBAddress"],
+        ]);
 
         // Decrease price so that loan gets liquidable
         await bepBtc
@@ -100,11 +106,11 @@ describe("Liquidation", async () => {
 
         await bepUsdc.connect(accounts[0]).approve(diamondAddress, loanAmount);
         expect(
-          liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdc, comit_ONEMONTH),
+          liquidator.connect(accounts[0]).liquidation(accounts[1].address, symbolUsdc, comit_NONE),
         ).to.be.revertedWith("Liquidator criteria not met!");
       });
 
-      it.skip("Non Liquidable loan", async () => {
+      it("Non Liquidable loan", async () => {
         const loanAmount = ethers.utils.parseUnits("10", TOKENS_DECIMAL);
         const collateralAmount = ethers.utils.parseUnits("7", TOKENS_DECIMAL);
         const accounts = await ethers.getSigners();
@@ -141,17 +147,44 @@ describe("Liquidation", async () => {
         expect(prevDiamondLoanAssetBalance).to.eq(postDiamondLoanAssetBalance);
       });
 
-      it.skip("DC3 Liquidation", async () => {
+      it("DC3 Liquidation", async () => {
         const loanAmount = ethers.utils.parseUnits("80000", TOKENS_DECIMAL);
         const collateralAmount = ethers.utils.parseUnits("1", TOKENS_DECIMAL);
         const accounts = await ethers.getSigners();
         const upgradeAdmin = accounts[0];
+
+        await bepWbnb
+          .connect(accounts[0])
+          .approve(pancakeRouter.address, swapAmount[swapAmount.length - 1]);
+        await pancakeRouter
+          .connect(accounts[0])
+          .swapExactTokensForTokens(
+            swapAmount[swapAmount.length - 1],
+            1,
+            [rets["tWBNBAddress"], rets["tBtcAddress"]],
+            upgradeAdmin.address,
+            Date.now() + 1000 * 60 * 10,
+          );
 
         const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
         await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
         await expect(
           loan1.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolBtc, collateralAmount),
         ).emit(loan1, "NewLoan");
+
+
+        await bepBtc
+          .connect(accounts[0])
+          .approve(pancakeRouter.address, ethers.utils.parseUnits("1000", TOKENS_DECIMAL));
+        await pancakeRouter
+          .connect(accounts[0])
+          .swapExactTokensForTokens(
+            ethers.utils.parseUnits("1000", TOKENS_DECIMAL),
+            1,
+            [rets["tBtcAddress"], rets["tWBNBAddress"]],
+            upgradeAdmin.address,
+            Date.now() + 1000 * 60 * 10,
+          );
 
         // make liquidator eligible
         const depositAmount = ethers.utils.parseUnits("2500", TOKENS_DECIMAL);
