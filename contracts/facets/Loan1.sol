@@ -82,7 +82,6 @@ contract Loan1 is Pausable, ILoan1 {
         uint256 _collateralAmount
     ) external override nonReentrant returns (bool) {
         uint256 LoanIssuanceFees;
-        // LoanIssuanceFees = LibCommon.diamondStorage().loanIssuanceFees;
         uint256 loanId = LibLoan1._loanRequest(
             msg.sender,
             _loanMarket,
