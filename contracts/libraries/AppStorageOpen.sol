@@ -174,7 +174,7 @@ struct AppStorageOpen {
     bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
     uint256 reserveFactor;
     uint256 loanIssuanceFees;
-    uint256 LoanClosureFees;
+    uint256 loanClosureFees;
     uint256 loanPreClosureFees;
     uint256 depositPreClosureFees;
     uint256 maxWithdrawalFactor;

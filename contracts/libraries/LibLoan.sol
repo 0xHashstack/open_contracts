@@ -11,7 +11,8 @@ library LibLoan {
         address indexed account,
         bytes32 indexed market,
         uint256 indexed amount,
-        uint256 id
+        uint256 id,
+        uint256 timestamp
     );
 
     function _hasLoanAccount(address _account) internal view returns (bool) {
@@ -107,7 +108,6 @@ library LibLoan {
             loan.isSwapped == true && loanState.currentMarket != loan.market,
             "ERROR: Swapped market does not exist"
         );
-        // require(loan.isSwapped == true, "Swapped market does not exist");
 
         LibCommon._isMarket2Supported(loanState.currentMarket);
 
@@ -143,7 +143,6 @@ library LibLoan {
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
-        // emit MarketSwapped(_account,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
     function _swapLoan(
@@ -202,7 +201,6 @@ library LibLoan {
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
 
-        // emit MarketSwapped(_sender,loan.market, loan.commitment, loan.isSwapped, loanState.currentMarket, loanState.currentAmount, block.timestamp);
     }
 
     function _withdrawCollateral(
@@ -221,7 +219,6 @@ library LibLoan {
         CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
 
-
         /// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
         require(loan.id != 0, "ERROR: Loan does not exist");
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
@@ -236,7 +233,7 @@ library LibLoan {
         bytes32 collateralMarket = collateral.market;
         uint256 collateralAmount = collateral.amount;
 
-        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id);
+        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id,block.timestamp);
 
         /// UPDATING STORAGE RECORDS FOR LOAN
         /// COLLATERAL RECORDS
