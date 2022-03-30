@@ -140,8 +140,7 @@ contract Deposit is Pausable, IDeposit {
         SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
         DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
         ActiveDeposits storage activeDeposits = ds.getActiveDeposits[msg.sender];
-        // uint256 _amountPostFees;
-        // uint256 _amountPostPreFees;
+    
         uint256 fees;
         uint256 initialAmount;
 

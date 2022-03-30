@@ -85,23 +85,23 @@ describe("testing Loans", async () => {
     });
 
     it("USDT New Loan", async () => {
-      const loanAmount = 300000000000000000000;
-      const collateralAmount = 200000000000000000000;
+      const loanAmount = 30000000000;
+      const collateralAmount = 20000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
       await bepUsdt.connect(accounts[1]).approve(diamondAddress, collateralAmount);
       await expect(
         loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_NONE, loanAmount, symbolUsdt, collateralAmount),
       ).emit(loan1, "NewLoan");
-      
+
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
       );
     });
 
     it("USDT New Loan (Retry)", async () => {
-      const loanAmount = 300000000000000000000;
-      const collateralAmount = 200000000000000000000;
+      const loanAmount = 30000000000;
+      const collateralAmount = 20000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
       await bepUsdt.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -113,7 +113,7 @@ describe("testing Loans", async () => {
     });
 
     it("USDT Add Collateral", async () => {
-      const collateralAmount = 200000000000000000000;
+      const collateralAmount = 20000000000;
 
       expect(await loan1.hasLoanAccount(accounts[1].address)).to.equal(true);
 
@@ -134,7 +134,7 @@ describe("testing Loans", async () => {
     });
 
     it("USDT Withdraw Loan (Trying more than permissible)", async () => {
-      const withdrawAmount = 350000000000000000000;
+      const withdrawAmount = 35000000000;
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
       await expect(loan.connect(accounts[1]).withdrawPartialLoan(symbolUsdt, comit_NONE, withdrawAmount)).to.be
@@ -158,7 +158,7 @@ describe("testing Loans", async () => {
     });
 
     it("USDT Withdraw Loan", async () => {
-      const withdrawAmount = 250000000000000000000;
+      const withdrawAmount = 25000000000;
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
       await expect(loan.connect(accounts[1]).withdrawPartialLoan(symbolUsdt, comit_NONE, withdrawAmount)).emit(
@@ -183,7 +183,7 @@ describe("testing Loans", async () => {
     });
 
     it("Repay Loan", async () => {
-      const repayAmount = 900000000000000000000;
+      const repayAmount = 90000000000;
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
       await bepUsdt.connect(accounts[1]).approve(diamondAddress, repayAmount);
@@ -220,8 +220,8 @@ describe("testing Loans", async () => {
     });
 
     it("BTC New Loan (1:4 CDR)", async () => {
-      const loanAmount = 400000000000000000000;
-      const collateralAmount = 100000000000000000000;
+      const loanAmount = 40000000000;
+      const collateralAmount = 10000000000;
 
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
       await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -233,8 +233,8 @@ describe("testing Loans", async () => {
     });
 
     it("Btc New Loan (Cross Market)", async () => {
-      const loanAmount = 170000000000000000; // 0.15 Btc
-      const collateralAmount = 200000000000000000; // 0.2 BTC
+      const loanAmount = 17000000; // 0.15 Btc
+      const collateralAmount = 20000000; // 0.2 BTC
 
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
       await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -248,8 +248,8 @@ describe("testing Loans", async () => {
     });
 
     it("Btc New Loan (Retry)", async () => {
-      const loanAmount = 3000000000000000000;
-      const collateralAmount = 2000000000000000000;
+      const loanAmount = 300000000;
+      const collateralAmount = 200000000;
 
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
       await bepBtc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -329,7 +329,7 @@ describe("testing Loans", async () => {
     });
 
     it("Repay Loan", async () => {
-      const repayAmount = 500000000000000000; // 0.5 BTC
+      const repayAmount = 50000000; // 0.5 BTC
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
       await bepBtc.connect(accounts[1]).approve(diamondAddress, repayAmount);
@@ -367,8 +367,8 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (1:4 CDR)", async () => {
-      const loanAmount = 400000000000000000000;
-      const collateralAmount = 100000000000000000000;
+      const loanAmount = 40000000000;
+      const collateralAmount = 10000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -380,7 +380,7 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (Cross Market)", async () => {
-      const loanAmount = 3000000000000000000000; // 3000 USDC
+      const loanAmount = 300000000000; // 3000 USDC
       const collateralAmount = 15000000; // 0.15 BTC
 
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
@@ -395,8 +395,8 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (Retry)", async () => {
-      const loanAmount = 300000000000000000000;
-      const collateralAmount = 200000000000000000000;
+      const loanAmount = 30000000000;
+      const collateralAmount = 20000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -408,7 +408,7 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc Add Collateral (Wrong Market)", async () => {
-      const collateralAmount = 150000000000000000000; // 150 USDC
+      const collateralAmount = 15000000000; // 150 USDC
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -447,7 +447,7 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc Withdraw Loan", async () => {
-      const withdrawAmount = 2500000000000000000000;
+      const withdrawAmount = 250000000000;
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
 
       await expect(loan.connect(accounts[1]).withdrawPartialLoan(symbolUsdc, comit_NONE, withdrawAmount)).emit(
@@ -461,7 +461,7 @@ describe("testing Loans", async () => {
     });
 
     it("Repay Loan", async () => {
-      const repayAmount = 500000000000000000000;
+      const repayAmount = 50000000000;
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
       console.log("Pre RBal: ", reserveBalance);
@@ -499,8 +499,8 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (1:4 CDR)", async () => {
-      const loanAmount = 400000000000000000000;
-      const collateralAmount = 100000000000000000000;
+      const loanAmount = 40000000000;
+      const collateralAmount = 10000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -512,8 +512,8 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (Cross Market)", async () => {
-      const loanAmount = 3000000000000000000000; // 3000 USDC
-      const collateralAmount = 5000000000000000000000;
+      const loanAmount = 300000000000; // 3000 USDC
+      const collateralAmount = 500000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
       await bepUsdt.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -527,8 +527,8 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc New Loan (Retry)", async () => {
-      const loanAmount = 300000000000000000000;
-      const collateralAmount = 200000000000000000000;
+      const loanAmount = 30000000000;
+      const collateralAmount = 20000000000;
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -540,7 +540,7 @@ describe("testing Loans", async () => {
     });
 
     it("Usdc Add Collateral (Wrong Market)", async () => {
-      const collateralAmount = 150000000000000000000; // 150 USDC
+      const collateralAmount = 15000000000; // 150 USDC
 
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -557,7 +557,7 @@ describe("testing Loans", async () => {
     });
 
     it("Repay Loan", async () => {
-      const repayAmount = 500000000000000000000;
+      const repayAmount = 50000000000;
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
 
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, repayAmount);
@@ -597,8 +597,8 @@ describe("testing Loans", async () => {
     });
 
     it("Bnb New Loan (1:4 CDR)", async () => {
-      const loanAmount = 400000000000000000000;
-      const collateralAmount = 100000000000000000000;
+      const loanAmount = 40000000000;
+      const collateralAmount = 10000000000;
 
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -610,8 +610,8 @@ describe("testing Loans", async () => {
     });
 
     it("Wbnb New Loan", async () => {
-      const loanAmount = 400000000000000000; // 0.4 Wbnb
-      const collateralAmount = 300000000000000000; // 0.3 Wbnb
+      const loanAmount = 40000000; // 0.4 Wbnb
+      const collateralAmount = 30000000; // 0.3 Wbnb
 
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -625,8 +625,8 @@ describe("testing Loans", async () => {
     });
 
     it("Wbnb New Loan (Retry)", async () => {
-      const loanAmount = 3000000000000000000;
-      const collateralAmount = 2000000000000000000;
+      const loanAmount = 300000000;
+      const collateralAmount = 200000000;
 
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, collateralAmount);
@@ -675,7 +675,7 @@ describe("testing Loans", async () => {
     });
 
     it("Repay Loan", async () => {
-      const repayAmount = 500000000000000000; // 0.5 Wbnb
+      const repayAmount = 50000000; // 0.5 Wbnb
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
 
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, repayAmount);
