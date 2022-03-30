@@ -296,7 +296,7 @@ library LibLiquidation {
 
         uint8 pointer;
 
-        for (uint256 i = _indexFrom; i < _indexFrom + 10; i++) {
+        for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < ds.borrowers.length; i++) {
             LoanState[] memory loanStates = ds.loanPassbook[ds.borrowers[i]].loanState;
             for (uint256 j = 0; j < loanStates.length; j++) {
                 LoanRecords memory loan = ds.loanPassbook[ds.borrowers[i]].loans[j];
