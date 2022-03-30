@@ -148,9 +148,7 @@ contract Deposit is Pausable, IDeposit {
         initialAmount = _amount;
         _convertYield(msg.sender, _market, _commitment);
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
-        /// CONNECTS THE MARKET BELOW
-        ds.token = IBEP20(LibCommon._connectMarket(_market));
-        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
+        
 
         if (_commitment != LibCommon._getCommitment(0)) {
             if (deposit.isTimelockActivated == false) {
@@ -162,21 +160,25 @@ contract Deposit is Pausable, IDeposit {
                 savingsAccount.deposits[deposit.id - 1].isTimelockActivated = true;
                 savingsAccount.deposits[deposit.id - 1].activationTime = block.timestamp;
                 savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
-                // return false;
+                return false;
             }
             require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
+        }
+        /// CONNECTS THE MARKET BELOW
+        ds.token = IBEP20(LibCommon._connectMarket(_market));
+        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
 
             /// CHECKS FOR TIMELOCK + buffer time of 3 days
-            if (deposit.activationTime + deposit.timelockValidity + (86400 * 3) <= block.timestamp) {
-                /*  CHARGE PRECLOSURE FEES */
-                uint256 PreClosurefees = ((LibCommon.diamondStorage().depositPreClosureFees) * _amount) / 10000;
-                require(_amount > PreClosurefees, "PreClosurefees is greater than amount");
-                /// DEDUCTS PRECLOSURE IF TIMELOCK IS GOING ON
-                _amount = _amount - PreClosurefees;
-                require(_amount > 0, "Amount Post pre Fees cannot be 0 ");
+            // if (deposit.activationTime + deposit.timelockValidity <= block.timestamp) {
+            //     /*  CHARGE PRECLOSURE FEES */
+            //     uint256 PreClosurefees = ((LibCommon.diamondStorage().depositPreClosureFees) * _amount) / 10000;
+            //     require(_amount > PreClosurefees, "PreClosurefees is greater than amount");
+            //     /// DEDUCTS PRECLOSURE IF TIMELOCK IS GOING ON
+            //     _amount = _amount - PreClosurefees;
+            //     require(_amount > 0, "Amount Post pre Fees cannot be 0 ");
                 /// NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
-            } 
-        }
+            // } 
+        
         /* NOW IT DEDUCTS DEPOSIT WITHDRAW FEE */
         fees = ((LibCommon.diamondStorage().depositWithdrawalFees) * _amount) / 10000;
         require(_amount > fees, "Fees is greater than amount");

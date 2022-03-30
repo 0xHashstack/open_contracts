@@ -32,7 +32,7 @@ library LibLoan2 {
         /// TRANSFER FUNDS TO PROTOCOL FROM USER
         if (_repayAmount != 0) {
             ds.loanToken = IBEP20(LibCommon._connectMarket(_loanMarket));
-            ds.loanToken.transferFrom(msg.sender, address(this), _repayAmount);
+            ds.loanToken.transferFrom(_sender, address(this), _repayAmount);
         }
 
         _repayAmount = _repayAmount - (LibCommon.diamondStorage().loanClosureFees * _repayAmount) / 10000;
@@ -115,9 +115,9 @@ library LibLoan2 {
             collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
             
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
-            ds.collateralToken.transfer(msg.sender, collateral.amount);
-            /// REMOVED BELOW EMIT FOR NOW BECAUSE OF STACK TOO DEEP
-            emit LibLoan.WithdrawCollateral(msg.sender, collateral.market, collateral.amount, loan.id,block.timestamp);
+            ds.collateralToken.transfer(_sender, collateral.amount);
+
+            emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id,block.timestamp);
 
             LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
 
