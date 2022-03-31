@@ -110,7 +110,7 @@ library LibLoan {
         LibCommon._isMarket2Supported(loanState.currentMarket);
 
         uint256 num = loan.id - 1;
-        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 10000;
         loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
@@ -165,7 +165,7 @@ library LibLoan {
 
         uint256 _swappedAmount;
         uint256 num = loan.id - 1;
-        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 1000;
+        marketSwapFees = ((LibCommon.diamondStorage().marketSwapFees) * loanState.currentAmount) / 10000;
         console.log("marketSwapFees is : ", marketSwapFees);
         loanState.currentAmount = loanState.currentAmount - (marketSwapFees);
         console.log("loan amount is : ", loanState.currentAmount);
@@ -221,7 +221,7 @@ library LibLoan {
         require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
 
     
-        collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+        collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 10000;
 
         ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
         ds.collateralToken.transfer(_sender, collateral.amount);

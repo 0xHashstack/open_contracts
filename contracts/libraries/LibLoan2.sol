@@ -112,7 +112,7 @@ library LibLoan2 {
         } else {
             /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
      
-            collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 1000;
+            collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 10000;
             
             ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
             ds.collateralToken.transfer(_sender, collateral.amount);

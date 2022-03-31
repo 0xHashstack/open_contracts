@@ -91,7 +91,7 @@ contract Loan1 is Pausable, ILoan1 {
             _collateralAmount
         );
         /// BELOW FUNCTIONS ARE DONE IN LIB, I HAVE WRITTEN THEM HERE JUST FOR THE EVENTS
-        LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 1000;
+        LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 10000;
         _loanAmount = _loanAmount - LoanIssuanceFees;
         emit NewLoan(
             msg.sender,
