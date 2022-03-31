@@ -278,6 +278,14 @@ contract Comptroller is Pausable, IComptroller {
         LibReserve._updateReservesDeposit(_market, _amount, 0);
     }
 
+    function updateAPR(bytes32 _market, bytes32 _commitment, uint256 _apr) external authComptroller {
+        LibComptroller._updateAPR(_market, _commitment, _apr);
+    }
+
+    function updateAPY(bytes32 _market, bytes32 _commitment, uint256 _apy) external authComptroller {
+        LibComptroller._updateAPY(_market, _commitment, _apy);
+    }
+
     modifier authComptroller() {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         require(

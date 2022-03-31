@@ -15,15 +15,15 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     event InterestsUpdated(address indexed admin, uint256 indexed timestamp);
 
     // getter Methods
-    function getDepositInterests(bytes32 _minOrMax) external view override returns (uint256) {
+    function getDepositInterests(uint256 _minOrMax) external view override returns (uint256) {
         return LibDynamicInterest._getDepositInterests(_minOrMax);
     }
 
-    function getBorrowInterests(bytes32 _minOrMax) external view override returns (uint256) {
+    function getBorrowInterests(uint256 _minOrMax) external view override returns (uint256) {
         return LibDynamicInterest._getBorrowInterests(_minOrMax);
     }
 
-    function getInterestFactors(bytes32 _factor) external view override returns (uint256) {
+    function getInterestFactors(uint256 _factor) external view override returns (uint256) {
         return LibDynamicInterest._getInterestFactors(_factor);
     }
 
@@ -62,15 +62,15 @@ contract DynamicInterest is Pausable, IDynamicInterest {
         _;
     }
 
-    function pauseComptroller() external override authDynamicInterest {
+    function pauseDynamicInterest() external override authDynamicInterest {
         _pause();
     }
 
-    function unpauseComptroller() external override authDynamicInterest {
+    function unpauseDynamicInterest() external override authDynamicInterest {
         _unpause();
     }
 
-    function isPausedComptroller() external view virtual override returns (bool) {
+    function isPausedDynamicInterest() external view virtual override returns (bool) {
         return _paused();
     }
 }

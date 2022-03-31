@@ -158,7 +158,6 @@ struct AppStorageOpen {
     address upgradeAdmin;
     // =========== TokenList state variables ===========
     bytes32 adminTokenList;
-    address adminTokenListAddress;
     bytes32[] pMarkets; // Primary markets
     bytes32[] sMarkets; // Secondary markets
     mapping(bytes32 => bool) tokenSupportCheck;
@@ -169,7 +168,6 @@ struct AppStorageOpen {
     mapping(bytes32 => MarketData) indMarket2Data;
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
-    address adminComptrollerAddress;
 
     bytes32[] depositCommitment;
     bytes32[] borrowCommitment;
@@ -189,7 +187,6 @@ struct AppStorageOpen {
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
     bytes32 protocolOwnedLiquidator;
-    address adminLiquidatorAddress;
     // =========== DynamicInterest state variables ======
     bytes32 adminDynamicInterest;
     address adminDynamicInterestAddress;
@@ -201,7 +198,6 @@ struct AppStorageOpen {
     mapping(bytes32 => uint) commitmentDays;
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
-    address adminDepositAddress;
     mapping(address => SavingsAccount) savingsPassbook; // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => YieldLedger))) indYieldRecord; // address =>_market => _commitment => depositRecord
@@ -211,18 +207,14 @@ struct AppStorageOpen {
     mapping(bytes32 => uint256) marketUtilisationDeposit; // mapping(market => marketBalance)
     // =========== OracleOpen state variables ==============
     bytes32 adminOpenOracle;
-    address adminOpenOracleAddress;
     mapping(bytes32 => address) pairAddresses;
     PriceData[] prices;
     mapping(uint256 => PriceData) priceData;
     uint256 requestEventId;
     // =========== Loan state variables ============
     bytes32 adminLoan;
-    address adminLoanAddress;
     bytes32 adminLoan1;
-    address adminLoan1Address;
     bytes32 adminLoan2;
-    address adminLoan2Address;
     IBEP20 loanToken;
     IBEP20 withdrawToken;
     IBEP20 collateralToken;
@@ -240,7 +232,6 @@ struct AppStorageOpen {
     address[] borrowers;
     // =========== Reserve state variables ===========
     bytes32 adminReserve;
-    address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
 }

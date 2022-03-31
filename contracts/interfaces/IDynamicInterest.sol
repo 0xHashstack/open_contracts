@@ -2,11 +2,11 @@
 pragma solidity 0.8.1;
 
 interface IDynamicInterest {
-    function getDepositInterests(bytes32 _minOrMax) external view returns (uint256);
+    function getDepositInterests(uint256 _minOrMax) external view returns (uint256);
 
-    function getBorrowInterests(bytes32 _minOrMax) external view returns (uint256);
+    function getBorrowInterests(uint256 _minOrMax) external view returns (uint256);
 
-    function getInterestFactors(bytes32 _factor) external view returns (uint256);
+    function getInterestFactors(uint256 _factor) external view returns (uint256);
 
     function setDepositInterests(uint256 minDepositInterest, uint256 maxDepositInterest) external returns (bool);
 
@@ -16,9 +16,9 @@ interface IDynamicInterest {
 
     function updateInterests(bytes32 market) external returns (bool);
 
-    function pauseComptroller() external;
+    function pauseDynamicInterest() external;
 
-    function unpauseComptroller() external;
+    function unpauseDynamicInterest() external;
 
-    function isPausedComptroller() external view returns (bool);
+    function isPausedDynamicInterest() external view returns (bool);
 }

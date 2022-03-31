@@ -64,8 +64,10 @@ library LibCommon {
             return ds.borrowCommitment[_index];
         else if(ds.borrowCommitment.length > _index && flag == 0)
             return ds.depositCommitment[_index];
-        else
+        else{
             require(true, "ERROR:Index Out of Bounds");
+            return 0x0;
+        }
     }
 
     function _getApyTimeLength(bytes32 market, bytes32 _commitment) internal view returns (uint256) {
