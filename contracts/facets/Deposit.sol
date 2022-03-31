@@ -76,7 +76,7 @@ contract Deposit is Pausable, IDeposit {
         DepositRecords storage deposit = ds.indDepositRecord[account][market][commitment];
         YieldLedger storage yield = ds.indYieldRecord[account][market][commitment];
 
-        interestFactor = LibDeposit._getDepositInterest(commitment, yield.oldLengthAccruedYield, yield.oldTime);
+        interestFactor = LibDeposit._getDepositInterest(market, commitment, yield.oldLengthAccruedYield, yield.oldTime);
 
         depositInterest = yield.accruedYield;
         depositInterest += ((interestFactor * deposit.amount) / (365 * 86400 * 10000));
@@ -149,7 +149,7 @@ contract Deposit is Pausable, IDeposit {
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
         
 
-        if (_commitment != LibCommon._getCommitment(0)) {
+        if (_commitment != LibCommon._getCommitment(0,0)) {
             if (deposit.isTimelockActivated == false) {
                 /// ACTIVATES TIMELOCK IF IT WASN'T ALREADY
                 deposit.isTimelockActivated = true;
@@ -248,20 +248,20 @@ contract Deposit is Pausable, IDeposit {
         deposit.amount = _amount;
         deposit.lastUpdate = block.timestamp;
 
-        if (_commitment != LibCommon._getCommitment(0)) {
+        if (_commitment != LibCommon._getCommitment(0,0)) {
             yield.id = id;
             yield.market = bytes32(_market);
-            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
+            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_market, _commitment);
             yield.oldTime = block.timestamp;
             yield.accruedYield = 0;
             deposit.isTimelockApplicable = true;
             deposit.isTimelockActivated = false;
             deposit.timelockValidity = 86400;
             deposit.activationTime = 0;
-        } else if (_commitment == LibCommon._getCommitment(0)) {
+        } else {
             yield.id = id;
             yield.market = _market;
-            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
+            yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_market, _commitment);
             yield.oldTime = block.timestamp;
             yield.accruedYield = 0;
             deposit.isTimelockApplicable = false;
@@ -295,6 +295,7 @@ contract Deposit is Pausable, IDeposit {
         YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
 
         (yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = LibDeposit._calcAPY(
+            _market,
             _commitment,
             yield.oldLengthAccruedYield,
             yield.oldTime,

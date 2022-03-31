@@ -44,7 +44,6 @@ library LibLoan1 {
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_loanMarket][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
         LoanIssuanceFees = ((LibCommon.diamondStorage().loanIssuanceFees) * _loanAmount) / 1000;
@@ -100,43 +99,30 @@ library LibLoan1 {
         loanAccount.loans.push(loan);
         loanAccount.loanState.push(loanState);
 
-        if (_commitment == LibCommon._getCommitment(0)) {
-            collateral.isCollateralisedDeposit = false;
+        if (_commitment == LibCommon._getCommitment(0,1)) {
             collateral.timelockValidity = 0;
             collateral.isTimelockActivated = true;
             collateral.activationTime = 0;
 
             /// pays 18% APR
-            deductibleInterest.oldLengthAccruedInterest = LibCommon._getAprTimeLength(_commitment);
+            deductibleInterest.oldLengthAccruedInterest = LibCommon._getAprTimeLength(_loanMarket, _commitment);
 
             /// UPDATING LoanAccount
             loanAccount.collaterals.push(collateral);
             loanAccount.accruedAPR.push(deductibleInterest);
 
-            loanAccount.accruedAPY.push(cYield);
             activeLoans.collateralYield.push(0);
-        } else if (_commitment == LibCommon._getCommitment(2)) {
-            collateral.isCollateralisedDeposit = true;
+        } else {
             collateral.timelockValidity = 86400;
             collateral.isTimelockActivated = false;
             collateral.activationTime = 0;
 
             /// 15% APR
-            deductibleInterest.oldLengthAccruedInterest = LibCommon._getAprTimeLength(_commitment);
+            deductibleInterest.oldLengthAccruedInterest = LibCommon._getAprTimeLength(_loanMarket, _commitment);
 
-            /// 10% APY ON COLLATERALISED DEPOSIT
-            cYield.id = loanAccount.loans.length + 1;
-            cYield.market = _collateralMarket;
-            cYield.commitment = LibCommon._getCommitment(1);
-            cYield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_commitment);
-            cYield.oldTime = block.timestamp;
-            cYield.accruedYield = 0;
-
-            activeLoans.collateralYield.push(0);
 
             /// UPDATING LoanAccount
             loanAccount.collaterals.push(collateral);
-            loanAccount.accruedAPY.push(cYield);
             loanAccount.accruedAPR.push(deductibleInterest);
         }
 

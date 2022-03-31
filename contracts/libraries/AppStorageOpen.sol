@@ -102,7 +102,6 @@ struct CollateralRecords {
     bytes32 commitment;
     uint256 initialAmount;
     uint256 amount;
-    bool isCollateralisedDeposit;
     uint256 timelockValidity;
     bool isTimelockActivated; // timelock duration
     uint256 activationTime; // blocknumber when yield withdrawal request was placed.
@@ -171,7 +170,6 @@ struct AppStorageOpen {
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
     address adminComptrollerAddress;
-    bytes32[] commitment;
 
     bytes32[] depositCommitment;
     bytes32[] borrowCommitment;
@@ -186,11 +184,8 @@ struct AppStorageOpen {
     uint256 collateralReleaseFees;
     uint256 yieldConversionFees;
     uint256 marketSwapFees;
-    mapping(bytes32 => APY) indAPYRecords;
-    mapping(bytes32 => APR) indAPRRecords;
-
-    mapping(bytes32 => mapping(bytes32 => APY)) newIndAPYRecords;
-    mapping(bytes32 => mapping(bytes32 => APR)) newIndAPRRecords;
+    mapping(bytes32 => mapping(bytes32 => APY)) indAPYRecords;
+    mapping(bytes32 => mapping(bytes32 => APR)) indAPRRecords;
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
     bytes32 protocolOwnedLiquidator;
@@ -203,7 +198,7 @@ struct AppStorageOpen {
     mapping(uint256 => uint256) depositInterests;
     mapping(uint256 => uint256) interestFactors;
 
-    mapping(bytes32 => uint) commitmentDays; // will be removed
+    mapping(bytes32 => uint) commitmentDays;
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
     address adminDepositAddress;

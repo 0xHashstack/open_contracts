@@ -87,12 +87,10 @@ library LibLiquidation {
         LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
         require(loan.id != 0, "ERROR: Loan does not exist");
 
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
-        if (collateral.isCollateralisedDeposit) LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
         if (
             LibSwap._getAmountOutMin(
@@ -111,21 +109,12 @@ library LibLiquidation {
                     deductibleInterest.accruedInterest
                 );
         }
-        if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
 
         delete deductibleInterest.id;
         delete deductibleInterest.market;
         delete deductibleInterest.oldLengthAccruedInterest;
         delete deductibleInterest.oldTime;
         delete deductibleInterest.accruedInterest;
-
-        //DELETING CollateralYield
-        delete cYield.id;
-        delete cYield.market;
-        delete cYield.commitment;
-        delete cYield.oldLengthAccruedYield;
-        delete cYield.oldTime;
-        delete cYield.accruedYield;
 
         if (!_validLoanLiquidation(loanState, collateral, _getDebtCategory(loan, collateral))) {
             revert("Liquidation price not hit");
@@ -143,7 +132,6 @@ library LibLiquidation {
                 loanState,
                 collateral,
                 deductibleInterest,
-                cYield,
                 true
             );
             LibReserve._updateReservesLoan(loan.market, remnantAmount, 0);
@@ -158,7 +146,6 @@ library LibLiquidation {
                 loanState,
                 collateral,
                 deductibleInterest,
-                cYield,
                 true
             );
 
@@ -184,7 +171,6 @@ library LibLiquidation {
         delete collateral.market;
         delete collateral.commitment;
         delete collateral.amount;
-        delete collateral.isCollateralisedDeposit;
         delete collateral.timelockValidity;
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;

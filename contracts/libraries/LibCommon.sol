@@ -58,19 +58,23 @@ library LibCommon {
         return marketData.tokenAddress;
     }
 
-    function _getCommitment(uint256 _index) internal view returns (bytes32) {
+    function _getCommitment(uint256 _index, uint256 flag) internal view returns (bytes32) {
         AppStorageOpen storage ds = diamondStorage();
-        require(_index < ds.commitment.length, "Commitment Index out of range");
-        return ds.commitment[_index];
+        if(ds.borrowCommitment.length > _index && flag == 1)
+            return ds.borrowCommitment[_index];
+        else if(ds.borrowCommitment.length > _index && flag == 0)
+            return ds.depositCommitment[_index];
+        else
+            require(true, "ERROR:Index Out of Bounds");
     }
 
-    function _getApyTimeLength(bytes32 _commitment) internal view returns (uint256) {
+    function _getApyTimeLength(bytes32 market, bytes32 _commitment) internal view returns (uint256) {
         AppStorageOpen storage ds = diamondStorage();
-        return ds.indAPYRecords[_commitment].time.length;
+        return ds.indAPYRecords[market][_commitment].time.length;
     }
 
-    function _getAprTimeLength(bytes32 _commitment) internal view returns (uint256) {
+    function _getAprTimeLength(bytes32 market, bytes32 _commitment) internal view returns (uint256) {
         AppStorageOpen storage ds = diamondStorage();
-        return ds.indAPRRecords[_commitment].time.length;
+        return ds.indAPRRecords[market][_commitment].time.length;
     }
 }

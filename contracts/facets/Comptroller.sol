@@ -84,90 +84,57 @@ contract Comptroller is Pausable, IComptroller {
         payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
 
-    function getAPR(bytes32 _commitment) external view override returns (uint256) {
-        return LibComptroller._getAPR(_commitment);
+    function getAPR(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibComptroller._getAPR(market, _commitment);
     }
 
-    function getAPRInd(bytes32 _commitment, uint256 _index) external view override returns (uint256) {
-        return LibComptroller._getAPRInd(_commitment, _index);
+    function getAPRInd(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+        return LibComptroller._getAPRInd(market, _commitment, _index);
     }
 
-    function getAPY(bytes32 _commitment) external view override returns (uint256) {
-        return LibComptroller._getAPY(_commitment);
+    function getAPY(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibComptroller._getAPY(market, _commitment);
     }
 
-    function getAPYInd(bytes32 _commitment, uint256 _index) external view override returns (uint256) {
-        return LibComptroller._getAPYInd(_commitment, _index);
+    function getAPYInd(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+        return LibComptroller._getAPYInd(market, _commitment, _index);
     }
 
-    function getApytime(bytes32 _commitment, uint256 _index) external view override returns (uint256) {
-        return LibComptroller._getApytime(_commitment, _index);
+    function getApytime(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+        return LibComptroller._getApytime(market, _commitment, _index);
     }
 
-    function getAprtime(bytes32 _commitment, uint256 _index) external view override returns (uint256) {
-        return LibComptroller._getAprtime(_commitment, _index);
+    function getAprtime(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+        return LibComptroller._getAprtime(market, _commitment, _index);
     }
 
-    function getApyLastTime(bytes32 _commitment) external view override returns (uint256) {
-        return LibComptroller._getApyLastTime(_commitment);
+    function getApyLastTime(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibComptroller._getApyLastTime(market, _commitment);
     }
 
-    function getAprLastTime(bytes32 _commitment) external view override returns (uint256) {
-        return LibComptroller._getAprLastTime(_commitment);
+    function getAprLastTime(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibComptroller._getAprLastTime(market, _commitment);
     }
 
-    function getApyTimeLength(bytes32 _commitment) external view override returns (uint256) {
-        return LibCommon._getApyTimeLength(_commitment);
+    function getApyTimeLength(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibCommon._getApyTimeLength(market, _commitment);
     }
 
-    function getAprTimeLength(bytes32 _commitment) external view override returns (uint256) {
-        return LibCommon._getAprTimeLength(_commitment);
+    function getAprTimeLength(bytes32 market, bytes32 _commitment) external view override returns (uint256) {
+        return LibCommon._getAprTimeLength(market, _commitment);
     }
 
-    function getCommitment(uint256 _index) external view override returns (bytes32) {
-        return LibCommon._getCommitment(_index);
+    function getCommitment(uint256 _index, uint256 flag) external view override returns (bytes32) {
+        return LibCommon._getCommitment(_index, flag);
     }
 
     // SETTERS
-    function setCommitment(bytes32 _commitment) external override nonReentrant authComptroller {
-        LibComptroller._setCommitment(_commitment);
+    function setDepositCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
+        LibComptroller._setDepositCommitment(_commitment, _days);
     }
 
-    function updateAPY(bytes32 _commitment, uint256 _apy)
-        external
-        override
-        nonReentrant
-        authComptroller
-        returns (bool)
-    {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        APY storage apyUpdate = ds.indAPYRecords[_commitment];
-
-        // if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
-        apyUpdate.commitment = _commitment;
-        apyUpdate.time.push(block.timestamp);
-        apyUpdate.apyChanges.push(_apy);
-        emit APYupdated(msg.sender, _apy, block.timestamp);
-        return true;
-    }
-
-    function updateAPR(bytes32 _commitment, uint256 _apr)
-        external
-        override
-        nonReentrant
-        authComptroller
-        returns (bool)
-    {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        APR storage aprUpdate = ds.indAPRRecords[_commitment];
-
-        if (aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
-
-        aprUpdate.commitment = _commitment;
-        aprUpdate.time.push(block.timestamp);
-        aprUpdate.aprChanges.push(_apr);
-        emit APRupdated(msg.sender, _apr, block.timestamp);
-        return true;
+    function setBorrowCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
+        LibComptroller._setBorrowCommitment(_commitment, _days);
     }
 
     function updateLoanIssuanceFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {

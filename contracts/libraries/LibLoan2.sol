@@ -26,7 +26,6 @@ library LibLoan2 {
         LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_loanMarket][_commitment];
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
 
         /// TRANSFER FUNDS TO PROTOCOL FROM USER
@@ -45,7 +44,6 @@ library LibLoan2 {
             loanState,
             collateral,
             deductibleInterest,
-            cYield,
             false
         );
 
@@ -81,11 +79,10 @@ library LibLoan2 {
         delete activeLoans.collateralYield[loan.id - 1];
         delete activeLoans.borrowInterest[loan.id - 1];
 
-        if (_commitment == LibCommon._getCommitment(2)) {
+        if (_commitment != LibCommon._getCommitment(0,1)) {
             /// UPDATING COLLATERAL AMOUNT IN STORAGE
             loanAccount.collaterals[loan.id - 1].amount = collateral.amount;
 
-            collateral.isCollateralisedDeposit = false;
             collateral.isTimelockActivated = true;
             collateral.activationTime = block.timestamp;
 
@@ -101,8 +98,6 @@ library LibLoan2 {
             loanAccount.loans[loan.id - 1].lastUpdate = block.timestamp;
 
             loanAccount.loanState[loan.id - 1].state = STATE.REPAID;
-
-            loanAccount.collaterals[loan.id - 1].isCollateralisedDeposit = false;
             loanAccount.collaterals[loan.id - 1].activationTime = block.timestamp;
             loanAccount.collaterals[loan.id - 1].isTimelockActivated = true;
 
@@ -126,7 +121,6 @@ library LibLoan2 {
             delete collateral.market;
             delete collateral.commitment;
             delete collateral.amount;
-            delete collateral.isCollateralisedDeposit;
             delete collateral.timelockValidity;
             delete collateral.isTimelockActivated;
             delete collateral.activationTime;
@@ -195,7 +189,6 @@ library LibLoan2 {
         LoanState storage loanState,
         CollateralRecords storage collateral,
         DeductibleInterest storage deductibleInterest,
-        CollateralYield storage cYield,
         bool liquidationEvent
     ) internal returns (uint256) {
         bytes32 _commitment;
@@ -214,7 +207,6 @@ library LibLoan2 {
                 LibSwap._getMarketAddress(collateral.market),
                 deductibleInterest.accruedInterest
             );
-        if (_commitment == LibCommon._getCommitment(2)) _collateralAmount += cYield.accruedYield;
 
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);
 
@@ -242,16 +234,6 @@ library LibLoan2 {
             delete deductibleInterest.oldLengthAccruedInterest;
             delete deductibleInterest.oldTime;
             delete deductibleInterest.accruedInterest;
-
-            //DELETING CollateralYield
-            delete cYield.id;
-            delete cYield.market;
-            delete cYield.commitment;
-            delete cYield.oldLengthAccruedYield;
-            delete cYield.oldTime;
-            delete cYield.accruedYield;
-
-            loanAccount.collaterals[num].isCollateralisedDeposit = false;
             loanAccount.collaterals[num].activationTime = block.timestamp;
             loanAccount.collaterals[num].isTimelockActivated = true;
         }
