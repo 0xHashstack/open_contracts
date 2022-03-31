@@ -45,12 +45,10 @@ library LibComptroller {
     }
 
     function _setCommitment(
-        bytes32 _commitment, /*authContract(COMPTROLLER_ID)*/
-        uint _days
+        bytes32 _commitment /*authContract(COMPTROLLER_ID)*/
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         ds.commitment.push(_commitment);
-        ds.commitmentDays[_commitment] = _days;
     }
 
     function _updateAPY(bytes32 market, bytes32 _commitment, uint _apy) internal{
