@@ -45,9 +45,26 @@ library LibComptroller {
     }
 
     function _setCommitment(
-        bytes32 _commitment /*authContract(COMPTROLLER_ID)*/
+        bytes32 _commitment, /*authContract(COMPTROLLER_ID)*/
+        uint _days
     ) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         ds.commitment.push(_commitment);
+        ds.commitmentDays[_commitment] = _days;
+    }
+
+    function _updateAPY(bytes32 market, bytes32 _commitment, uint _apy) internal{
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        APY storage apyUpdate = ds.newIndAPYRecords[market][_commitment];
+        
+        apyUpdate.time.push(block.timestamp);
+        apyUpdate.apyChanges.push(_apy);
+    }
+
+    function _updateAPR(bytes32 market, bytes32 _commitment, uint _apr) internal{
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        APR storage aprUpdate = ds.newIndAPRRecords[market][_commitment];
+        aprUpdate.time.push(block.timestamp);
+        aprUpdate.aprChanges.push(_apr);
     }
 }

@@ -171,7 +171,10 @@ struct AppStorageOpen {
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
     address adminComptrollerAddress;
-    bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
+    bytes32[] commitment;
+
+    bytes32[] depositCommitment;
+    bytes32[] borrowCommitment;
     uint256 reserveFactor;
     uint256 loanIssuanceFees;
     uint256 loanClosureFees;
@@ -185,10 +188,22 @@ struct AppStorageOpen {
     uint256 marketSwapFees;
     mapping(bytes32 => APY) indAPYRecords;
     mapping(bytes32 => APR) indAPRRecords;
+
+    mapping(bytes32 => mapping(bytes32 => APY)) newIndAPYRecords;
+    mapping(bytes32 => mapping(bytes32 => APR)) newIndAPRRecords;
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
     bytes32 protocolOwnedLiquidator;
     address adminLiquidatorAddress;
+    // =========== DynamicInterest state variables ======
+    bytes32 adminDynamicInterest;
+    address adminDynamicInterestAddress;
+    
+    mapping(uint256 => uint256) borrowInterests;
+    mapping(uint256 => uint256) depositInterests;
+    mapping(uint256 => uint256) interestFactors;
+
+    mapping(bytes32 => uint) commitmentDays; // will be removed
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
     address adminDepositAddress;
