@@ -22,7 +22,7 @@ interface IComptroller {
 
     function getAprTimeLength(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getCommitment(uint256 index_, uint256 flag) external view returns (bytes32);
+    function getCommitment(uint256 index_, uint256 depositorborrow) external view returns (bytes32);
 
     function setDepositCommitment(bytes32 _commitment, uint _days) external;
 

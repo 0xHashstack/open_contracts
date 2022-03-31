@@ -23,18 +23,24 @@ library LibDynamicInterest {
 
     function _setDepositInterests(uint256 minDepositInterest, uint256 maxDepositInterest) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
+        if(ds.depositInterests.length == 0)
+            ds.depositInterests = new uint256[](2);
         ds.depositInterests[0] = minDepositInterest;
         ds.depositInterests[1] = maxDepositInterest;
     }
 
     function _setBorrowInterests(uint256 minBorrowInterest, uint256 maxBorrowInterest) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
+        if(ds.borrowInterests.length == 0)
+            ds.borrowInterests = new uint256[](2);
         ds.borrowInterests[0] = minBorrowInterest;
         ds.borrowInterests[1] = maxBorrowInterest;
     }
 
     function _setInterestFactors(uint256 offset, uint256 correlationFactor) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
+        if(ds.interestFactors.length == 0)
+            ds.interestFactors = new uint256[](2);
         ds.interestFactors[0] = offset;
         ds.interestFactors[1] = correlationFactor;
     }

@@ -206,12 +206,10 @@ library LibLiquidation {
         loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccount.loans.length - 1];
         loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccount.loans.length - 1];
         loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccount.loans.length - 1];
-        loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccount.loans.length - 1];
         loanAccount.loans.pop();
         loanAccount.loanState.pop();
         loanAccount.accruedAPR.pop();
         loanAccount.collaterals.pop();
-        loanAccount.accruedAPY.pop();
 
         activeLoans.loanMarket[loan.id - 1] = activeLoans.loanMarket[activeLoans.loanMarket.length - 1];
         activeLoans.loanCommitment[loan.id - 1] = activeLoans.loanCommitment[activeLoans.loanMarket.length - 1];
@@ -221,7 +219,6 @@ library LibLiquidation {
         activeLoans.isSwapped[loan.id - 1] = activeLoans.isSwapped[activeLoans.loanMarket.length - 1];
         activeLoans.loanCurrentMarket[loan.id - 1] = activeLoans.loanCurrentMarket[activeLoans.loanMarket.length - 1];
         activeLoans.loanCurrentAmount[loan.id - 1] = activeLoans.loanCurrentAmount[activeLoans.loanMarket.length - 1];
-        activeLoans.collateralYield[loan.id - 1] = activeLoans.collateralYield[activeLoans.loanMarket.length - 1];
         activeLoans.borrowInterest[loan.id - 1] = activeLoans.borrowInterest[activeLoans.loanMarket.length - 1];
         activeLoans.state[loan.id - 1] = activeLoans.state[activeLoans.loanMarket.length - 1];
         activeLoans.loanMarket.pop();
@@ -232,7 +229,6 @@ library LibLiquidation {
         activeLoans.isSwapped.pop();
         activeLoans.loanCurrentMarket.pop();
         activeLoans.loanCurrentAmount.pop();
-        activeLoans.collateralYield.pop();
         activeLoans.borrowInterest.pop();
         activeLoans.state.pop();
 

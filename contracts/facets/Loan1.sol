@@ -51,7 +51,6 @@ contract Loan1 is Pausable, ILoan1 {
             bool[] memory isSwapped,
             bytes32[] memory loanCurrentMarket,
             uint256[] memory loanCurrentAmount,
-            uint256[] memory collateralYield,
             uint256[] memory borrowInterest,
             STATE[] memory state
         )
@@ -68,7 +67,6 @@ contract Loan1 is Pausable, ILoan1 {
             activeLoans.isSwapped,
             activeLoans.loanCurrentMarket,
             activeLoans.loanCurrentAmount,
-            activeLoans.collateralYield,
             activeLoans.borrowInterest,
             activeLoans.state
         );

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, CollateralYield, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
+import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
 import { Pausable } from "../util/Pausable.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 import { ILoan } from "../interfaces/ILoan.sol";

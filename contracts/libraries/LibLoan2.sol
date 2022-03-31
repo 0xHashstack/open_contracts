@@ -76,7 +76,6 @@ library LibLoan2 {
         activeLoans.state[loan.id - 1] = STATE.REPAID;
         delete activeLoans.isSwapped[loan.id - 1];
         delete activeLoans.loanCurrentAmount[loan.id - 1];
-        delete activeLoans.collateralYield[loan.id - 1];
         delete activeLoans.borrowInterest[loan.id - 1];
 
         if (_commitment != LibCommon._getCommitment(0,1)) {
@@ -136,12 +135,10 @@ library LibLoan2 {
             loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccountCount - 1];
             loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccountCount - 1];
             loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccountCount - 1];
-            loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccountCount - 1];
             loanAccount.loans.pop();
             loanAccount.loanState.pop();
             loanAccount.accruedAPR.pop();
             loanAccount.collaterals.pop();
-            loanAccount.accruedAPY.pop();
 
             uint256 activeLoansCount = activeLoans.loanMarket.length;
             activeLoans.loanMarket[loan.id - 1] = activeLoans.loanMarket[activeLoansCount - 1];
@@ -152,7 +149,6 @@ library LibLoan2 {
             activeLoans.isSwapped[loan.id - 1] = activeLoans.isSwapped[activeLoansCount - 1];
             activeLoans.loanCurrentMarket[loan.id - 1] = activeLoans.loanCurrentMarket[activeLoansCount - 1];
             activeLoans.loanCurrentAmount[loan.id - 1] = activeLoans.loanCurrentAmount[activeLoansCount - 1];
-            activeLoans.collateralYield[loan.id - 1] = activeLoans.collateralYield[activeLoansCount - 1];
             activeLoans.borrowInterest[loan.id - 1] = activeLoans.borrowInterest[activeLoansCount - 1];
             activeLoans.state[loan.id - 1] = activeLoans.state[activeLoansCount - 1];
             activeLoans.loanMarket.pop();
@@ -163,7 +159,6 @@ library LibLoan2 {
             activeLoans.isSwapped.pop();
             activeLoans.loanCurrentMarket.pop();
             activeLoans.loanCurrentAmount.pop();
-            activeLoans.collateralYield.pop();
             activeLoans.borrowInterest.pop();
             activeLoans.state.pop();
 
@@ -226,7 +221,6 @@ library LibLoan2 {
 
         // / UPDATING RECORDS IN LOANACCOUNT
         delete loanAccount.accruedAPR[num];
-        delete loanAccount.accruedAPY[num];
 
         if (!liquidationEvent) {
             delete deductibleInterest.id;

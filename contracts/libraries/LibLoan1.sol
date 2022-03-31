@@ -110,8 +110,6 @@ library LibLoan1 {
             /// UPDATING LoanAccount
             loanAccount.collaterals.push(collateral);
             loanAccount.accruedAPR.push(deductibleInterest);
-
-            activeLoans.collateralYield.push(0);
         } else {
             collateral.timelockValidity = 86400;
             collateral.isTimelockActivated = false;

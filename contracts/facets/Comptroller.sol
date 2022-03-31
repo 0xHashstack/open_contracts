@@ -124,8 +124,8 @@ contract Comptroller is Pausable, IComptroller {
         return LibCommon._getAprTimeLength(market, _commitment);
     }
 
-    function getCommitment(uint256 _index, uint256 flag) external view override returns (bytes32) {
-        return LibCommon._getCommitment(_index, flag);
+    function getCommitment(uint256 _index, uint256 depositorborrow) external view override returns (bytes32) {
+        return LibCommon._getCommitment(_index, depositorborrow);
     }
 
     // SETTERS
@@ -280,10 +280,12 @@ contract Comptroller is Pausable, IComptroller {
 
     function updateAPR(bytes32 _market, bytes32 _commitment, uint256 _apr) external authComptroller {
         LibComptroller._updateAPR(_market, _commitment, _apr);
+        emit APRupdated(msg.sender, _apr, block.timestamp);
     }
 
     function updateAPY(bytes32 _market, bytes32 _commitment, uint256 _apy) external authComptroller {
         LibComptroller._updateAPY(_market, _commitment, _apy);
+        emit APYupdated(msg.sender, _apy, block.timestamp);
     }
 
     modifier authComptroller() {

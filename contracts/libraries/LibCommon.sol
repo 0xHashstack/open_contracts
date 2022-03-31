@@ -58,15 +58,14 @@ library LibCommon {
         return marketData.tokenAddress;
     }
 
-    function _getCommitment(uint256 _index, uint256 flag) internal view returns (bytes32) {
+    function _getCommitment(uint256 _index, uint256 depositorborrow) internal view returns (bytes32) {
         AppStorageOpen storage ds = diamondStorage();
-        if(ds.borrowCommitment.length > _index && flag == 1)
+        if(ds.borrowCommitment.length > _index && depositorborrow == 1)
             return ds.borrowCommitment[_index];
-        else if(ds.borrowCommitment.length > _index && flag == 0)
+        else if(ds.borrowCommitment.length > _index && depositorborrow == 0)
             return ds.depositCommitment[_index];
         else{
-            require(true, "ERROR:Index Out of Bounds");
-            return 0x0;
+            revert("ERROR:Index Out of Bounds");
         }
     }
 

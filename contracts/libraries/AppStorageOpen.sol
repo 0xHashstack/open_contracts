@@ -75,7 +75,6 @@ struct LoanAccount {
     LoanRecords[] loans; // 2 types of loans. 3 markets intially. So, a maximum o f6 records.
     CollateralRecords[] collaterals;
     DeductibleInterest[] accruedAPR;
-    CollateralYield[] accruedAPY;
     LoanState[] loanState;
 }
 struct LoanRecords {
@@ -107,15 +106,6 @@ struct CollateralRecords {
     uint256 activationTime; // blocknumber when yield withdrawal request was placed.
 }
 
-struct CollateralYield {
-    uint256 id;
-    bytes32 market;
-    bytes32 commitment;
-    uint256 oldLengthAccruedYield; // length of the APY time array.
-    uint256 oldTime; // last recorded block num
-    uint256 accruedYield; // accruedYield in
-}
-
 // DeductibleInterest stores the amount_ of interest deducted.
 struct DeductibleInterest {
     uint256 id; // Id of the loan the interest is being deducted for.
@@ -134,7 +124,6 @@ struct ActiveLoans {
     bool[] isSwapped;
     bytes32[] loanCurrentMarket;
     uint256[] loanCurrentAmount;
-    uint256[] collateralYield;
     uint256[] borrowInterest;
     STATE[] state;
 }
@@ -189,11 +178,10 @@ struct AppStorageOpen {
     bytes32 protocolOwnedLiquidator;
     // =========== DynamicInterest state variables ======
     bytes32 adminDynamicInterest;
-    address adminDynamicInterestAddress;
     
-    mapping(uint256 => uint256) borrowInterests;
-    mapping(uint256 => uint256) depositInterests;
-    mapping(uint256 => uint256) interestFactors;
+    uint256[] borrowInterests;
+    uint256[] depositInterests;
+    uint256[] interestFactors;
 
     mapping(bytes32 => uint) commitmentDays;
     // =========== Deposit state variables ===========
@@ -223,7 +211,6 @@ struct AppStorageOpen {
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanRecords))) indLoanRecords;
     mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralRecords))) indCollateralRecords;
     mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indAccruedAPR;
-    mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indAccruedAPY;
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
     mapping(address => ActiveLoans) getActiveLoans;
     //  Balance monitoring  - Loan
