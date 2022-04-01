@@ -303,7 +303,7 @@ describe("testing Loans", async () => {
     });
 
     it("Swap Loan", async () => {
-      const preLoan = BigNumber.from(7000000);
+      const preLoan = BigNumber.from(17000000);
       const loanFees = BigNumber.from(preLoan).mul(10).div(10000);
       const loanAmount = preLoan - loanFees; // 0.17 Btc
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
