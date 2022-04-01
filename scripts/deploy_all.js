@@ -238,9 +238,9 @@ async function addMarkets(array) {
   /// SETTING MIN-MAX VALUES OF DEPOSIT & BORROW INTEREST
   /// SETTING OFFSET AND CORRELATION FACTORS
   console.log("Setting min-max interests, offset, correlation-factor");
-  await expect(dynamicInterest.setDepositInterests(200, 1000)).emit(dynamicInterest, "DepositInterestUpdated");
-  await expect(dynamicInterest.setBorrowInterests(500, 2000)).emit(dynamicInterest, "BorrowInterestUpdated");
-  await expect(dynamicInterest.setInterestFactors(2, 12)).emit(dynamicInterest, "InterestFactorsUpdated");
+  await dynamicInterest.setBorrowInterests(500, 2000);
+  await dynamicInterest.setDepositInterests(200, 1000);
+  await dynamicInterest.setInterestFactors(2, 12);
   console.log("Setting min-max interests, offset, correlation-factor done");
 
   /// DEPLOYING TEST TOKENS
