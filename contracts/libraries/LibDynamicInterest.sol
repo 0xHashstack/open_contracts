@@ -16,9 +16,9 @@ library LibDynamicInterest {
         return ds.borrowInterests[minOrMax];
     }
 
-    function _getInterestFactors(uint256 factor) internal view returns(uint256) {
+    function _getInterestFactors(uint256 offsetOrFactor) internal view returns(uint256) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-        return ds.interestFactors[factor];
+        return ds.interestFactors[offsetOrFactor];
     }
 
     function _setDepositInterests(uint256 minDepositInterest, uint256 maxDepositInterest) internal {
@@ -48,60 +48,44 @@ library LibDynamicInterest {
     function _calculateDynamicInterest(bytes32 market) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         
-        uint utilisationFactor = (LibReserve._utilisedReservesLoan(market)*100)/LibReserve._avblReservesDeposit(market);
+        uint8 utilisationFactor = (uint8)((LibReserve._utilisedReservesLoan(market)*100)/LibReserve._avblReservesDeposit(market));
+        uint256 correlationFactor = 100000;
         if(utilisationFactor <= 25){
             for(uint i = ds.depositCommitment.length; i >= 0; i--)
                 LibComptroller._updateAPY(market, ds.depositCommitment[i], 0);
             
-            uint256 correlationFactor = 1;
             for(uint i = 0; i < ds.borrowCommitment.length; i++){   
-                LibComptroller._updateAPR(market, ds.borrowCommitment[i], (_getBorrowInterests(0)/correlationFactor));
+                LibComptroller._updateAPR(market, ds.borrowCommitment[i], ((_getBorrowInterests(0)*100000)/correlationFactor));
                 correlationFactor *= _getInterestFactors(1);
             }
             return;
         }
 
         uint256 randomness = 80;
-        if(utilisationFactor > 70){
+        uint256 calculatedDepositInterest;
+        uint256 calculatedBorrowInterest;
 
-            uint256 calculatedDepositInterest = (randomness*_getDepositInterests(1)/100)+1;
-            uint256 calculatedBorrowInterest = ((calculatedDepositInterest*10000)/((100+_getInterestFactors(0))*utilisationFactor));
-            if(calculatedBorrowInterest > _getBorrowInterests(1)){
-                calculatedBorrowInterest = _getBorrowInterests(1);
-                calculatedDepositInterest = ((((100+_getInterestFactors(0))*utilisationFactor)*calculatedBorrowInterest)/10000);
-            }
+        if(utilisationFactor > 70)
+            calculatedDepositInterest = (randomness*_getDepositInterests(1)/100)+1;
+        else
+            calculatedDepositInterest = (randomness*_getDepositInterests(1)/100);
 
-            uint256 correlationFactor = 1;
-            for(uint i = ds.depositCommitment.length; i >= 0; i--){
-                LibComptroller._updateAPY(market, ds.depositCommitment[i], (calculatedDepositInterest/correlationFactor));
-                correlationFactor *= _getInterestFactors(1);
-            }
-
-            correlationFactor = 1;
-            for(uint i = 0; i < ds.borrowCommitment.length; i++){   
-                LibComptroller._updateAPR(market, ds.borrowCommitment[i], (calculatedBorrowInterest/correlationFactor));
-                correlationFactor *= _getInterestFactors(1);
-            }
+        calculatedBorrowInterest = ((calculatedDepositInterest*10000)/((100+_getInterestFactors(0))*utilisationFactor));
+        if(calculatedBorrowInterest > _getBorrowInterests(1)){
+            calculatedBorrowInterest = _getBorrowInterests(1);
+            calculatedDepositInterest = ((((100+_getInterestFactors(0))*utilisationFactor)*calculatedBorrowInterest)/10000);
         }
-        else{
-            uint256 calculatedDepositInterest = (randomness*_getDepositInterests(1)/100);
-            uint256 calculatedBorrowInterest = ((calculatedDepositInterest*10000)/((100+_getInterestFactors(0))*utilisationFactor));
-            if(calculatedBorrowInterest > _getBorrowInterests(1)){
-                calculatedBorrowInterest = _getBorrowInterests(1);
-                calculatedDepositInterest = ((((100+_getInterestFactors(0))*utilisationFactor)*calculatedBorrowInterest)/10000);
-            }
 
-            uint256 correlationFactor = 1;
-            for(uint i = ds.depositCommitment.length; i >= 0; i--){
-                LibComptroller._updateAPY(market, ds.depositCommitment[i], (calculatedDepositInterest/correlationFactor));
-                correlationFactor *= _getInterestFactors(1);
-            }
+        correlationFactor = 100000;
+        for(uint256 i = ds.depositCommitment.length - 1; i >= 0; i--){
+            LibComptroller._updateAPY(market, ds.depositCommitment[i], ((calculatedDepositInterest*100000)/correlationFactor));
+            correlationFactor *= _getInterestFactors(1);
+        }
 
-            correlationFactor = 1;
-            for(uint i = 0; i < ds.borrowCommitment.length; i++){   
-                LibComptroller._updateAPR(market, ds.borrowCommitment[i], (calculatedBorrowInterest/correlationFactor));
-                correlationFactor *= _getInterestFactors(1);
-            }
+        correlationFactor = 100000;
+        for(uint256 i = 0; i < ds.borrowCommitment.length; i++){   
+            LibComptroller._updateAPR(market, ds.borrowCommitment[i], ((calculatedBorrowInterest*100000)/correlationFactor));
+            correlationFactor *= _getInterestFactors(1);
         }           
     }
 }

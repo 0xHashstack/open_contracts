@@ -251,7 +251,6 @@ library LibLiquidation {
             uint256[] memory
         )
     {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
         // TODO: in frontend its showing up an empty data records
         address[] memory loanOwner = new address[](100);
@@ -263,11 +262,11 @@ library LibLiquidation {
 
         uint8 pointer;
 
-        for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < ds.borrowers.length; i++) {
-            LoanState[] memory loanStates = ds.loanPassbook[ds.borrowers[i]].loanState;
+        for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < LibCommon.diamondStorage().borrowers.length; i++) {
+            LoanState[] memory loanStates = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loanState;
             for (uint256 j = 0; j < loanStates.length; j++) {
-                LoanRecords memory loan = ds.loanPassbook[ds.borrowers[i]].loans[j];
-                CollateralRecords memory collateral = ds.loanPassbook[ds.borrowers[i]].collaterals[j];
+                LoanRecords memory loan = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loans[j];
+                CollateralRecords memory collateral = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].collaterals[j];
                 if (
                     loan.id != 0 && _validLoanLiquidation(loanStates[j], collateral, _getDebtCategory(loan, collateral))
                 ) {
