@@ -98,8 +98,6 @@ describe("testing Loans", async () => {
 
       let loanData = await loan1.getLoans(accounts[1].address);
         const loanAmountPostFees = loanAmount-loanFees; // 0.17 Btc
-        console.log("LoanAmount : ",loanData.loanAmount);
-        console.log("loanAmountPostFees : ",loanAmountPostFees);
         await expect(loanData.loanAmount[0]).to.eq(loanAmountPostFees);
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
@@ -176,9 +174,7 @@ describe("testing Loans", async () => {
       const reserveBalanceCake = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       let loanData = await loan1.getLoans(accounts[1].address);
       LoanAmount = BigNumber.from(loanData.loanAmount[0]);
-      console.log("LoanAmount : ", LoanAmount);
       CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[0]);
-      console.log("CurrentLoan : ", CurrentLoan);
       fees = CurrentLoan.mul(5).div(10000);
       await expect(loan.connect(accounts[1]).swapToLoan(symbolUsdt, comit_NONE)).emit(loan, "MarketSwapped");
 
@@ -308,19 +304,18 @@ describe("testing Loans", async () => {
     });
 
     it("Swap Loan", async () => {
-      const preLoan = 17000000;
+      const preLoan = BigNumber.from(7000000);
       const loanFees = BigNumber.from(preLoan).mul(10).div(10000);
       const loanAmount = preLoan - loanFees; // 0.17 Btc
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
-      console.log("pre swap loan market");
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
       await expect(loan.connect(accounts[1]).swapLoan(symbolBtc, comit_ONEMONTH, symbolCAKE)).emit(
         loan,
         "MarketSwapped",
       );
       const reserveLoanPost = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
-      const reserveBalPost = BigNumber.from(await bepCake.balanceOf(diamondAddress));
+
 
       /// CHECKS FEE
       expect(BigNumber.from(reserveBalance).sub(BigNumber.from(loanAmount)).add(BigNumber.from(fees))).to.equal(
@@ -343,12 +338,9 @@ describe("testing Loans", async () => {
     it("Swap to Loan", async () => {
       const reserveBalance = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
-      console.log("pre swap loan market");
       let loanData = await loan1.getLoans(accounts[1].address);
       LoanAmount = BigNumber.from(loanData.loanAmount[0]);
-      console.log("LoanAmount : ", LoanAmount);
       CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[0]);
-      console.log("CurrentLoan : ", CurrentLoan);
       fees = CurrentLoan.mul(5).div(10000);
 
       await expect(loan.connect(accounts[1]).swapToLoan(symbolBtc, comit_ONEMONTH)).emit(loan, "MarketSwapped");
@@ -450,8 +442,6 @@ describe("testing Loans", async () => {
       let loanData = await loan1.getLoans(accounts[1].address);
 
         const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-        console.log("LoanAmount : ", loanData.loanAmount);
-        console.log("loanAmountPostFees : ", loanAmountPostFees);
         await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
 
 
@@ -504,13 +494,10 @@ describe("testing Loans", async () => {
       const loanAmount = preLoan - loanFees; // 0.17 Btc
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
-      console.log("pre swap loan market");
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
-      console.log("fees", fees);
 
       await expect(loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
       const reserveLoanPost = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
-      console.log("reserveBalance : ", reserveBalance);
       expect(BigNumber.from(reserveBalance).sub(BigNumber.from(loanAmount)).add(BigNumber.from(fees))).to.equal(
         BigNumber.from(reserveLoanPost),
       );
@@ -522,9 +509,7 @@ describe("testing Loans", async () => {
       const reserveBalanceCake = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       let loanData = await loan1.getLoans(accounts[1].address);
       LoanAmount = BigNumber.from(loanData.loanAmount[1]);
-      console.log("LoanAmount : ", LoanAmount);
       CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[1]);
-      console.log("CurrentLoan : ", CurrentLoan);
       fees = CurrentLoan.mul(5).div(10000);
 
       await expect(loan.connect(accounts[1]).swapToLoan(symbolUsdc, comit_NONE)).emit(loan, "MarketSwapped");
@@ -553,12 +538,10 @@ describe("testing Loans", async () => {
       const repayAmount = 50000000000;
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
-      console.log("Pre RBal: ", reserveBalance);
 
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(loan2.connect(accounts[1]).repayLoan(symbolUsdc, comit_NONE, repayAmount)).emit(loan2, "LoanRepaid");
 
-      console.log("Pos RBal: ", BigNumber.from(await bepBtc.balanceOf(diamondAddress)));
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.lt(BigNumber.from(reserveBalance));
     });
   });
@@ -614,8 +597,6 @@ describe("testing Loans", async () => {
       let loanData = await loan1.getLoans(accounts[1].address);
       if ((loanData.loanMarket = symbolUsdt)) {
         const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-        console.log("LoanAmount : ", loanData.loanAmount);
-        console.log("loanAmountPostFees : ", loanAmountPostFees);
         await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
       }
 
@@ -707,12 +688,10 @@ describe("testing Loans", async () => {
         loan1.connect(accounts[1]).loanRequest(symbolWbnb, comit_ONEMONTH, loanAmount, symbolWbnb, collateralAmount),
       ).emit(loan1, "NewLoan");
       let loanData = await loan1.getLoans(accounts[1].address);
-      if ((loanData.loanMarket = symbolWbnb)) {
+
         const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-        console.log("LoanAmount : ", loanData.loanAmount);
-        console.log("loanAmountPostFees : ", loanAmountPostFees);
         await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
-      }
+      
 
       expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
@@ -752,7 +731,6 @@ describe("testing Loans", async () => {
       const loanFees = BigNumber.from(preLoan).mul(10).div(10000);
       const loanAmount = preLoan - loanFees; // 0.17 Btc
 
-      console.log("pre swap loan market");
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
 
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
