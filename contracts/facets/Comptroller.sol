@@ -76,6 +76,8 @@ contract Comptroller is Pausable, IComptroller {
         uint256 timestamp
     );
 
+    event CommitmentAdded(address indexed admin, bytes32 indexed _commitment, uint256 indexed _days, uint256 timestamp);
+
     receive() external payable {
         payable(LibCommon.upgradeAdmin()).transfer(msg.value);
     }
@@ -131,10 +133,12 @@ contract Comptroller is Pausable, IComptroller {
     // SETTERS
     function setDepositCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
         LibComptroller._setDepositCommitment(_commitment, _days);
+        emit CommitmentAdded(msg.sender, _commitment, _days, block.timestamp);
     }
 
     function setBorrowCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
         LibComptroller._setBorrowCommitment(_commitment, _days);
+        emit CommitmentAdded(msg.sender, _commitment, _days, block.timestamp);
     }
 
     function updateLoanIssuanceFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {
