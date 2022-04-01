@@ -85,7 +85,7 @@ library LibLoan {
         loanAccount.accruedAPY[collateral.id - 1].accruedYield += aggregateYield;
     }
 
-        function _swapToLoan(
+    function _swapToLoan(
         address _account,
         bytes32 _market,
         bytes32 _commitment /*authContract(LOAN_ID)*/
