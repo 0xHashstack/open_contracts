@@ -260,64 +260,40 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Loan Issuance Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateLoanIssuanceFees(2800)).to.be.reverted;
-      await expect(comptroller.updateLoanIssuanceFees(2800)).emit(comptroller, "LoanIssuanceFeesUpdated");
+      await expect(comptroller.connect(accounts[1]).updateLoanIssuanceFees(10)).to.be.reverted;
+      await expect(comptroller.updateLoanIssuanceFees(10)).emit(comptroller, "LoanIssuanceFeesUpdated");
     });
 
     it("Set Loan Closure Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(2800)).to.be.reverted;
-      await expect(comptroller.updateLoanClosureFees(2800)).emit(comptroller, "LoanClosureFeesUpdated");
-    });
-
-    it("Set Loan pre Closure Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateLoanPreClosureFees(2800)).to.be.reverted;
-      await expect(comptroller.updateLoanPreClosureFees(2800)).emit(comptroller, "LoanPreClosureFeesUpdated");
+      await expect(comptroller.connect(accounts[1]).updateLoanClosureFees(5)).to.be.reverted;
+      await expect(comptroller.updateLoanClosureFees(5)).emit(comptroller, "LoanClosureFeesUpdated");
     });
 
     it("Set Deposit pre Closure Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateDepositPreclosureFees(2800)).to.be.reverted;
-      await expect(comptroller.updateDepositPreclosureFees(2800)).emit(comptroller, "DepositPreClosureFeesUpdated");
+      await expect(comptroller.connect(accounts[1]).updateDepositPreclosureFees(36)).to.be.reverted;
+      await expect(comptroller.updateDepositPreclosureFees(36)).emit(comptroller, "DepositPreClosureFeesUpdated");
 
-      expect(await comptroller.depositPreClosureFees()).to.equal(BigNumber.from(2800));
+      expect(await comptroller.depositPreClosureFees()).to.equal(BigNumber.from(36));
     });
 
     it("Set Withdrawal Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateWithdrawalFees(2800)).to.be.reverted;
-      await expect(comptroller.updateWithdrawalFees(2800)).emit(comptroller, "DepositWithdrawalFeesUpdated");
+      await expect(comptroller.connect(accounts[1]).updateWithdrawalFees(17)).to.be.reverted;
+      await expect(comptroller.updateWithdrawalFees(17)).emit(comptroller, "DepositWithdrawalFeesUpdated");
 
-      expect(await comptroller.depositWithdrawalFees()).to.equal(BigNumber.from(2800));
+      expect(await comptroller.depositWithdrawalFees()).to.equal(BigNumber.from(17));
     });
 
     it("Set Collateral release Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateCollateralReleaseFees(2800)).to.be.reverted;
-      await expect(comptroller.updateCollateralReleaseFees(2800)).emit(comptroller, "CollateralReleaseFeesUpdated");
+      await expect(comptroller.connect(accounts[1]).updateCollateralReleaseFees(10)).to.be.reverted;
+      await expect(comptroller.updateCollateralReleaseFees(10)).emit(comptroller, "CollateralReleaseFeesUpdated");
 
-      expect(await comptroller.collateralReleaseFees()).to.equal(BigNumber.from(2800));
-    });
-
-    it("Set Yield Conversion Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateYieldConversion(2800)).to.be.reverted;
-      await expect(comptroller.updateYieldConversion(2800)).emit(comptroller, "YieldConversionFeesUpdated");
+      expect(await comptroller.collateralReleaseFees()).to.equal(BigNumber.from(10));
     });
 
     it("Set MarketSwap Fee", async () => {
-      await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(2800)).to.be.reverted;
-      await expect(comptroller.updateMarketSwapFees(2800)).emit(comptroller, "MarketSwapFeesUpdated");
-    });
-
-    it("Set ReserveFactor", async () => {
-      await expect(comptroller.connect(accounts[1]).updateReserveFactor(1)).to.be.reverted;
-      await expect(comptroller.updateReserveFactor(1)).emit(comptroller, "ReserveFactorUpdated");
-
-      expect(await comptroller.getReserveFactor()).to.equal(BigNumber.from(1));
-    });
-
-    it("Set Max Withdrawal Limit", async () => {
-      const x = (await ethers.provider.getBlock()).timestamp;
-
-      await expect(comptroller.connect(accounts[1]).updateMaxWithdrawal(2800, x)).to.be.reverted;
-
-      await expect(comptroller.updateMaxWithdrawal(2800, x)).emit(comptroller, "MaxWithdrawalUpdated");
+      await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(5)).to.be.reverted;
+      await expect(comptroller.updateMarketSwapFees(5)).emit(comptroller, "MarketSwapFeesUpdated");
+      
     });
   });
 });
