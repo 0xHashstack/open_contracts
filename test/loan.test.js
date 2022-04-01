@@ -102,7 +102,6 @@ describe("testing Loans", async () => {
         console.log("LoanAmount : ",loanData.loanAmount);
         console.log("loanAmountPostFees : ",loanAmountPostFees);
         await expect(loanData.loanAmount[0]).to.eq(loanAmountPostFees);
-        }
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
