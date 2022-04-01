@@ -68,7 +68,7 @@ library LibDynamicInterest {
         if(utilisationFactor > 70)
             calculatedDepositInterest = ((randomness*_getDepositInterests(1))/100) + 1;
         else
-            calculatedDepositInterest = ((randomness*_getDepositInterests(1))/100);
+            calculatedDepositInterest = ((randomness*(_getDepositInterests(1) - _getDepositInterests(0)))/100);
 
         calculatedBorrowInterest = ((calculatedDepositInterest*10000)/((100+_getInterestFactors(0))*utilisationFactor));
         if(calculatedBorrowInterest > _getBorrowInterests(1)){
