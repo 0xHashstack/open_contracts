@@ -157,16 +157,16 @@ describe("Testing Deposit", async () => {
       const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
-      
-      console.log("Diamond balance before :",await bepUsdc.balanceOf(diamondAddress))
-      
+
+      console.log("Diamond balance before :", await bepUsdc.balanceOf(diamondAddress));
+
       await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_NONE, withdrawAmount)).emit(
         deposit,
         "DepositWithdrawal",
       );
-        console.log("Diamond balance after :",await bepUsdc.balanceOf(diamondAddress))
-        expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-          reserveBalance.add(BigNumber.from(fees)).sub(BigNumber.from(withdrawAmount)),
+      console.log("Diamond balance after :", await bepUsdc.balanceOf(diamondAddress));
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance.add(BigNumber.from(fees)).sub(BigNumber.from(withdrawAmount)),
       );
     });
 
@@ -260,7 +260,6 @@ describe("Testing Deposit", async () => {
 
       const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
 
-
       const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
 
       await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdc, comit_NONE, withdrawAmount)).to.be.reverted;
@@ -323,7 +322,7 @@ describe("Testing Deposit", async () => {
       const withdrawAmount = 20000000; // 2 (7-0's)  0.2 BTC
 
       const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
-      
+
       const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
 
       await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolBtc, comit_NONE, withdrawAmount)).emit(
@@ -333,7 +332,7 @@ describe("Testing Deposit", async () => {
 
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
         reserveBalance.sub(BigNumber.from(withdrawAmount)).add(BigNumber.from(fees)),
-       );
+      );
     });
 
     it("Withdraw BTC(more than deposited)", async () => {
@@ -501,9 +500,8 @@ describe("Testing Deposit", async () => {
 
     it("Withdraw USDT", async () => {
       const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
-      
-      const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
 
+      const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
 
       const currentProvider = waffle.provider;
 

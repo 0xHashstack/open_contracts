@@ -85,7 +85,7 @@ library LibLoan {
         loanAccount.accruedAPY[collateral.id - 1].accruedYield += aggregateYield;
     }
 
-        function _swapToLoan(
+    function _swapToLoan(
         address _account,
         bytes32 _market,
         bytes32 _commitment /*authContract(LOAN_ID)*/
@@ -138,7 +138,6 @@ library LibLoan {
         activeLoans.loanCurrentMarket[num] = loan.market;
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
-
     }
 
     function _swapLoan(
@@ -198,7 +197,6 @@ library LibLoan {
         activeLoans.loanCurrentMarket[num] = _swapMarket;
         activeLoans.loanCurrentAmount[num] = _swappedAmount;
         activeLoans.borrowInterest[num] = ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
-
     }
 
     function _withdrawCollateral(
@@ -222,8 +220,10 @@ library LibLoan {
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
         require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
 
-    
-        collateral.amount = collateral.amount - ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) / 10000;
+        collateral.amount =
+            collateral.amount -
+            ((LibCommon.diamondStorage().collateralReleaseFees) * collateral.amount) /
+            10000;
 
         ds.collateralToken = IBEP20(LibCommon._connectMarket(collateral.market));
         ds.collateralToken.transfer(_sender, collateral.amount);
@@ -231,7 +231,7 @@ library LibLoan {
         bytes32 collateralMarket = collateral.market;
         uint256 collateralAmount = collateral.amount;
 
-        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id,block.timestamp);
+        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
 
         /// UPDATING STORAGE RECORDS FOR LOAN
         /// COLLATERAL RECORDS
