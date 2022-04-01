@@ -6,6 +6,12 @@ import "./LibReserve.sol";
 import "./LibComptroller.sol";
 
 library LibDynamicInterest {
+
+    function random() public view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.timestamp,block.difficulty,  
+        msg.sender)));
+    }
+
     function _getDepositInterests(uint256 minOrMax) internal view returns(uint256) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         return ds.depositInterests[minOrMax];
@@ -63,7 +69,7 @@ library LibDynamicInterest {
             return;
         }
 
-        uint256 randomness = 80;
+        uint256 randomness = random()%20 + 70;
         uint256 calculatedDepositInterest;
         uint256 calculatedBorrowInterest;
 

@@ -18,7 +18,7 @@ let dynamicInterest;
 let loan1;
 let tokenList;
 
-describe("testing Dynamic Interest", async () => {
+describe.skip("testing Dynamic Interest", async () => {
   before(async () => {
       array = await deployDiamond();
       diamondAddress = array["diamondAddress"];
