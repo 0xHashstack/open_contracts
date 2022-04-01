@@ -202,7 +202,7 @@ describe("testing Loans", async () => {
         reserveBalance.sub(BigNumber.from(withdrawAmount)),
       );
     });
-    
+
     it("USDT Get Loan Interests", async () => {
       const currentProvider = waffle.provider;
       await currentProvider.send("evm_increaseTime", [86400]);
@@ -339,43 +339,20 @@ describe("testing Loans", async () => {
     });
     
     it("Swap to Loan", async () => {
-      // const preLoan = 17000000;
-      // const loanAmount = preLoan-loanFees; // 0.17 Btc
       const reserveBalance = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       console.log("pre swap loan market")
-      // const fees = BigNumber.from(loanAmount).mul(5).div(10000);
-      // const reserveLoanPost =  BigNumber.from(await bepCake.balanceOf(diamondAddress));
       let loanData = await loan1.getLoans(accounts[1].address);
       LoanAmount = BigNumber.from(loanData.loanAmount[0]);
       console.log("LoanAmount : ",LoanAmount);
       CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[0]);
       console.log("CurrentLoan : ",CurrentLoan);
       fees = CurrentLoan.mul(5).div(10000);
-      // fees1 = LoanAmount.mul(5).div(10000);
-      // console.log("fees1 : ",fees1);
-      // Post = LoanAmount.sub(fees1)
-      // console.log("Post : ",Post);
       
       await expect(loan.connect(accounts[1]).swapToLoan(symbolBtc, comit_ONEMONTH)).emit(loan, "MarketSwapped");
-      
-      // CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[0]);
-      // console.log("CurrentLoan : ",CurrentLoan);
-      // if (loanData.loanMarket[0] == symbolBtc){
-      //   // CurrentLoan = BigNumber.from(CurrentLoan[0]);
-      //   console.log("Loop is not the error : ",CurrentLoan);
-      //   const loanFees = CurrentLoan.mul(5).div(10000);
-      //   console.log("loanFees : ",loanFees);
-      //   const loanAmountPostFees = CurrentLoan.sub(loanFees); // 0.17 Btc
-      //   console.log("CurrentLoan : ",CurrentLoan);
-      //   console.log("loanAmountPostFees : ",loanAmountPostFees);
-      //   // await expect(CurrentLoan).to.eq(loanAmountPostFees);
-      //   }
         const reserveLoanPost =  BigNumber.from(await bepCake.balanceOf(diamondAddress));
         /// CHECKS FEE
         expect(reserveBalance.sub(CurrentLoan).add(fees)).to.equal(BigNumber.from(reserveLoanPost));
-     
-      // expect(BigNumber.from(reserveBalance).sub(BigNumber.from(loanAmount)).add(BigNumber.from(fees))).to.equal(BigNumber.from(reserveLoanPost));
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.gt(BigNumber.from(reserveBalance));
       expect(BigNumber.from(await bepCake.balanceOf(diamondAddress))).to.lt(BigNumber.from(reserveBal));
     });
@@ -529,7 +506,6 @@ describe("testing Loans", async () => {
       console.log("pre swap loan market")
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
       
-      // const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
       await expect(loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
       
       expect(BigNumber.from(reserveBalance).sub(BigNumber.from(loanAmount)).add(BigNumber.from(fees))).to.equal(BigNumber.from(reserveLoanPost));
@@ -670,7 +646,6 @@ describe("testing Loans", async () => {
       const preLoan = 300000000000;
       const loanFees = BigNumber.from(preLoan).mul(10).div(10000);
       const loanAmount = preLoan-loanFees; // 0.17 Btc
-      // const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       console.log("pre swap loan market")
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
@@ -688,10 +663,6 @@ describe("testing Loans", async () => {
 
       await bepUsdc.connect(accounts[1]).approve(diamondAddress, repayAmount);
       await expect(loan2.connect(accounts[1]).repayLoan(symbolUsdc, comit_NONE, repayAmount)).emit(loan2, "LoanRepaid");
-
-      // expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress))).to.lt(
-      //   BigNumber.from(reserveBalance)
-      // );
     });
   });
 
@@ -791,8 +762,7 @@ describe("testing Loans", async () => {
       const preLoan = 40000000;
       const loanFees = BigNumber.from(preLoan).mul(10).div(10000);
       const loanAmount = preLoan-loanFees; // 0.17 Btc
-      // const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
-      // const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
+
       console.log("pre swap loan market")
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
       
