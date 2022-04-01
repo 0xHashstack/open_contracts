@@ -51,12 +51,14 @@ library LibDynamicInterest {
         uint8 utilisationFactor = (uint8)((LibReserve._utilisedReservesLoan(market)*100)/LibReserve._avblReservesDeposit(market));
         uint256 correlationFactor = 100000;
         if(utilisationFactor <= 25){
-            for(uint i = ds.depositCommitment.length; i >= 0; i--)
+            for(uint i = ds.depositCommitment.length - 1; i >= 0; i--){
                 LibComptroller._updateAPY(market, ds.depositCommitment[i], 0);
+                if(i == 0)break;
+            }
             
             for(uint i = 0; i < ds.borrowCommitment.length; i++){   
                 LibComptroller._updateAPR(market, ds.borrowCommitment[i], ((_getBorrowInterests(0)*100000)/correlationFactor));
-                correlationFactor *= _getInterestFactors(1);
+                correlationFactor = (correlationFactor*_getInterestFactors(1))/10;
             }
             return;
         }
@@ -66,10 +68,9 @@ library LibDynamicInterest {
         uint256 calculatedBorrowInterest;
 
         if(utilisationFactor > 70)
-            calculatedDepositInterest = ((randomness*_getDepositInterests(1))/100) + 1;
+            calculatedDepositInterest = ((randomness*_getDepositInterests(1))/100) + 100;
         else
             calculatedDepositInterest = ((randomness*(_getDepositInterests(1) - _getDepositInterests(0)))/100);
-
         calculatedBorrowInterest = ((calculatedDepositInterest*10000)/((100+_getInterestFactors(0))*utilisationFactor));
         if(calculatedBorrowInterest > _getBorrowInterests(1)){
             calculatedBorrowInterest = _getBorrowInterests(1);
@@ -79,13 +80,14 @@ library LibDynamicInterest {
         correlationFactor = 100000;
         for(uint256 i = ds.depositCommitment.length - 1; i >= 0; i--){
             LibComptroller._updateAPY(market, ds.depositCommitment[i], ((calculatedDepositInterest*100000)/correlationFactor));
-            correlationFactor *= _getInterestFactors(1);
+            correlationFactor = (correlationFactor*_getInterestFactors(1))/10;
+            if(i == 0)break;
         }
 
         correlationFactor = 100000;
         for(uint256 i = 0; i < ds.borrowCommitment.length; i++){   
             LibComptroller._updateAPR(market, ds.borrowCommitment[i], ((calculatedBorrowInterest*100000)/correlationFactor));
-            correlationFactor *= _getInterestFactors(1);
+            correlationFactor = (correlationFactor*_getInterestFactors(1))/10;
         }           
     }
 }
