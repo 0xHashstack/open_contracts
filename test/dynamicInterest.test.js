@@ -106,11 +106,11 @@ describe("testing Comptroller", async () => {
 
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-      expect(apr).to.equal(BigNumber.from(500));
+      expect(apr).to.equal(BigNumber.from(500)); // minimum value of borrowed interest
 
       let apy;
       apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
-      expect(apy).to.equal(BigNumber.from(0));
+      expect(apy).to.equal(BigNumber.from(0)); // Uf < 25, deposit interest = 0
     });
 
     it("Update interests (Uf <= 70)", async () => {
@@ -124,13 +124,14 @@ describe("testing Comptroller", async () => {
         
         await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
         
+        // Uf < 70
         let apr;
         apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-        expect(apr).to.equal(BigNumber.from(896));
+        expect(apr).to.equal(BigNumber.from(896)); // Uf = 70, manually calculated the value which comes to be 896.3585 
 
         let apy;
         apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
-        expect(apy).to.equal(BigNumber.from(640));        
+        expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
     });
 
     it("Update interests (Uf > 70)", async () => {
@@ -145,9 +146,10 @@ describe("testing Comptroller", async () => {
 
       await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
 
+      // Uf = 82
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-      expect(apr).to.equal(BigNumber.from(1076));
+      expect(apr).to.equal(BigNumber.from(1076)); // manually calculated value comes 1076.0401 
 
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
       expect(apr).to.equal(BigNumber.from(896));
