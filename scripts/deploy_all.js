@@ -169,6 +169,7 @@ async function addMarkets(array) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+  const dynamicInterest = await ethers.getContractAt("DynamicInterest", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32
@@ -233,6 +234,14 @@ async function addMarkets(array) {
   await comptroller.connect(upgradeAdmin).updateAPR(symbolWBNB, comit_NONE, 1800);
   await comptroller.connect(upgradeAdmin).updateAPR(symbolWBNB, comit_ONEMONTH, 1500);
   console.log("updateAPR complete");
+
+  /// SETTING MIN-MAX VALUES OF DEPOSIT & BORROW INTEREST
+  /// SETTING OFFSET AND CORRELATION FACTORS
+  console.log("Setting min-max interests, offset, correlation-factor");
+  await expect(dynamicInterest.setDepositInterests(200, 1000)).emit(dynamicInterest, "DepositInterestUpdated");
+  await expect(dynamicInterest.setBorrowInterests(500, 2000)).emit(dynamicInterest, "BorrowInterestUpdated");
+  await expect(dynamicInterest.setInterestFactors(2, 12)).emit(dynamicInterest, "InterestFactorsUpdated");
+  console.log("Setting min-max interests, offset, correlation-factor done");
 
   /// DEPLOYING TEST TOKENS
   console.log("Deploy test tokens");
