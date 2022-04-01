@@ -76,6 +76,7 @@ async function deployDiamond() {
     "Loan1",
     "Loan2",
     "Deposit",
+    "DynamicInterest",
   ];
   const opencut = [];
   let facetId = 10;
@@ -168,6 +169,7 @@ async function addMarkets(array) {
   const diamond = await ethers.getContractAt("OpenDiamond", diamondAddress);
   const tokenList = await ethers.getContractAt("TokenList", diamondAddress);
   const comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
+  const dynamicInterest = await ethers.getContractAt("DynamicInterest", diamondAddress);
   createAbiJSON(diamond, "OpenDiamond");
 
   /// BYTES32 MARKET SYMBOL BYTES32
@@ -186,27 +188,60 @@ async function addMarkets(array) {
 
   /// SET COMMITMENT PERIOD
   console.log("setCommitment begin");
-  await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
-  await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
-  await comptroller.connect(upgradeAdmin).setCommitment(comit_ONEMONTH);
-  await comptroller.connect(upgradeAdmin).setCommitment(comit_THREEMONTHS);
+  await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_NONE, 0);
+  await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_TWOWEEKS, 14);
+  await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_ONEMONTH, 30);
+  await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_THREEMONTHS, 90);
+  
+  await comptroller.connect(upgradeAdmin).setBorrowCommitment(comit_NONE, 0);
+  await comptroller.connect(upgradeAdmin).setBorrowCommitment(comit_ONEMONTH, 30);
   console.log("setCommitment complete");
 
   /// UPDATE APY
   console.log("updateAPY begin");
-  await comptroller.connect(upgradeAdmin).updateAPY(comit_NONE, 780);
-  await comptroller.connect(upgradeAdmin).updateAPY(comit_TWOWEEKS, 1000);
-  await comptroller.connect(upgradeAdmin).updateAPY(comit_ONEMONTH, 1500);
-  await comptroller.connect(upgradeAdmin).updateAPY(comit_THREEMONTHS, 1800);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolBtc, comit_NONE, 780);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolBtc, comit_TWOWEEKS, 1000);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolBtc, comit_ONEMONTH, 1500);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolBtc, comit_THREEMONTHS, 1800);
+
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdc, comit_NONE, 780);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdc, comit_TWOWEEKS, 1000);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdc, comit_ONEMONTH, 1500);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdc, comit_THREEMONTHS, 1800);
+
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdt, comit_NONE, 780);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdt, comit_TWOWEEKS, 1000);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdt, comit_ONEMONTH, 1500);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolUsdt, comit_THREEMONTHS, 1800);
+
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolWBNB, comit_NONE, 780);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolWBNB, comit_TWOWEEKS, 1000);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolWBNB, comit_ONEMONTH, 1500);
+  await comptroller.connect(upgradeAdmin).updateAPY(symbolWBNB, comit_THREEMONTHS, 1800);
   console.log("updateAPY complete");
 
   /// UPDATE APR
   console.log("updateAPR begin");
-  await comptroller.connect(upgradeAdmin).updateAPR(comit_NONE, 1800);
-  await comptroller.connect(upgradeAdmin).updateAPR(comit_TWOWEEKS, 1800);
-  await comptroller.connect(upgradeAdmin).updateAPR(comit_ONEMONTH, 1500);
-  await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolBtc, comit_NONE, 1800);
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolBtc, comit_ONEMONTH, 1500);
+
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolUsdc, comit_NONE, 1800);
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolUsdc, comit_ONEMONTH, 1500);
+
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolUsdt, comit_NONE, 1800);
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolUsdt, comit_ONEMONTH, 1500);
+
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolWBNB, comit_NONE, 1800);
+  await comptroller.connect(upgradeAdmin).updateAPR(symbolWBNB, comit_ONEMONTH, 1500);
   console.log("updateAPR complete");
+
+  /// SETTING MIN-MAX VALUES OF DEPOSIT & BORROW INTEREST
+  /// SETTING OFFSET AND CORRELATION FACTORS
+  console.log("Setting min-max interests, offset, correlation-factor");
+  await dynamicInterest.setBorrowInterests(500, 2000);
+  await dynamicInterest.setDepositInterests(200, 1000);
+  await dynamicInterest.setInterestFactors(2, 12);
+  console.log("Setting min-max interests, offset, correlation-factor done");
 
   /// DEPLOYING TEST TOKENS
   console.log("Deploy test tokens");

@@ -87,12 +87,10 @@ library LibLiquidation {
         LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
         DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
         require(loan.id != 0, "ERROR: Loan does not exist");
 
         LibLoan._accruedInterest(account, loanState.currentMarket, loan.commitment);
-        if (collateral.isCollateralisedDeposit) LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
         if (
             LibSwap._getAmountOutMin(
@@ -111,21 +109,12 @@ library LibLiquidation {
                     deductibleInterest.accruedInterest
                 );
         }
-        if (_commitment == LibCommon._getCommitment(2)) collateral.amount += cYield.accruedYield;
 
         delete deductibleInterest.id;
         delete deductibleInterest.market;
         delete deductibleInterest.oldLengthAccruedInterest;
         delete deductibleInterest.oldTime;
         delete deductibleInterest.accruedInterest;
-
-        //DELETING CollateralYield
-        delete cYield.id;
-        delete cYield.market;
-        delete cYield.commitment;
-        delete cYield.oldLengthAccruedYield;
-        delete cYield.oldTime;
-        delete cYield.accruedYield;
 
         if (!_validLoanLiquidation(loanState, collateral, _getDebtCategory(loan, collateral))) {
             revert("Liquidation price not hit");
@@ -143,7 +132,6 @@ library LibLiquidation {
                 loanState,
                 collateral,
                 deductibleInterest,
-                cYield,
                 true
             );
             LibReserve._updateReservesLoan(loan.market, remnantAmount, 0);
@@ -158,7 +146,6 @@ library LibLiquidation {
                 loanState,
                 collateral,
                 deductibleInterest,
-                cYield,
                 true
             );
 
@@ -184,7 +171,6 @@ library LibLiquidation {
         delete collateral.market;
         delete collateral.commitment;
         delete collateral.amount;
-        delete collateral.isCollateralisedDeposit;
         delete collateral.timelockValidity;
         delete collateral.isTimelockActivated;
         delete collateral.activationTime;
@@ -220,12 +206,10 @@ library LibLiquidation {
         loanAccount.collaterals[loan.id - 1] = loanAccount.collaterals[loanAccount.loans.length - 1];
         loanAccount.loanState[loan.id - 1] = loanAccount.loanState[loanAccount.loans.length - 1];
         loanAccount.accruedAPR[loan.id - 1] = loanAccount.accruedAPR[loanAccount.loans.length - 1];
-        loanAccount.accruedAPY[loan.id - 1] = loanAccount.accruedAPY[loanAccount.loans.length - 1];
         loanAccount.loans.pop();
         loanAccount.loanState.pop();
         loanAccount.accruedAPR.pop();
         loanAccount.collaterals.pop();
-        loanAccount.accruedAPY.pop();
 
         activeLoans.loanMarket[loan.id - 1] = activeLoans.loanMarket[activeLoans.loanMarket.length - 1];
         activeLoans.loanCommitment[loan.id - 1] = activeLoans.loanCommitment[activeLoans.loanMarket.length - 1];
@@ -235,7 +219,6 @@ library LibLiquidation {
         activeLoans.isSwapped[loan.id - 1] = activeLoans.isSwapped[activeLoans.loanMarket.length - 1];
         activeLoans.loanCurrentMarket[loan.id - 1] = activeLoans.loanCurrentMarket[activeLoans.loanMarket.length - 1];
         activeLoans.loanCurrentAmount[loan.id - 1] = activeLoans.loanCurrentAmount[activeLoans.loanMarket.length - 1];
-        activeLoans.collateralYield[loan.id - 1] = activeLoans.collateralYield[activeLoans.loanMarket.length - 1];
         activeLoans.borrowInterest[loan.id - 1] = activeLoans.borrowInterest[activeLoans.loanMarket.length - 1];
         activeLoans.state[loan.id - 1] = activeLoans.state[activeLoans.loanMarket.length - 1];
         activeLoans.loanMarket.pop();
@@ -246,7 +229,6 @@ library LibLiquidation {
         activeLoans.isSwapped.pop();
         activeLoans.loanCurrentMarket.pop();
         activeLoans.loanCurrentAmount.pop();
-        activeLoans.collateralYield.pop();
         activeLoans.borrowInterest.pop();
         activeLoans.state.pop();
 
@@ -269,7 +251,6 @@ library LibLiquidation {
             uint256[] memory
         )
     {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
 
         // TODO: in frontend its showing up an empty data records
         address[] memory loanOwner = new address[](100);
@@ -281,11 +262,11 @@ library LibLiquidation {
 
         uint8 pointer;
 
-        for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < ds.borrowers.length; i++) {
-            LoanState[] memory loanStates = ds.loanPassbook[ds.borrowers[i]].loanState;
+        for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < LibCommon.diamondStorage().borrowers.length; i++) {
+            LoanState[] memory loanStates = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loanState;
             for (uint256 j = 0; j < loanStates.length; j++) {
-                LoanRecords memory loan = ds.loanPassbook[ds.borrowers[i]].loans[j];
-                CollateralRecords memory collateral = ds.loanPassbook[ds.borrowers[i]].collaterals[j];
+                LoanRecords memory loan = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loans[j];
+                CollateralRecords memory collateral = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].collaterals[j];
                 if (
                     loan.id != 0 && _validLoanLiquidation(loanStates[j], collateral, _getDebtCategory(loan, collateral))
                 ) {

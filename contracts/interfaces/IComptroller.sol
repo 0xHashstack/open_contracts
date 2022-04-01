@@ -2,33 +2,31 @@
 pragma solidity 0.8.1;
 
 interface IComptroller {
-    function getAPR(bytes32 commitment_) external view returns (uint256);
+    function getAPR(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getAPRInd(bytes32 _commitment, uint256 index) external view returns (uint256);
+    function getAPRInd(bytes32 market, bytes32 _commitment, uint256 index) external view returns (uint256);
 
-    function getAPY(bytes32 _commitment) external view returns (uint256);
+    function getAPY(bytes32 market, bytes32 _commitment) external view returns (uint256);
 
-    function getAPYInd(bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getAPYInd(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
 
-    function getApytime(bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getApytime(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
 
-    function getAprtime(bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getAprtime(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
 
-    function getApyLastTime(bytes32 commitment_) external view returns (uint256);
+    function getApyLastTime(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getAprLastTime(bytes32 commitment_) external view returns (uint256);
+    function getAprLastTime(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getApyTimeLength(bytes32 commitment_) external view returns (uint256);
+    function getApyTimeLength(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getAprTimeLength(bytes32 commitment_) external view returns (uint256);
+    function getAprTimeLength(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getCommitment(uint256 index_) external view returns (bytes32);
+    function getCommitment(uint256 index_, uint256 depositorborrow) external view returns (bytes32);
 
-    function setCommitment(bytes32 _commitment) external;
+    function setDepositCommitment(bytes32 _commitment, uint _days) external;
 
-    function updateAPY(bytes32 _commitment, uint256 _apy) external returns (bool);
-
-    function updateAPR(bytes32 _commitment, uint256 _apr) external returns (bool);
+    function setBorrowCommitment(bytes32 _commitment, uint _days) external;
 
     function updateLoanIssuanceFees(uint256 fees) external returns (bool success);
 

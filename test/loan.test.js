@@ -203,10 +203,8 @@ describe("testing Loans", async () => {
       await currentProvider.send("evm_increaseTime", [86400]);
       await currentProvider.send("evm_mine");
 
-      const [loanInterest, collateralInterest] = await loan.getLoanInterest(accounts[1].address, 1);
+      const loanInterest = await loan.getLoanInterest(accounts[1].address, 1);
       expect(BigNumber.from(loanInterest)).to.gt(BigNumber.from(0));
-
-      expect(BigNumber.from(collateralInterest)).to.equal(BigNumber.from(0));
     });
 
     it("Repay Loan", async () => {
