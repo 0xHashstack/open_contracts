@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, CollateralYield, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
+import { DeductibleInterest, LoanRecords, LoanState, CollateralRecords, AppStorageOpen, LoanAccount, ActiveLoans, STATE, YieldLedger, LibCommon, LibReserve, LibDeposit, LibLoan } from "../libraries/LibLoan.sol";
 import { Pausable } from "../util/Pausable.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 import { ILoan } from "../interfaces/ILoan.sol";
@@ -110,7 +110,6 @@ contract Loan is Pausable, ILoan {
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
         _preAddCollateralProcess(collateral.market, loan, loanState, collateral);
@@ -127,7 +126,6 @@ contract Loan is Pausable, ILoan {
         activeLoans.collateralAmount[loan.id - 1] += _collateralAmount; // updating activeLoans
 
         LibLoan._accruedInterest(msg.sender, _loanMarket, _commitment);
-        if (collateral.isCollateralisedDeposit) LibLoan._accruedYieldCollateral(loanAccount, collateral, cYield);
 
         emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
         return true;
@@ -141,14 +139,12 @@ contract Loan is Pausable, ILoan {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         LibLoan._hasLoanAccount(msg.sender);
 
-        LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
         LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
         LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
-        CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[msg.sender];
 
-        LibLoan._checkPermissibleWithdrawal(msg.sender, _amount, loanAccount, loan, loanState, collateral, cYield);
+        LibLoan._checkPermissibleWithdrawal(msg.sender, _amount, loan, loanState, collateral);
 
         loanState.currentAmount -= _amount;
         activeLoans.loanCurrentAmount[loan.id - 1] -= _amount;
@@ -164,7 +160,7 @@ contract Loan is Pausable, ILoan {
     function getLoanInterest(address account, uint256 id)
         external
         view
-        returns (uint256 loanInterest, uint256 collateralInterest)
+        returns (uint256 loanInterest)
     {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
 
@@ -172,26 +168,13 @@ contract Loan is Pausable, ILoan {
         bytes32 market = activeLoans.loanMarket[id - 1];
         bytes32 commitment = activeLoans.loanCommitment[id - 1];
         uint256 interestFactor = 0;
-        uint256 collateralInterestFactor = 0;
 
         LoanRecords memory loan = ds.indLoanRecords[account][market][commitment];
         DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
-        CollateralYield memory cYield = ds.indAccruedAPY[account][market][commitment];
 
-        interestFactor = LibLoan._getLoanInterest(commitment, yield.oldLengthAccruedInterest, yield.oldTime);
-        if (commitment != LibCommon._getCommitment(0)) {
-            collateralInterestFactor = LibDeposit._getDepositInterest(
-                commitment,
-                cYield.oldLengthAccruedYield,
-                cYield.oldTime
-            );
-            collateralInterest = cYield.accruedYield;
-            collateralInterest += ((collateralInterestFactor *
-                (ds.indCollateralRecords[account][market][commitment]).amount) / (365 * 86400 * 10000));
-        }
+        interestFactor = LibLoan._getLoanInterest(market, commitment, yield.oldLengthAccruedInterest, yield.oldTime);
         loanInterest = yield.accruedInterest;
         loanInterest += ((interestFactor * loan.amount) / (365 * 86400 * 10000));
-        return (loanInterest, collateralInterest);
     }
 
     function pauseLoan() external override authLoan {

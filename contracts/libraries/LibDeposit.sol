@@ -43,12 +43,13 @@ library LibDeposit {
     }
 
     function _getDepositInterest(
+        bytes32 market,
         bytes32 _commitment,
         uint256 oldLengthAccruedYield,
         uint256 oldTime
     ) internal view returns (uint256 interestFactor) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-        APY storage apy = ds.indAPYRecords[_commitment];
+        APY storage apy = ds.indAPYRecords[market][_commitment];
 
         uint256 index = oldLengthAccruedYield - 1;
         uint256 time = oldTime;
@@ -82,6 +83,7 @@ library LibDeposit {
     }
 
     function _calcAPY(
+        bytes32 market,
         bytes32 _commitment,
         uint256 oldLengthAccruedYield,
         uint256 oldTime,
@@ -96,11 +98,11 @@ library LibDeposit {
         )
     {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-        APY storage apy = ds.indAPYRecords[_commitment];
+        APY storage apy = ds.indAPYRecords[market][_commitment];
 
         require(oldLengthAccruedYield > 0, "ERROR : oldLengthAccruedYield < 1");
 
-        aggregateYield = _getDepositInterest(_commitment, oldLengthAccruedYield, oldTime);
+        aggregateYield = _getDepositInterest(market, _commitment, oldLengthAccruedYield, oldTime);
 
         oldLengthAccruedYield = apy.time.length;
         oldTime = block.timestamp;
