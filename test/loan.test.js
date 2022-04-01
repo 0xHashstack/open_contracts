@@ -97,12 +97,10 @@ describe("testing Loans", async () => {
       ).emit(loan1, "NewLoan");
 
       let loanData = await loan1.getLoans(accounts[1].address);
-      if ((loanData.loanMarket = symbolUsdt)) {
-        const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-        console.log("LoanAmount : ", loanData.loanAmount);
-        console.log("loanAmountPostFees : ", loanAmountPostFees);
+        const loanAmountPostFees = loanAmount-loanFees; // 0.17 Btc
+        console.log("LoanAmount : ",loanData.loanAmount);
+        console.log("loanAmountPostFees : ",loanAmountPostFees);
         await expect(loanData.loanAmount[0]).to.eq(loanAmountPostFees);
-      }
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
@@ -162,10 +160,8 @@ describe("testing Loans", async () => {
       const fees = BigNumber.from(loanAmount).mul(5).div(10000);
 
       await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
-
-      // await expect(OracleOpen.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
-      // await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
-
+      
+      
       const reserveLoanPost = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
       /// CHECKS FEE
