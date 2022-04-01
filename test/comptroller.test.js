@@ -269,6 +269,11 @@ describe("testing Comptroller", async () => {
       await expect(comptroller.updateLoanClosureFees(5)).emit(comptroller, "LoanClosureFeesUpdated");
     });
 
+    it("Set Loan pre Closure Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateLoanPreClosureFees(36)).to.be.reverted;
+      await expect(comptroller.updateLoanPreClosureFees(36)).emit(comptroller, "LoanPreClosureFeesUpdated");
+    });
+
     it("Set Deposit pre Closure Fee", async () => {
       await expect(comptroller.connect(accounts[1]).updateDepositPreclosureFees(36)).to.be.reverted;
       await expect(comptroller.updateDepositPreclosureFees(36)).emit(comptroller, "DepositPreClosureFeesUpdated");
@@ -290,10 +295,29 @@ describe("testing Comptroller", async () => {
       expect(await comptroller.collateralReleaseFees()).to.equal(BigNumber.from(10));
     });
 
+    it("Set Yield Conversion Fee", async () => {
+      await expect(comptroller.connect(accounts[1]).updateYieldConversion(10)).to.be.reverted;
+      await expect(comptroller.updateYieldConversion(10)).emit(comptroller, "YieldConversionFeesUpdated");
+    });
+
     it("Set MarketSwap Fee", async () => {
       await expect(comptroller.connect(accounts[1]).updateMarketSwapFees(5)).to.be.reverted;
       await expect(comptroller.updateMarketSwapFees(5)).emit(comptroller, "MarketSwapFeesUpdated");
-      
+    });
+
+    it("Set ReserveFactor", async () => {
+      await expect(comptroller.connect(accounts[1]).updateReserveFactor(1)).to.be.reverted;
+      await expect(comptroller.updateReserveFactor(1)).emit(comptroller, "ReserveFactorUpdated");
+
+      expect(await comptroller.getReserveFactor()).to.equal(BigNumber.from(1));
+    });
+
+    it("Set Max Withdrawal Limit", async () => {
+      const x = (await ethers.provider.getBlock()).timestamp;
+
+      await expect(comptroller.connect(accounts[1]).updateMaxWithdrawal(2800, x)).to.be.reverted;
+
+      await expect(comptroller.updateMaxWithdrawal(2800, x)).emit(comptroller, "MaxWithdrawalUpdated");
     });
   });
 });
