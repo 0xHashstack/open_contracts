@@ -52,11 +52,12 @@ library LibComptroller {
         ds.depositCommitment.push(_commitment);
         ds.commitmentDays[_commitment] = _days;
         for(uint i = ds.depositCommitment.length - 1; i > 0; i--) {
-            if(ds.depositCommitment[i] < ds.depositCommitment[i]){
+            if(ds.commitmentDays[ds.depositCommitment[i]] < ds.commitmentDays[ds.depositCommitment[i - 1]]){
                 bytes32 temp = ds.depositCommitment[i];
                 ds.depositCommitment[i] = ds.depositCommitment[i - 1];
-                ds.depositCommitment[i] = temp;
+                ds.depositCommitment[i - 1] = temp;
             }
+            else break;
         }
     }
 
@@ -68,11 +69,12 @@ library LibComptroller {
         ds.borrowCommitment.push(_commitment);
         ds.commitmentDays[_commitment] = _days;
         for(uint i = ds.borrowCommitment.length - 1; i > 0; i--) {
-            if(ds.borrowCommitment[i] < ds.borrowCommitment[i]) {
+            if(ds.commitmentDays[ds.borrowCommitment[i]] < ds.commitmentDays[ds.borrowCommitment[i - 1]]) {
                 bytes32 temp = ds.borrowCommitment[i];
                 ds.borrowCommitment[i] = ds.borrowCommitment[i - 1];
-                ds.borrowCommitment[i] = temp;
+                ds.borrowCommitment[i - 1] = temp;
             }
+            else break;
         }
     }
 
