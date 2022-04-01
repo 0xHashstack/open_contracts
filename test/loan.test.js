@@ -163,8 +163,6 @@ describe("testing Loans", async () => {
       
       await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
       
-      // await expect(OracleOpen.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
-      // await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_NONE, symbolCAKE)).emit(loan, "MarketSwapped");
       
       const reserveLoanPost = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
       
