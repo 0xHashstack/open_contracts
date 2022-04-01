@@ -17,7 +17,6 @@
 **/typechain
 
 # files
-*.env
 *.log
 .pnp.*
 coverage.json

@@ -26,7 +26,9 @@ After the repository is cloned
 ```
 $ npm install
 ```
-Now all node dependencies are installed, you're ready to go!
+Set environment variables by updating `MNEMONIC` in `.env` file which will be used by hardhat for deployment
+
+Now that all the dependencies are installed, you're ready to go!
 
 ```
 $ npx hardhat run --network bsctestnet scripts/deploy_all.js
