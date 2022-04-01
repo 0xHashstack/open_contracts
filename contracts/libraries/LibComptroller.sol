@@ -51,6 +51,13 @@ library LibComptroller {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         ds.depositCommitment.push(_commitment);
         ds.commitmentDays[_commitment] = _days;
+        for(uint i = ds.depositCommitment.length - 1; i > 0; i--) {
+            if(ds.depositCommitment[i] < ds.depositCommitment[i]){
+                bytes32 temp = ds.depositCommitment[i];
+                ds.depositCommitment[i] = ds.depositCommitment[i - 1];
+                ds.depositCommitment[i] = temp;
+            }
+        }
     }
 
     function _setBorrowCommitment(
@@ -60,6 +67,13 @@ library LibComptroller {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         ds.borrowCommitment.push(_commitment);
         ds.commitmentDays[_commitment] = _days;
+        for(uint i = ds.borrowCommitment.length - 1; i > 0; i--) {
+            if(ds.borrowCommitment[i] < ds.borrowCommitment[i]) {
+                bytes32 temp = ds.borrowCommitment[i];
+                ds.borrowCommitment[i] = ds.borrowCommitment[i - 1];
+                ds.borrowCommitment[i] = temp;
+            }
+        }
     }
 
     function _updateAPY(bytes32 market, bytes32 _commitment, uint _apy) internal{
