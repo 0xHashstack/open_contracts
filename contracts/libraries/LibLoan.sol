@@ -77,7 +77,8 @@ library LibLoan {
         LibCommon._isMarketSupported(_market);
 
         LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-        LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];        ActiveLoans storage activeLoans = ds.getActiveLoans[_account];
+        LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+        ActiveLoans storage activeLoans = ds.getActiveLoans[_account];
 
         require(loan.id != 0, "ERROR: No loan");
         require(

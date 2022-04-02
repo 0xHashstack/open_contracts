@@ -60,12 +60,9 @@ library LibCommon {
 
     function _getCommitment(uint256 _index, uint256 depositorborrow) internal view returns (bytes32) {
         AppStorageOpen storage ds = diamondStorage();
-        if(depositorborrow == 1 && ds.borrowCommitment.length > _index)
-            return ds.borrowCommitment[_index];
-        else if(depositorborrow == 0 && ds.depositCommitment.length > _index)
-            return ds.depositCommitment[_index];
-        else
-            revert("ERROR:Index Out of Bounds");
+        if (depositorborrow == 1 && ds.borrowCommitment.length > _index) return ds.borrowCommitment[_index];
+        else if (depositorborrow == 0 && ds.depositCommitment.length > _index) return ds.depositCommitment[_index];
+        else revert("ERROR:Index Out of Bounds");
     }
 
     function _getApyTimeLength(bytes32 market, bytes32 _commitment) internal view returns (uint256) {

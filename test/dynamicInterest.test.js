@@ -20,19 +20,19 @@ let tokenList;
 
 describe.skip("testing Dynamic Interest", async () => {
   before(async () => {
-      array = await deployDiamond();
-      diamondAddress = array["diamondAddress"];
-      rets = await addMarkets(array);
-      await provideLiquidity(rets);
-      accounts = await ethers.getSigners();
-      faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
-      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
+    await provideLiquidity(rets);
+    accounts = await ethers.getSigners();
+    faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
+    await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(faucet, "TokensIssued");
+    await expect(faucet.connect(accounts[1]).getTokens(1)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
+    await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
+    await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
   });
 
   describe("Comptroller: Getter Methods", async () => {
@@ -114,24 +114,25 @@ describe.skip("testing Dynamic Interest", async () => {
     });
 
     it("Update interests (Uf <= 70)", async () => {
-        const loanAmount = ethers.utils.parseUnits("3000000", TOKENS_DECIMAL);
-        const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
+      const loanAmount = ethers.utils.parseUnits("3000000", TOKENS_DECIMAL);
+      const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
 
-        await bepBtc.approve(diamondAddress, collateralAmount);
-        await expect(
-          loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount),
-        ).emit(loan1, "NewLoan");
-        
-        await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
-        
-        // Uf < 70
-        let apr;
-        apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-        expect(apr).to.equal(BigNumber.from(896)); // Uf = 70, manually calculated the value which comes to be 896.3585 
+      await bepBtc.approve(diamondAddress, collateralAmount);
+      await expect(loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount)).emit(
+        loan1,
+        "NewLoan",
+      );
 
-        let apy;
-        apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
-        expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
+      await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
+
+      // Uf < 70
+      let apr;
+      apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
+      expect(apr).to.equal(BigNumber.from(896)); // Uf = 70, manually calculated the value which comes to be 896.3585
+
+      let apy;
+      apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
+      expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
     });
 
     it("Update interests (Uf > 70)", async () => {
@@ -149,7 +150,7 @@ describe.skip("testing Dynamic Interest", async () => {
       // Uf = 82
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-      expect(apr).to.equal(BigNumber.from(1076)); // manually calculated value comes 1076.0401 
+      expect(apr).to.equal(BigNumber.from(1076)); // manually calculated value comes 1076.0401
 
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
       expect(apr).to.equal(BigNumber.from(896));

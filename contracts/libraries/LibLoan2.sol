@@ -78,7 +78,7 @@ library LibLoan2 {
         delete activeLoans.loanCurrentAmount[loan.id - 1];
         delete activeLoans.borrowInterest[loan.id - 1];
 
-        if (_commitment != LibCommon._getCommitment(0,1)) {
+        if (_commitment != LibCommon._getCommitment(0, 1)) {
             /// UPDATING COLLATERAL AMOUNT IN STORAGE
             loanAccount.collaterals[loan.id - 1].amount = collateral.amount;
 
@@ -102,7 +102,7 @@ library LibLoan2 {
 
             activeLoans.collateralAmount[loan.id - 1] = collateral.amount;
 
-            LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
+            LibReserve._updateUtilisationLoan(loan.market, loanState.actualLoanAmount, 1);
         } else {
             /*/// Transfer remnant collateral to the user if _commitment != _getCommitment(2) */
 
@@ -116,7 +116,7 @@ library LibLoan2 {
 
             emit LibLoan.WithdrawCollateral(_sender, collateral.market, collateral.amount, loan.id, block.timestamp);
 
-            LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
+            LibReserve._updateUtilisationLoan(loan.market, loanState.actualLoanAmount, 1);
 
             /// COLLATERAL RECORDS
             delete collateral.id;
@@ -208,7 +208,7 @@ library LibLoan2 {
 
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);
 
-        if (_repayAmount >= loan.amount) _remnantAmount = (_repayAmount - loan.amount);
+        if (_repayAmount >= loanState.actualLoanAmount) _remnantAmount = (_repayAmount - loanState.actualLoanAmount);
         else {
             if (loanState.currentMarket == loan.market) _repayAmount += loanState.currentAmount;
             else if (loanState.currentMarket != loanState.loanMarket)
@@ -219,7 +219,7 @@ library LibLoan2 {
                     1
                 );
 
-            _remnantAmount = (_repayAmount - loan.amount);
+            _remnantAmount = (_repayAmount - loanState.actualLoanAmount);
         }
 
         // / UPDATING RECORDS IN LOANACCOUNT

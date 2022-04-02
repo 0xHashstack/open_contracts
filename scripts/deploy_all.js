@@ -192,7 +192,7 @@ async function addMarkets(array) {
   await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_TWOWEEKS, 14);
   await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_ONEMONTH, 30);
   await comptroller.connect(upgradeAdmin).setDepositCommitment(comit_THREEMONTHS, 90);
-  
+
   await comptroller.connect(upgradeAdmin).setBorrowCommitment(comit_NONE, 0);
   await comptroller.connect(upgradeAdmin).setBorrowCommitment(comit_ONEMONTH, 30);
   console.log("setCommitment complete");

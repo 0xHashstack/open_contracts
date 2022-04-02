@@ -310,7 +310,7 @@ describe("testing Comptroller", async () => {
         comptroller.setDepositCommitment("0x636f6d69745f54574f4d4f4e5448530000000000000000000000000000000000", 60),
       ).emit(comptroller, "CommitmentAdded");
 
-      let x = await comptroller.getCommitment(3,0);
+      let x = await comptroller.getCommitment(3, 0);
       expect(x).to.equal("0x636f6d69745f54574f4d4f4e5448530000000000000000000000000000000000");
 
       await expect(
@@ -322,19 +322,18 @@ describe("testing Comptroller", async () => {
     });
 
     it("Set Borrow Commitment", async () => {
-      
       await expect(
         comptroller.setBorrowCommitment("0x636f6d69745f5349584d4f4e5448530000000000000000000000000000000000", 180),
       ).emit(comptroller, "CommitmentAdded");
 
       let x = await comptroller.getCommitment(2, 1);
       expect(x).to.equal("0x636f6d69745f5349584d4f4e5448530000000000000000000000000000000000");
-      
+
       await expect(
         comptroller.setBorrowCommitment("0x636f6d69745f54574f4d4f4e5448530000000000000000000000000000000000", 60),
       ).emit(comptroller, "CommitmentAdded");
 
-      x = await comptroller.getCommitment(2,1);
+      x = await comptroller.getCommitment(2, 1);
       expect(x).to.equal("0x636f6d69745f54574f4d4f4e5448530000000000000000000000000000000000");
 
       x = await comptroller.getCommitment(3, 1);

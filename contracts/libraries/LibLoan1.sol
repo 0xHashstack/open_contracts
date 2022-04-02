@@ -99,7 +99,7 @@ library LibLoan1 {
         loanAccount.loans.push(loan);
         loanAccount.loanState.push(loanState);
 
-        if (_commitment == LibCommon._getCommitment(0,1)) {
+        if (_commitment == LibCommon._getCommitment(0, 1)) {
             collateral.timelockValidity = 0;
             collateral.isTimelockActivated = true;
             collateral.activationTime = 0;
@@ -117,7 +117,6 @@ library LibLoan1 {
 
             /// 15% APR
             deductibleInterest.oldLengthAccruedInterest = LibCommon._getAprTimeLength(_loanMarket, _commitment);
-
 
             /// UPDATING LoanAccount
             loanAccount.collaterals.push(collateral);

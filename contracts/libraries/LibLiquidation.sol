@@ -115,10 +115,11 @@ library LibLiquidation {
         delete deductibleInterest.oldLengthAccruedInterest;
         delete deductibleInterest.oldTime;
         delete deductibleInterest.accruedInterest;
+        require(
+            _validLoanLiquidation(loanState, collateral, _getDebtCategory(loan, collateral)),
+            "Liquidation price not hit"
+        );
 
-        if (!_validLoanLiquidation(loanState, collateral, _getDebtCategory(loan, collateral))) {
-            revert("Liquidation price not hit");
-        }
         uint256 loanAmount = loan.amount;
 
         LibReserve._updateReservesLoan(collateral.market, collateral.amount, 1);
@@ -163,7 +164,7 @@ library LibLiquidation {
             );
         }
 
-        LibReserve._updateUtilisationLoan(loan.market, loan.amount, 1);
+        LibReserve._updateUtilisationLoan(loan.market, loanState.actualLoanAmount, 1);
 
         /// DELETING THE LOAN ENTRIES
         /// COLLATERAL RECORDS
@@ -251,7 +252,6 @@ library LibLiquidation {
             uint256[] memory
         )
     {
-
         // TODO: in frontend its showing up an empty data records
         address[] memory loanOwner = new address[](100);
         bytes32[] memory loanMarket = new bytes32[](100);
@@ -263,10 +263,19 @@ library LibLiquidation {
         uint8 pointer;
 
         for (uint256 i = _indexFrom; i < _indexFrom + 10 && i < LibCommon.diamondStorage().borrowers.length; i++) {
-            LoanState[] memory loanStates = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loanState;
+            LoanState[] memory loanStates = LibCommon
+                .diamondStorage()
+                .loanPassbook[LibCommon.diamondStorage().borrowers[i]]
+                .loanState;
             for (uint256 j = 0; j < loanStates.length; j++) {
-                LoanRecords memory loan = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].loans[j];
-                CollateralRecords memory collateral = LibCommon.diamondStorage().loanPassbook[LibCommon.diamondStorage().borrowers[i]].collaterals[j];
+                LoanRecords memory loan = LibCommon
+                    .diamondStorage()
+                    .loanPassbook[LibCommon.diamondStorage().borrowers[i]]
+                    .loans[j];
+                CollateralRecords memory collateral = LibCommon
+                    .diamondStorage()
+                    .loanPassbook[LibCommon.diamondStorage().borrowers[i]]
+                    .collaterals[j];
                 if (
                     loan.id != 0 && _validLoanLiquidation(loanStates[j], collateral, _getDebtCategory(loan, collateral))
                 ) {
