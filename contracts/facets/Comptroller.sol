@@ -90,7 +90,11 @@ contract Comptroller is Pausable, IComptroller {
         return LibComptroller._getAPR(market, _commitment);
     }
 
-    function getAPRInd(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+    function getAPRInd(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view override returns (uint256) {
         return LibComptroller._getAPRInd(market, _commitment, _index);
     }
 
@@ -98,15 +102,27 @@ contract Comptroller is Pausable, IComptroller {
         return LibComptroller._getAPY(market, _commitment);
     }
 
-    function getAPYInd(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+    function getAPYInd(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view override returns (uint256) {
         return LibComptroller._getAPYInd(market, _commitment, _index);
     }
 
-    function getApytime(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+    function getApytime(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view override returns (uint256) {
         return LibComptroller._getApytime(market, _commitment, _index);
     }
 
-    function getAprtime(bytes32 market, bytes32 _commitment, uint256 _index) external view override returns (uint256) {
+    function getAprtime(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view override returns (uint256) {
         return LibComptroller._getAprtime(market, _commitment, _index);
     }
 
@@ -131,12 +147,12 @@ contract Comptroller is Pausable, IComptroller {
     }
 
     // SETTERS
-    function setDepositCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
+    function setDepositCommitment(bytes32 _commitment, uint256 _days) external override nonReentrant authComptroller {
         LibComptroller._setDepositCommitment(_commitment, _days);
         emit CommitmentAdded(msg.sender, _commitment, _days, block.timestamp);
     }
 
-    function setBorrowCommitment(bytes32 _commitment, uint _days) external override nonReentrant authComptroller {
+    function setBorrowCommitment(bytes32 _commitment, uint256 _days) external override nonReentrant authComptroller {
         LibComptroller._setBorrowCommitment(_commitment, _days);
         emit CommitmentAdded(msg.sender, _commitment, _days, block.timestamp);
     }
@@ -282,12 +298,20 @@ contract Comptroller is Pausable, IComptroller {
         LibReserve._updateReservesDeposit(_market, _amount, 0);
     }
 
-    function updateAPR(bytes32 _market, bytes32 _commitment, uint256 _apr) external authComptroller {
+    function updateAPR(
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _apr
+    ) external authComptroller {
         LibComptroller._updateAPR(_market, _commitment, _apr);
         emit APRupdated(msg.sender, _apr, block.timestamp);
     }
 
-    function updateAPY(bytes32 _market, bytes32 _commitment, uint256 _apy) external authComptroller {
+    function updateAPY(
+        bytes32 _market,
+        bytes32 _commitment,
+        uint256 _apy
+    ) external authComptroller {
         LibComptroller._updateAPY(_market, _commitment, _apy);
         emit APYupdated(msg.sender, _apy, block.timestamp);
     }

@@ -4,15 +4,31 @@ pragma solidity 0.8.1;
 interface IComptroller {
     function getAPR(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
-    function getAPRInd(bytes32 market, bytes32 _commitment, uint256 index) external view returns (uint256);
+    function getAPRInd(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 index
+    ) external view returns (uint256);
 
     function getAPY(bytes32 market, bytes32 _commitment) external view returns (uint256);
 
-    function getAPYInd(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getAPYInd(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view returns (uint256);
 
-    function getApytime(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getApytime(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view returns (uint256);
 
-    function getAprtime(bytes32 market, bytes32 _commitment, uint256 _index) external view returns (uint256);
+    function getAprtime(
+        bytes32 market,
+        bytes32 _commitment,
+        uint256 _index
+    ) external view returns (uint256);
 
     function getApyLastTime(bytes32 market, bytes32 commitment_) external view returns (uint256);
 
@@ -24,9 +40,9 @@ interface IComptroller {
 
     function getCommitment(uint256 index_, uint256 depositorborrow) external view returns (bytes32);
 
-    function setDepositCommitment(bytes32 _commitment, uint _days) external;
+    function setDepositCommitment(bytes32 _commitment, uint256 _days) external;
 
-    function setBorrowCommitment(bytes32 _commitment, uint _days) external;
+    function setBorrowCommitment(bytes32 _commitment, uint256 _days) external;
 
     function updateLoanIssuanceFees(uint256 fees) external returns (bool success);
 

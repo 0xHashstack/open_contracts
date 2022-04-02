@@ -26,7 +26,6 @@ describe.skip("testing Dynamic Interest", async () => {
     rets = await addMarkets(array);
     await provideLiquidity(rets);
     accounts = await ethers.getSigners();
-
     faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
     await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
 
@@ -120,7 +119,6 @@ describe.skip("testing Dynamic Interest", async () => {
 
     it("Update interests (Uf <= 70)", async () => {
 
-
         const loanAmount = ethers.utils.parseUnits("2600000", TOKENS_DECIMAL);
         const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
 
@@ -139,6 +137,7 @@ describe.skip("testing Dynamic Interest", async () => {
         let apy;
         apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
         expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
+
     });
 
     it("Update interests (Uf > 70)", async () => {
@@ -158,6 +157,7 @@ describe.skip("testing Dynamic Interest", async () => {
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
       expect(apr).to.equal(BigNumber.from(1025)); // manually calculated value comes 1025._____
+
 
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
       expect(apr).to.equal(BigNumber.from(854)); // manually calculated value comes 854._____
