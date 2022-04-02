@@ -75,7 +75,6 @@ struct LoanAccount {
     LoanRecords[] loans; // 2 types of loans. 3 markets intially. So, a maximum o f6 records.
     CollateralRecords[] collaterals;
     DeductibleInterest[] accruedAPR;
-    CollateralYield[] accruedAPY;
     LoanState[] loanState;
 }
 struct LoanRecords {
@@ -102,19 +101,9 @@ struct CollateralRecords {
     bytes32 commitment;
     uint256 initialAmount;
     uint256 amount;
-    bool isCollateralisedDeposit;
     uint256 timelockValidity;
     bool isTimelockActivated; // timelock duration
     uint256 activationTime; // blocknumber when yield withdrawal request was placed.
-}
-
-struct CollateralYield {
-    uint256 id;
-    bytes32 market;
-    bytes32 commitment;
-    uint256 oldLengthAccruedYield; // length of the APY time array.
-    uint256 oldTime; // last recorded block num
-    uint256 accruedYield; // accruedYield in
 }
 
 // DeductibleInterest stores the amount_ of interest deducted.
@@ -135,7 +124,6 @@ struct ActiveLoans {
     bool[] isSwapped;
     bytes32[] loanCurrentMarket;
     uint256[] loanCurrentAmount;
-    uint256[] collateralYield;
     uint256[] borrowInterest;
     STATE[] state;
 }
@@ -159,7 +147,6 @@ struct AppStorageOpen {
     address upgradeAdmin;
     // =========== TokenList state variables ===========
     bytes32 adminTokenList;
-    address adminTokenListAddress;
     bytes32[] pMarkets; // Primary markets
     bytes32[] sMarkets; // Secondary markets
     mapping(bytes32 => bool) tokenSupportCheck;
@@ -170,8 +157,9 @@ struct AppStorageOpen {
     mapping(bytes32 => MarketData) indMarket2Data;
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
-    address adminComptrollerAddress;
-    bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
+
+    bytes32[] depositCommitment;
+    bytes32[] borrowCommitment;
     uint256 reserveFactor;
     uint256 loanIssuanceFees;
     uint256 loanClosureFees;
@@ -183,15 +171,21 @@ struct AppStorageOpen {
     uint256 collateralReleaseFees;
     uint256 yieldConversionFees;
     uint256 marketSwapFees;
-    mapping(bytes32 => APY) indAPYRecords;
-    mapping(bytes32 => APR) indAPRRecords;
+    mapping(bytes32 => mapping(bytes32 => APY)) indAPYRecords;
+    mapping(bytes32 => mapping(bytes32 => APR)) indAPRRecords;
     // =========== Liquidator state variables ===========
     bytes32 adminLiquidator;
     bytes32 protocolOwnedLiquidator;
-    address adminLiquidatorAddress;
+    // =========== DynamicInterest state variables ======
+    bytes32 adminDynamicInterest;
+    
+    uint256[] borrowInterests;
+    uint256[] depositInterests;
+    uint256[] interestFactors;
+
+    mapping(bytes32 => uint) commitmentDays;
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
-    address adminDepositAddress;
     mapping(address => SavingsAccount) savingsPassbook; // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => YieldLedger))) indYieldRecord; // address =>_market => _commitment => depositRecord
@@ -201,18 +195,14 @@ struct AppStorageOpen {
     mapping(bytes32 => uint256) marketUtilisationDeposit; // mapping(market => marketBalance)
     // =========== OracleOpen state variables ==============
     bytes32 adminOpenOracle;
-    address adminOpenOracleAddress;
     mapping(bytes32 => address) pairAddresses;
     PriceData[] prices;
     mapping(uint256 => PriceData) priceData;
     uint256 requestEventId;
     // =========== Loan state variables ============
     bytes32 adminLoan;
-    address adminLoanAddress;
     bytes32 adminLoan1;
-    address adminLoan1Address;
     bytes32 adminLoan2;
-    address adminLoan2Address;
     IBEP20 loanToken;
     IBEP20 withdrawToken;
     IBEP20 collateralToken;
@@ -221,7 +211,6 @@ struct AppStorageOpen {
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanRecords))) indLoanRecords;
     mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralRecords))) indCollateralRecords;
     mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indAccruedAPR;
-    mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indAccruedAPY;
     mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
     mapping(address => ActiveLoans) getActiveLoans;
     //  Balance monitoring  - Loan
@@ -230,7 +219,6 @@ struct AppStorageOpen {
     address[] borrowers;
     // =========== Reserve state variables ===========
     bytes32 adminReserve;
-    address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
 }

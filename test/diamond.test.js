@@ -77,11 +77,11 @@ describe(" Complex Test ", function () {
     bepCake = await ethers.getContractAt("BEP20Token", rets["tCakeAddress"]);
   });
 
-  it("should have 11 facets -- call to facetAddresses function", async () => {
+  it("should have 12 facets -- call to facetAddresses function", async () => {
     for (const address of await diamondLoupeFacet.facetAddresses()) {
       addresses.push(address);
     }
-    assert.equal(addresses.length, 11);
+    assert.equal(addresses.length, 12);
   });
 
   it("facets should have the right function selectors -- call to facetFunctionSelectors function", async () => {
