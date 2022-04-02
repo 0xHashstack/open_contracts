@@ -46,7 +46,7 @@ library LibDynamicInterest {
     function _calculateDynamicInterest(bytes32 market, uint256 randomness) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         
-        uint256 utilisationFactor = (uint256)((LibReserve._utilisedReservesLoan(market)*10000)/LibReserve._avblReservesDeposit(market));
+        uint256 utilisationFactor = ((LibReserve._utilisedReservesLoan(market)*10000)/LibReserve._avblReservesDeposit(market));
         
         // ==============code to round-off utilisationFactor===============
         if(utilisationFactor%100 >= 50)

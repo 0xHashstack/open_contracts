@@ -37,7 +37,7 @@ describe.skip("testing Dynamic Interest", async () => {
 
   });
 
-  describe("Dynamic", async () => {
+  describe("Dynamic interests tests", async () => {
     const comit_NONE = utils.formatBytes32String("comit_NONE");
     const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
     const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
@@ -132,7 +132,7 @@ describe.skip("testing Dynamic Interest", async () => {
         // Uf = 61.84, therefore Uf= 62
         let apr;
         apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-        expect(apr).to.equal(BigNumber.from(1012)); 
+        expect(apr).to.equal(BigNumber.from(1012)); // manually calculated value = 1012.___ which is 10.12%
 
         let apy;
         apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
@@ -141,7 +141,6 @@ describe.skip("testing Dynamic Interest", async () => {
     });
 
     it("Update interests (Uf > 70)", async () => {
-
       const loanAmount = ethers.utils.parseUnits("1000000", TOKENS_DECIMAL);
       const collateralAmount = ethers.utils.parseUnits("400000", TOKENS_DECIMAL);
 
@@ -158,19 +157,18 @@ describe.skip("testing Dynamic Interest", async () => {
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
       expect(apr).to.equal(BigNumber.from(1025)); // manually calculated value comes 1025._____
 
-
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
       expect(apr).to.equal(BigNumber.from(854)); // manually calculated value comes 854._____
 
       let apy;
       apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
-      expect(apy).to.equal(BigNumber.from(900));
+      expect(apy).to.equal(BigNumber.from(900)); // manually calculated value comes 900
 
       apy = await comptroller.getAPY(symbolBtc, comit_ONEMONTH);
-      expect(apy).to.equal(BigNumber.from(750));
+      expect(apy).to.equal(BigNumber.from(750)); // manually calculated value comes 750
 
       apy = await comptroller.getAPY(symbolBtc, comit_TWOWEEKS);
-      expect(apy).to.equal(BigNumber.from(625));
+      expect(apy).to.equal(BigNumber.from(625)); // manually calculated value comes 625
     });
   });
 });
