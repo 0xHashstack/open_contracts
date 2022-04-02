@@ -14,6 +14,11 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     event InterestFactorsUpdated(address indexed admin, uint256 factor, uint256 correlationFactor, uint256 indexed timestamp);
     event InterestsUpdated(address indexed admin, uint256 indexed timestamp);
 
+    function random() internal view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.timestamp,block.difficulty,  
+        msg.sender)));
+    }
+
     // getter Methods
     function getDepositInterests(uint256 _minOrMax) external view override returns (uint256) {
         return LibDynamicInterest._getDepositInterests(_minOrMax);
@@ -47,7 +52,8 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     }
 
     function updateInterests(bytes32 market) external override authDynamicInterest returns (bool){
-        LibDynamicInterest._calculateDynamicInterest(market);
+        uint256 randomness = random();
+        LibDynamicInterest._calculateDynamicInterest(market, randomness);
         emit InterestsUpdated(msg.sender, block.timestamp);
         return true;
     }

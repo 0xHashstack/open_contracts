@@ -1,6 +1,6 @@
 const { expect, assert } = require("chai");
 const { BigNumber } = require("ethers");
-const { ethers } = require("hardhat");
+const { ethers, waffle, artifacts } = require("hardhat");
 const { solidity } = require("ethereum-waffle");
 const utils = require("ethers").utils;
 
@@ -15,27 +15,30 @@ const TOKENS_DECIMAL = 8;
 let accessRegistry;
 let comptroller;
 let dynamicInterest;
+let dynamic;
 let loan1;
 let tokenList;
 
 describe.skip("testing Dynamic Interest", async () => {
   before(async () => {
-      array = await deployDiamond();
-      diamondAddress = array["diamondAddress"];
-      rets = await addMarkets(array);
-      await provideLiquidity(rets);
-      accounts = await ethers.getSigners();
-      faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
-      await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
+    array = await deployDiamond();
+    diamondAddress = array["diamondAddress"];
+    rets = await addMarkets(array);
+    await provideLiquidity(rets);
+    accounts = await ethers.getSigners();
 
-      await expect(faucet.connect(accounts[1]).getTokens(1)).emit(faucet, "TokensIssued");
+    faucet = await ethers.getContractAt("Faucet", rets["faucetAddress"]);
+    await expect(faucet.connect(accounts[1]).getTokens(0)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
+    await expect(faucet.connect(accounts[1]).getTokens(1)).emit(faucet, "TokensIssued");
 
-      await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
+    await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
+
+    await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
+
   });
 
-  describe("Comptroller: Getter Methods", async () => {
+  describe("Dynamic", async () => {
     const comit_NONE = utils.formatBytes32String("comit_NONE");
     const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
     const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
@@ -51,6 +54,8 @@ describe.skip("testing Dynamic Interest", async () => {
 
     before(async () => {
       // deploying relevant contracts
+
+
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
       dynamicInterest = await ethers.getContractAt("DynamicInterest", diamondAddress);
@@ -114,7 +119,9 @@ describe.skip("testing Dynamic Interest", async () => {
     });
 
     it("Update interests (Uf <= 70)", async () => {
-        const loanAmount = ethers.utils.parseUnits("3000000", TOKENS_DECIMAL);
+
+
+        const loanAmount = ethers.utils.parseUnits("2600000", TOKENS_DECIMAL);
         const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
 
         await bepBtc.approve(diamondAddress, collateralAmount);
@@ -122,12 +129,15 @@ describe.skip("testing Dynamic Interest", async () => {
           loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount),
         ).emit(loan1, "NewLoan");
         
+        console.log("Difficulty: ", (await waffle.provider.getBlock()).difficulty);
+        console.log("Timestamp: ", (await waffle.provider.getBlock()).timestamp);
+        console.log("Address: ", accounts[0].address);
         await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
         
-        // Uf < 70
+        // Uf = 61.84, therefore Uf= 62
         let apr;
         apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-        expect(apr).to.equal(BigNumber.from(896)); // Uf = 70, manually calculated the value which comes to be 896.3585 
+        expect(apr).to.equal(BigNumber.from(1012)); 
 
         let apy;
         apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
@@ -135,8 +145,9 @@ describe.skip("testing Dynamic Interest", async () => {
     });
 
     it("Update interests (Uf > 70)", async () => {
-      const loanAmount = ethers.utils.parseUnits("500000", TOKENS_DECIMAL);
-      const collateralAmount = ethers.utils.parseUnits("200000", TOKENS_DECIMAL);
+
+      const loanAmount = ethers.utils.parseUnits("1000000", TOKENS_DECIMAL);
+      const collateralAmount = ethers.utils.parseUnits("400000", TOKENS_DECIMAL);
 
       await bepBtc.approve(diamondAddress, collateralAmount);
       await expect(loan1.loanRequest(symbolBtc, comit_ONEMONTH, loanAmount, symbolBtc, collateralAmount)).emit(
@@ -146,13 +157,13 @@ describe.skip("testing Dynamic Interest", async () => {
 
       await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
 
-      // Uf = 82
+      // Uf = 86
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-      expect(apr).to.equal(BigNumber.from(1076)); // manually calculated value comes 1076.0401 
+      expect(apr).to.equal(BigNumber.from(1025)); // manually calculated value comes 1025.____
 
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
-      expect(apr).to.equal(BigNumber.from(896));
+      expect(apr).to.equal(BigNumber.from(854)); // manually calculated value comes 854._____
 
       let apy;
       apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
