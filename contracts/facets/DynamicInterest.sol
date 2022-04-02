@@ -52,7 +52,7 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     }
 
     function updateInterests(bytes32 market) external override authDynamicInterest returns (bool){
-        uint256 randomness = random();
+        uint256 randomness = random()%20 + 70;
         LibDynamicInterest._calculateDynamicInterest(market, randomness);
         emit InterestsUpdated(msg.sender, block.timestamp);
         return true;
