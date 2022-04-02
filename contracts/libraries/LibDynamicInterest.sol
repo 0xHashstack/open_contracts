@@ -51,12 +51,12 @@ library LibDynamicInterest {
         
         uint256 utilisationFactor = (uint256)((LibReserve._utilisedReservesLoan(market)*10000)/LibReserve._avblReservesDeposit(market));
         
-        // ==============code to round-off utilisationFactor==============
+        // ==============code to round-off utilisationFactor===============
         if(utilisationFactor%100 >= 50)
             utilisationFactor = utilisationFactor/100 + 1;
         else
             utilisationFactor /= 100;
-        // ===============================================================
+        // ================================================================
 
         uint256 correlationFactor = 100000;
         if(utilisationFactor <= 25){

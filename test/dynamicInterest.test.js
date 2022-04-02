@@ -160,7 +160,7 @@ describe.skip("testing Dynamic Interest", async () => {
       // Uf = 86
       let apr;
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-      expect(apr).to.equal(BigNumber.from(1025)); // manually calculated value comes 1025.____
+      expect(apr).to.equal(BigNumber.from(1025)); // manually calculated value comes 1025._____
 
       apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_ONEMONTH));
       expect(apr).to.equal(BigNumber.from(854)); // manually calculated value comes 854._____

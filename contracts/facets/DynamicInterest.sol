@@ -14,8 +14,8 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     event InterestFactorsUpdated(address indexed admin, uint256 factor, uint256 correlationFactor, uint256 indexed timestamp);
     event InterestsUpdated(address indexed admin, uint256 indexed timestamp);
 
-    function random() internal view returns(uint){
-        return uint(keccak256(abi.encodePacked(block.timestamp,block.difficulty,  
+    function random() internal view returns(uint256){
+        return uint256(keccak256(abi.encodePacked(block.timestamp,block.difficulty,  
         msg.sender)));
     }
 
