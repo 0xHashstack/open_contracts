@@ -128,10 +128,7 @@ describe.skip("testing Dynamic Interest", async () => {
         await expect(
           loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount),
         ).emit(loan1, "NewLoan");
-        
-        console.log("Difficulty: ", (await waffle.provider.getBlock()).difficulty);
-        console.log("Timestamp: ", (await waffle.provider.getBlock()).timestamp);
-        console.log("Address: ", accounts[0].address);
+      
         await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
         
         // Uf = 61.84, therefore Uf= 62
