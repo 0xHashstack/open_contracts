@@ -157,11 +157,7 @@ contract Loan is Pausable, ILoan {
         return true;
     }
 
-    function getLoanInterest(address account, uint256 id)
-        external
-        view
-        returns (uint256 loanInterest)
-    {
+    function getLoanInterest(address account, uint256 id) external view returns (uint256 loanInterest) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
 
         ActiveLoans memory activeLoans = ds.getActiveLoans[account];
@@ -169,12 +165,12 @@ contract Loan is Pausable, ILoan {
         bytes32 commitment = activeLoans.loanCommitment[id - 1];
         uint256 interestFactor = 0;
 
-        LoanRecords memory loan = ds.indLoanRecords[account][market][commitment];
+        LoanState memory loanState = ds.indLoanState[account][market][commitment];
         DeductibleInterest memory yield = ds.indAccruedAPR[account][market][commitment];
 
         interestFactor = LibLoan._getLoanInterest(market, commitment, yield.oldLengthAccruedInterest, yield.oldTime);
         loanInterest = yield.accruedInterest;
-        loanInterest += ((interestFactor * loan.amount) / (365 * 86400 * 10000));
+        loanInterest += ((interestFactor * loanState.actualLoanAmount) / (365 * 86400 * 10000));
     }
 
     function pauseLoan() external override authLoan {

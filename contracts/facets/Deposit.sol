@@ -148,7 +148,7 @@ contract Deposit is Pausable, IDeposit {
         _convertYield(msg.sender, _market, _commitment);
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
-        if (_commitment != LibCommon._getCommitment(0,0)) {
+        if (_commitment != LibCommon._getCommitment(0, 0)) {
             if (deposit.isTimelockActivated == false) {
                 /// ACTIVATES TIMELOCK IF IT WASN'T ALREADY
                 deposit.isTimelockActivated = true;
@@ -246,7 +246,7 @@ contract Deposit is Pausable, IDeposit {
         deposit.amount = _amount;
         deposit.lastUpdate = block.timestamp;
 
-        if (_commitment != LibCommon._getCommitment(0,0)) {
+        if (_commitment != LibCommon._getCommitment(0, 0)) {
             yield.id = id;
             yield.market = bytes32(_market);
             yield.oldLengthAccruedYield = LibCommon._getApyTimeLength(_market, _commitment);

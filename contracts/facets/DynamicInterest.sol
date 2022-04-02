@@ -8,10 +8,24 @@ import { IDynamicInterest } from "../interfaces/IDynamicInterest.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract DynamicInterest is Pausable, IDynamicInterest {
-
-    event DepositInterestUpdated(address indexed admin, uint256 minDepositInterest, uint256 maxDepositInterest, uint256 indexed timestamp);
-    event BorrowInterestUpdated(address indexed admin, uint256 minBorrowInterest, uint256 maxBorrowInterest, uint256 indexed timestamp);
-    event InterestFactorsUpdated(address indexed admin, uint256 factor, uint256 correlationFactor, uint256 indexed timestamp);
+    event DepositInterestUpdated(
+        address indexed admin,
+        uint256 minDepositInterest,
+        uint256 maxDepositInterest,
+        uint256 indexed timestamp
+    );
+    event BorrowInterestUpdated(
+        address indexed admin,
+        uint256 minBorrowInterest,
+        uint256 maxBorrowInterest,
+        uint256 indexed timestamp
+    );
+    event InterestFactorsUpdated(
+        address indexed admin,
+        uint256 factor,
+        uint256 correlationFactor,
+        uint256 indexed timestamp
+    );
     event InterestsUpdated(address indexed admin, uint256 indexed timestamp);
 
     // getter Methods
@@ -28,25 +42,40 @@ contract DynamicInterest is Pausable, IDynamicInterest {
     }
 
     // setter methods
-    function setDepositInterests(uint256 minDepositInterest, uint256 maxDepositInterest) external override authDynamicInterest returns (bool){
+    function setDepositInterests(uint256 minDepositInterest, uint256 maxDepositInterest)
+        external
+        override
+        authDynamicInterest
+        returns (bool)
+    {
         LibDynamicInterest._setDepositInterests(minDepositInterest, maxDepositInterest);
         emit DepositInterestUpdated(msg.sender, minDepositInterest, maxDepositInterest, block.timestamp);
         return true;
     }
 
-    function setBorrowInterests(uint256 minBorrowInterest, uint256 maxBorrowInterest) external override authDynamicInterest returns (bool){
+    function setBorrowInterests(uint256 minBorrowInterest, uint256 maxBorrowInterest)
+        external
+        override
+        authDynamicInterest
+        returns (bool)
+    {
         LibDynamicInterest._setBorrowInterests(minBorrowInterest, maxBorrowInterest);
         emit BorrowInterestUpdated(msg.sender, minBorrowInterest, maxBorrowInterest, block.timestamp);
         return true;
     }
 
-    function setInterestFactors(uint256 offset, uint256 correlationFactor) external override authDynamicInterest returns (bool){
+    function setInterestFactors(uint256 offset, uint256 correlationFactor)
+        external
+        override
+        authDynamicInterest
+        returns (bool)
+    {
         LibDynamicInterest._setInterestFactors(offset, correlationFactor);
         emit InterestFactorsUpdated(msg.sender, offset, correlationFactor, block.timestamp);
         return true;
     }
 
-    function updateInterests(bytes32 market) external override authDynamicInterest returns (bool){
+    function updateInterests(bytes32 market) external override authDynamicInterest returns (bool) {
         LibDynamicInterest._calculateDynamicInterest(market);
         emit InterestsUpdated(msg.sender, block.timestamp);
         return true;

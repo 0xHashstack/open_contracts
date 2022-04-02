@@ -157,7 +157,6 @@ struct AppStorageOpen {
     mapping(bytes32 => MarketData) indMarket2Data;
     // =========== Comptroller state variables ===========
     bytes32 adminComptroller;
-
     bytes32[] depositCommitment;
     bytes32[] borrowCommitment;
     uint256 reserveFactor;
@@ -178,12 +177,10 @@ struct AppStorageOpen {
     bytes32 protocolOwnedLiquidator;
     // =========== DynamicInterest state variables ======
     bytes32 adminDynamicInterest;
-    
     uint256[] borrowInterests;
     uint256[] depositInterests;
     uint256[] interestFactors;
-
-    mapping(bytes32 => uint) commitmentDays;
+    mapping(bytes32 => uint256) commitmentDays;
     // =========== Deposit state variables ===========
     bytes32 adminDeposit;
     mapping(address => SavingsAccount) savingsPassbook; // Maps an account to its savings Passbook
