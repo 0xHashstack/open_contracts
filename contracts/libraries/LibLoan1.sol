@@ -124,6 +124,7 @@ library LibLoan1 {
         }
 
         LibReserve._updateUtilisationLoan(_loanMarket, _loanAmount, 0);
+        LibReserve._updateUtilisationDeposit(_loanMarket, _loanAmount, 0);
         LibReserve._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 
         return loan.id;

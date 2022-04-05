@@ -22,19 +22,6 @@ library LibDeposit {
         require(yield.id != 0, "ERROR: No Yield");
     }
 
-    function _updateReservesDeposit(
-        bytes32 _loanMarket,
-        uint256 _amount,
-        uint256 _num /*authContract(DEPOSIT_ID)*/
-    ) internal {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        if (_num == 0) {
-            ds.marketReservesDeposit[_loanMarket] += _amount;
-        } else if (_num == 1) {
-            ds.marketReservesDeposit[_loanMarket] -= _amount;
-        }
-    }
-
     function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) internal {
         if (savingsAccount.accOpenTime == 0) {
             savingsAccount.accOpenTime = block.timestamp;

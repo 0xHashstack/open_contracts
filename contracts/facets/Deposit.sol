@@ -114,7 +114,7 @@ contract Deposit is Pausable, IDeposit {
         ds.token.transferFrom(msg.sender, address(this), _amount); // change the address(this) to the diamond address.
         _processDeposit(msg.sender, _market, _commitment, _amount);
 
-        LibDeposit._updateReservesDeposit(_market, _amount, 0);
+        LibReserve._updateReservesDeposit(_market, _amount, 0);
         emit DepositAdded(
             msg.sender,
             _market,
@@ -191,7 +191,7 @@ contract Deposit is Pausable, IDeposit {
         activeDeposits.amount[deposit.id - 1] -= initialAmount;
         activeDeposits.savingsInterest[deposit.id - 1] = 0;
 
-        LibDeposit._updateReservesDeposit(_market, initialAmount, 1);
+        LibReserve._updateReservesDeposit(_market, initialAmount, 1);
         emit DepositWithdrawal(msg.sender, deposit.id, _amount, block.timestamp);
         return true;
     }
@@ -214,7 +214,7 @@ contract Deposit is Pausable, IDeposit {
         ds.token.transferFrom(_sender, address(this), _amount);
 
         _processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield, activeDeposits);
-        LibDeposit._updateReservesDeposit(_market, _amount, 0);
+        LibReserve._updateReservesDeposit(_market, _amount, 0);
         emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id, block.timestamp);
     }
 
@@ -372,19 +372,6 @@ contract Deposit is Pausable, IDeposit {
         savingsAccount.deposits[deposit.id - 1].amount = deposit.amount;
         savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
         savingsAccount.yield[deposit.id - 1].accruedYield = 0;
-    }
-
-    function _updateUtilisation(
-        bytes32 _market,
-        uint256 _amount,
-        uint256 _num
-    ) private {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        if (_num == 0) {
-            ds.marketUtilisationDeposit[_market] += _amount;
-        } else if (_num == 1) {
-            ds.marketUtilisationDeposit[_market] -= _amount;
-        }
     }
 
     function pauseDeposit() external override authDeposit {

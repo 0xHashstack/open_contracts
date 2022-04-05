@@ -29,7 +29,7 @@ library LibReserve {
     }
 
     function _marketUtilisation(bytes32 _market) internal view returns (uint256) {
-        return _utilisedReservesDeposit(_market) + _utilisedReservesLoan(_market);
+        return _utilisedReservesLoan(_market);
     }
 
     function _avblMarketReserves(bytes32 _market) internal view returns (uint256) {
@@ -87,6 +87,20 @@ library LibReserve {
             ds.marketReservesDeposit[_loanMarket] += _amount;
         } else if (_num == 1) {
             ds.marketReservesDeposit[_loanMarket] -= _amount;
+        }
+    }
+
+    function _updateUtilisationDeposit(
+        bytes32 _market,
+        uint256 _amount,
+        uint256 _num
+    ) internal {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        if (_num == 0) {
+            ds.marketUtilisationLoan[_market] += _amount;
+        } else if (_num == 1) {
+            // require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "ERROR: Utilisation is less than amount");
+            ds.marketUtilisationLoan[_market] -= _amount;
         }
     }
 }
