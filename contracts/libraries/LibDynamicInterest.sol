@@ -6,8 +6,7 @@ import "./LibReserve.sol";
 import "./LibComptroller.sol";
 
 library LibDynamicInterest {
-
-    function _getDepositInterests(uint256 minOrMax) internal view returns(uint256) {
+    function _getDepositInterests(uint256 minOrMax) internal view returns (uint256) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         return ds.depositInterests[minOrMax];
     }
@@ -45,14 +44,13 @@ library LibDynamicInterest {
 
     function _calculateDynamicInterest(bytes32 market, uint256 randomness) internal {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
-        
-        uint256 utilisationFactor = ((LibReserve._utilisedReservesLoan(market)*10000)/LibReserve._avblReservesDeposit(market));
-        
+
+        uint256 utilisationFactor = ((LibReserve._utilisedReservesLoan(market) * 10000) /
+            LibReserve._avblReservesDeposit(market));
+
         // ==============code to round-off utilisationFactor===============
-        if(utilisationFactor%100 >= 50)
-            utilisationFactor = utilisationFactor/100 + 1;
-        else
-            utilisationFactor /= 100;
+        if (utilisationFactor % 100 >= 50) utilisationFactor = utilisationFactor / 100 + 1;
+        else utilisationFactor /= 100;
         // ================================================================
 
         uint256 correlationFactor = 100000;

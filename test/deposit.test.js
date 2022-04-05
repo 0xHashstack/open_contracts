@@ -158,13 +158,10 @@ describe("Testing Deposit", async () => {
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
-      console.log("Diamond balance before :", await bepUsdc.balanceOf(diamondAddress));
-
       await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_NONE, withdrawAmount)).emit(
         deposit,
         "DepositWithdrawal",
       );
-      console.log("Diamond balance after :", await bepUsdc.balanceOf(diamondAddress));
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
         reserveBalance.add(BigNumber.from(fees)).sub(BigNumber.from(withdrawAmount)),
       );
@@ -498,8 +495,15 @@ describe("Testing Deposit", async () => {
       );
     });
 
-    it("Withdraw USDT", async () => {
-      const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+    it("Withdraw USDT with fees and preclosure before timelock", async () => {
+      // let withdrawAmount = BigNumber.from(50000000000); // 500 8-0's 500 USDT
+      let depositData = await deposit.getDeposits(accounts[1].address);
+      withdrawAmount = depositData.amount[0];
+      let initialAmount = withdrawAmount;
+
+      const preClosurefees = withdrawAmount.mul(36).div(10000);
+
+      withdrawAmount = BigNumber.from(withdrawAmount).sub(BigNumber.from(preClosurefees));
 
       const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
 
@@ -507,90 +511,149 @@ describe("Testing Deposit", async () => {
 
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
-      await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount);
+      /// USER ACTIVATES TIMELOCK HERE
+      await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, initialAmount);
 
-      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        reserveBalance,
-      );
-
-      console.log("Pre-Time: ", (await currentProvider.getBlock()).timestamp);
-
-      const timeInSeconds = 2 * 7 * 24 * 60 * 60 + 20;
+      const timeInSeconds = 1 * 86400 + 20;
       await currentProvider.send("evm_increaseTime", [timeInSeconds]);
       await currentProvider.send("evm_mine");
-      console.log("Post-Time: ", (await currentProvider.getBlock()).timestamp);
-      await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount)).emit(
+      await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, initialAmount)).to.be
+        .reverted;
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        BigNumber.from(reserveBalance),
+      );
+    });
+    it("Withdraw USDT with fees and preclosure", async () => {
+      // let withdrawAmount = BigNumber.from(50000000000); // 500 8-0's 500 USDT
+      let depositData = await deposit.getDeposits(accounts[1].address);
+      withdrawAmount = depositData.amount[0];
+      let initialAmount = withdrawAmount;
+      
+      const preClosurefees = withdrawAmount.mul(36).div(10000);
+      
+      withdrawAmount = BigNumber.from(withdrawAmount).sub(BigNumber.from(preClosurefees));
+      
+      const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
+      
+      const currentProvider = waffle.provider;
+      
+      const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
+      
+      /// USER ACTIVATES TIMELOCK HERE
+      // await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, initialAmount);
+
+      const timeInSeconds = 3 * 86400 + 20;
+      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+      await currentProvider.send("evm_mine");
+      await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, initialAmount)).emit(
         deposit,
         "DepositWithdrawal",
       );
-
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        reserveBalance.sub(BigNumber.from(withdrawAmount)).add(BigNumber.from(fees)),
-      );
-    });
-
-    it("Withdraw USDT(more than deposited)", async () => {
-      const withdrawAmount = 600000000000; // 6000 8-0's 600 USDT
-
-      const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
-
-      await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount)).to.be
-        .reverted;
-
-      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        BigNumber.from(reserveBalance),
-      );
-    });
-
-    // USDC Deposits
-    it("USDC New Deposit", async () => {
-      const depositAmount = 50000000000; // 500 (8-0's) 500 USDC
-
-      const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
-
-      await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-
-      await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).emit(
-        deposit,
-        "NewDeposit",
-      );
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        reserveBalance.add(BigNumber.from(depositAmount)),
-      );
-    });
-
-    it("USDC Add to Deposit", async () => {
-      const depositAmount = 50000000000; // 500 (8-0's) 500 USDC
-
-      const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
-
-      await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-
-      await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).emit(
-        deposit,
-        "DepositAdded",
-      );
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        reserveBalance.add(BigNumber.from(depositAmount)),
-      );
-    });
-
-    it("USDC Minimum Deposit", async () => {
-      const depositAmount = 500000000; // 50 (8-0's) 50 USDC
-
-      const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
-
-      await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-
-      await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).to.be
-        .reverted;
-
-      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
-        BigNumber.from(reserveBalance),
-      );
-    });
+        BigNumber.from(reserveBalance)
+          .add(BigNumber.from(fees))
+          .add(BigNumber.from(preClosurefees))
+          .sub(BigNumber.from(initialAmount)),
+          );
+        });
+        
+        it("Withdraw USDT(more than deposited)", async () => {
+          const withdrawAmount = 600000000000; // 6000 8-0's 600 USDT
+          
+          const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
+          
+          await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_TWOWEEKS, withdrawAmount)).to.be
+          .reverted;
+          
+          expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+            BigNumber.from(reserveBalance),
+            );
+          });
+          
+          // USDC Deposits
+          it("USDC New Deposit", async () => {
+            const depositAmount = 50000000000; // 500 (8-0's) 500 USDC
+            
+            const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
+            
+            await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+            
+            await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).emit(
+              deposit,
+              "NewDeposit",
+              );
+              
+              expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+                reserveBalance.add(BigNumber.from(depositAmount)),
+                );
+              });
+              
+              it("USDC Add to Deposit", async () => {
+                const depositAmount = 50000000000; // 500 (8-0's) 500 USDC
+                
+                const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
+                
+                await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+                
+                await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).emit(
+                  deposit,
+                  "DepositAdded",
+                  );
+                  
+                  expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+                    reserveBalance.add(BigNumber.from(depositAmount)),
+                    );
+                  });
+                  
+                  it("USDC Minimum Deposit", async () => {
+                    const depositAmount = 500000000; // 50 (8-0's) 50 USDC
+                    
+                    const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
+                    
+                    await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+                    
+                    await expect(deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_TWOWEEKS, depositAmount)).to.be
+                    .reverted;
+                    
+                    expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+                      BigNumber.from(reserveBalance),
+                      );
+                    });
+                    
+                    /// SKIPPING THIS TEST AS WE ARE WITHDRAWING WITH PRECLOSURE IN NEXT "IT" STATEMENT, THIS IT
+                    /// STATEMENT WOULD BE LATER USED FOR SOME OTHER ASSET.
+                    it("Withdraw USDC with fees", async () => {
+                      // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+                      let depositData = await deposit.getDeposits(accounts[1].address);
+                      console.log("depositData array : ",depositData);
+                      withdrawAmount = depositData.amount[1];
+                      console.log("withdrawAmount : ",withdrawAmount);
+                      
+                      let initialAmount = withdrawAmount;
+                      console.log("initialAmount : ",initialAmount);
+                      
+                      const fees = BigNumber.from(withdrawAmount).mul(10).div(10000);
+                      console.log("fees : ",fees);
+                      
+                      const currentProvider = waffle.provider;
+                      
+                      const reserveBalance = BigNumber.from(await bepUsdc.balanceOf(diamondAddress));
+                      console.log("reserveBalance pre : ",reserveBalance);
+                      
+                      /// ACTIVATES TIMELOCK
+                      await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdc, comit_TWOWEEKS, initialAmount);
+                      
+                      const timeInSeconds = 14 * 86400 + 20;
+                      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+                      await currentProvider.send("evm_mine");
+                      await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdc, comit_TWOWEEKS, initialAmount)).emit(
+                        deposit,
+                        "DepositWithdrawal",
+                      );
+                      expect(BigNumber.from(await bepUsdc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+                        reserveBalance.sub(BigNumber.from(initialAmount)).add(BigNumber.from(fees)),
+                      );
+                    });
 
     // skipped because timelock for commitment yet to be implemented
     it.skip("Withdraw USDC", async () => {
@@ -703,8 +766,6 @@ describe("Testing Deposit", async () => {
       const reserveBalance = BigNumber.from(await bepWbnb.balanceOf(diamondAddress));
 
       await bepWbnb.connect(accounts[1]).approve(diamondAddress, depositAmount);
-
-      console.log("Token BNB: ", bepWbnb.address);
 
       await expect(deposit.connect(accounts[1]).depositRequest(symbolWBNB, comit_TWOWEEKS, depositAmount)).emit(
         deposit,
@@ -857,7 +918,7 @@ describe("Testing Deposit", async () => {
       await expect(deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_ONEMONTH, withdrawAmount)).to.be
         .reverted;
 
-      const timeInSeconds = 30 * 24 * 60 * 60 + 20;
+      const timeInSeconds = 30 * 86400 + 20;
       await currentProvider.send("evm_increaseTime", [timeInSeconds]);
       await currentProvider.send("evm_mine");
 

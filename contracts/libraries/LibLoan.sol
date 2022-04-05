@@ -94,7 +94,6 @@ library LibLoan {
         uint256 _swappedAmount = LibSwap._swap(loanState.currentMarket, loan.market, loanState.currentAmount, 1);
         /// Updating LoanRecord
         loan.isSwapped = false;
-        loan.lastUpdate = block.timestamp;
 
         /// updating the LoanState
         loanState.currentMarket = loan.market;
@@ -102,7 +101,6 @@ library LibLoan {
 
         /// Updating LoanAccount
         ds.loanPassbook[_account].loans[num].isSwapped = false;
-        ds.loanPassbook[_account].loans[num].lastUpdate = block.timestamp;
         ds.loanPassbook[_account].loanState[num].currentMarket = loanState.currentMarket;
         ds.loanPassbook[_account].loanState[num].currentAmount = loanState.currentAmount;
 
@@ -143,7 +141,7 @@ library LibLoan {
 
         /// Updating LoanRecord
         loan.isSwapped = true;
-        loan.lastUpdate = block.timestamp;
+
 
         /// Updating LoanState
         loanState.currentMarket = _swapMarket;
@@ -151,7 +149,6 @@ library LibLoan {
 
         /// Updating LoanAccount
         loanAccount.loans[num].isSwapped = true;
-        loanAccount.loans[num].lastUpdate = block.timestamp;
         loanAccount.loanState[num].currentMarket = loanState.currentMarket;
         loanAccount.loanState[num].currentAmount = loanState.currentAmount;
 
@@ -179,11 +176,30 @@ library LibLoan {
         LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
         CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
         ActiveLoans storage activeLoans = ds.getActiveLoans[_sender];
+        uint256 commitmentTimelock;
+
+        commitmentTimelock = ds.commitmentDays[_commitment] * 86400;
+        // Convert commitment days into seconds for block.timestamp
 
         /// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
         require(loan.id != 0, "ERROR: Loan does not exist");
         require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-        require((collateral.timelockValidity + collateral.activationTime) < block.timestamp, "ERROR: Active Timelock");
+        // require((collateral.timelockValidity + commitmentTimelock) < block.timestamp, "ERROR: Active Timelock");
+
+        console.log("loan.createdAt : ",loan.createdAt);
+        console.log("commitmentTimelock : ",commitmentTimelock);
+        console.log("collateral.activationTime : ",collateral.activationTime);
+        
+        if (loan.createdAt + commitmentTimelock >=  collateral.activationTime) {
+            collateral.amount =
+                collateral.amount -
+                ((LibCommon.diamondStorage().collateralPreClosureFees) * collateral.amount) /
+                10000;
+        }
+            require(
+                collateral.activationTime + collateral.timelockValidity <= block.timestamp,
+                "3 days timelock has not passed yet"
+            );
 
         collateral.amount =
             collateral.amount -
@@ -196,7 +212,8 @@ library LibLoan {
         bytes32 collateralMarket = collateral.market;
         uint256 collateralAmount = collateral.amount;
 
-        emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
+        LibReserve._updateReservesLoan(collateralMarket, collateralAmount, 1);
+        // emit WithdrawCollateral(_sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
 
         /// UPDATING STORAGE RECORDS FOR LOAN
         /// COLLATERAL RECORDS
@@ -254,9 +271,7 @@ library LibLoan {
         /// LOAN RECORDS
         delete loan.id;
         delete loan.isSwapped;
-        delete loan.lastUpdate;
-
-        LibReserve._updateReservesLoan(collateralMarket, collateralAmount, 1);
+        delete loan.createdAt;
     }
 
     function _checkPermissibleWithdrawal(

@@ -40,7 +40,7 @@ struct DepositRecords {
     bytes32 market;
     bytes32 commitment;
     uint256 amount;
-    uint256 lastUpdate;
+    uint256 createdAt;
     bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
     bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
     uint256 timelockValidity; // timelock duration
@@ -83,8 +83,9 @@ struct LoanRecords {
     bytes32 commitment;
     uint256 amount;
     bool isSwapped; //true or false. Update when a loan is swapped
-    uint256 lastUpdate; // block.timestamp
+    uint256 createdAt; // block.timestamp
     address owner;
+    uint256 activationTime; // block.timestamp when yield withdrawal request was placed.
 }
 
 struct LoanState {
@@ -163,6 +164,7 @@ struct AppStorageOpen {
     uint256 loanIssuanceFees;
     uint256 loanClosureFees;
     uint256 loanPreClosureFees;
+    uint256 collateralPreClosureFees;
     uint256 depositPreClosureFees;
     uint256 maxWithdrawalFactor;
     uint256 maxWithdrawalBlockLimit;

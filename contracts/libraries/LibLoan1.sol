@@ -53,14 +53,15 @@ library LibLoan1 {
         loan.commitment = _commitment;
         loan.amount = _loanAmount;
         loan.isSwapped = false;
-        loan.lastUpdate = block.timestamp;
+        loan.createdAt = block.timestamp;
         loan.owner = msg.sender;
+
 
         if (loan.id == 1) {
             ds.borrowers.push(msg.sender);
         }
+        /// Loan Fees
         _loanAmount = _loanAmount - LoanIssuanceFees;
-        console.log("_loanAmount is :", _loanAmount);
         /// UPDATING ACTIVELOANS RECORDS
         activeLoans.loanMarket.push(_loanMarket);
         activeLoans.loanCommitment.push(_commitment);
@@ -111,7 +112,7 @@ library LibLoan1 {
             loanAccount.collaterals.push(collateral);
             loanAccount.accruedAPR.push(deductibleInterest);
         } else {
-            collateral.timelockValidity = 86400;
+            collateral.timelockValidity = 259200;
             collateral.isTimelockActivated = false;
             collateral.activationTime = 0;
 
@@ -178,11 +179,6 @@ library LibLoan1 {
 
         uint256 usdLoan = (LibOracle._getQuote(_loanMarket)) * _loanAmount;
         uint256 usdCollateral = (LibOracle._getQuote(_collateralMarket)) * _collateralAmount;
-
-        console.log("permissible data below");
-        console.log(usdLoan);
-        console.log(usdCollateral);
-        console.log("permissible data above");
 
         require(LibReserve._avblMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
         require((usdLoan * 100) / usdCollateral <= 300, "ERROR: Insufficient collateral");

@@ -48,6 +48,8 @@ interface IComptroller {
 
     function updateLoanClosureFees(uint256 fees) external returns (bool success);
 
+    function updateCollateralPreclosureFees(uint256 fees) external returns (bool success);
+
     function updateLoanPreClosureFees(uint256 fees) external returns (bool success);
 
     function updateDepositPreclosureFees(uint256 fees) external returns (bool success);
@@ -71,6 +73,8 @@ interface IComptroller {
     function unpauseComptroller() external;
 
     function isPausedComptroller() external view returns (bool);
+
+    function collateralPreClosureFees() external view returns (uint256);
 
     function depositPreClosureFees() external view returns (uint256);
 

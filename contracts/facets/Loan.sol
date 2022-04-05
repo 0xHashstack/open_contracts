@@ -8,6 +8,13 @@ import { ILoan } from "../interfaces/ILoan.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 
 contract Loan is Pausable, ILoan {
+    event WithdrawCollateral(
+        address indexed account,
+        bytes32 indexed market,
+        uint256 indexed amount,
+        uint256 id,
+        uint256 timestamp
+    );
     event AddCollateral(address indexed account, uint256 indexed id, uint256 amount, uint256 timestamp);
     event WithdrawPartialLoan(address indexed account, uint256 indexed id, uint256 indexed amount, uint256 timestamp);
     event MarketSwapped(
@@ -79,7 +86,13 @@ contract Loan is Pausable, ILoan {
     }
 
     function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
+        CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
+        bytes32 collateralMarket = collateral.market;
+        uint256 collateralAmount = collateral.amount;
         LibLoan._withdrawCollateral(msg.sender, _market, _commitment);
+        emit WithdrawCollateral(msg.sender, collateralMarket, collateralAmount, loan.id, block.timestamp);
         return true;
     }
 

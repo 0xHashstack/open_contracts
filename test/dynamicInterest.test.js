@@ -34,7 +34,6 @@ describe.skip("testing Dynamic Interest", async () => {
     await expect(faucet.connect(accounts[1]).getTokens(2)).emit(faucet, "TokensIssued");
 
     await expect(faucet.connect(accounts[1]).getTokens(3)).emit(faucet, "TokensIssued");
-
   });
 
   describe("Dynamic interests tests", async () => {
@@ -53,7 +52,6 @@ describe.skip("testing Dynamic Interest", async () => {
 
     before(async () => {
       // deploying relevant contracts
-
 
       tokenList = await ethers.getContractAt("TokenList", diamondAddress);
       comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
@@ -118,26 +116,25 @@ describe.skip("testing Dynamic Interest", async () => {
     });
 
     it("Update interests (Uf <= 70)", async () => {
+      const loanAmount = ethers.utils.parseUnits("2600000", TOKENS_DECIMAL);
+      const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
 
-        const loanAmount = ethers.utils.parseUnits("2600000", TOKENS_DECIMAL);
-        const collateralAmount = ethers.utils.parseUnits("2000000", TOKENS_DECIMAL);
+      await bepBtc.approve(diamondAddress, collateralAmount);
+      await expect(loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount)).emit(
+        loan1,
+        "NewLoan",
+      );
 
-        await bepBtc.approve(diamondAddress, collateralAmount);
-        await expect(
-          loan1.loanRequest(symbolBtc, comit_NONE, loanAmount, symbolBtc, collateralAmount),
-        ).emit(loan1, "NewLoan");
-      
-        await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
-        
-        // Uf = 61.84, therefore Uf= 62
-        let apr;
-        apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
-        expect(apr).to.equal(BigNumber.from(1012)); // manually calculated value = 1012.___ which is 10.12%
+      await expect(dynamicInterest.updateInterests(symbolBtc)).emit(dynamicInterest, "InterestsUpdated");
 
-        let apy;
-        apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
-        expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
+      // Uf = 61.84, therefore Uf= 62
+      let apr;
+      apr = BigNumber.from(await comptroller.getAPR(symbolBtc, comit_NONE));
+      expect(apr).to.equal(BigNumber.from(1012)); // manually calculated value = 1012.___ which is 10.12%
 
+      let apy;
+      apy = await comptroller.getAPY(symbolBtc, comit_THREEMONTHS);
+      expect(apy).to.equal(BigNumber.from(640)); // manually calculated value = 640
     });
 
     it("Update interests (Uf > 70)", async () => {

@@ -37,6 +37,12 @@ contract Comptroller is Pausable, IComptroller {
         uint256 indexed newFees,
         uint256 indexed timestamp
     );
+    event CollateralPreClosureFeesUpdated(
+        address indexed admin,
+        uint256 oldFees,
+        uint256 indexed newFees,
+        uint256 indexed timestamp
+    );
     event DepositPreClosureFeesUpdated(
         address indexed admin,
         uint256 oldFees,
@@ -190,6 +196,25 @@ contract Comptroller is Pausable, IComptroller {
 
         emit LoanPreClosureFeesUpdated(msg.sender, oldFees, ds.loanPreClosureFees, block.timestamp);
         return true;
+    }
+
+    function updateCollateralPreclosureFees(uint256 fees)
+        external
+        override
+        nonReentrant
+        authComptroller
+        returns (bool)
+    {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        uint256 oldFees = ds.collateralPreClosureFees;
+        ds.collateralPreClosureFees = fees;
+
+        emit CollateralPreClosureFeesUpdated(msg.sender, oldFees, ds.loanPreClosureFees, block.timestamp);
+        return true;
+    }
+
+    function collateralPreClosureFees() external view override returns (uint256) {
+        return LibCommon.diamondStorage().collateralPreClosureFees;
     }
 
     function depositPreClosureFees() external view override returns (uint256) {

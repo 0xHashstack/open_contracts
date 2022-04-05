@@ -18,6 +18,7 @@ contract Deposit is Pausable, IDeposit {
         uint256 depositId,
         uint256 time
     );
+
     event DepositAdded(
         address indexed account,
         bytes32 indexed market,
@@ -143,49 +144,63 @@ contract Deposit is Pausable, IDeposit {
 
         uint256 fees;
         uint256 initialAmount;
+        uint256 commitmentTimelock;
 
+        commitmentTimelock = ds.commitmentDays[_commitment] * 86400;
+        // Convert commitment days into seconds for block.timestamp
         initialAmount = _amount;
+        // Converts yield
         _convertYield(msg.sender, _market, _commitment);
         require(deposit.amount >= _amount, "ERROR: Insufficient balance");
+        /// CONNECTS THE MARKET BELOW
+        ds.token = IBEP20(LibCommon._connectMarket(_market));
+        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
 
         if (_commitment != LibCommon._getCommitment(0, 0)) {
             if (deposit.isTimelockActivated == false) {
                 /// ACTIVATES TIMELOCK IF IT WASN'T ALREADY
                 deposit.isTimelockActivated = true;
+                // deposit.createdAt = block.timestamp;
                 deposit.activationTime = block.timestamp;
-                deposit.lastUpdate = block.timestamp;
 
                 savingsAccount.deposits[deposit.id - 1].isTimelockActivated = true;
                 savingsAccount.deposits[deposit.id - 1].activationTime = block.timestamp;
-                savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
+                savingsAccount.deposits[deposit.id - 1].createdAt = block.timestamp;
                 return false;
             }
-            require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Active timelock");
+            // CHECKS FOR TIMELOCK + buffer time of 3 days
+            if (deposit.createdAt + commitmentTimelock >= block.timestamp) {
+                console.log("deposit.createdAt : ",deposit.createdAt);
+                console.log("commitmentTimelock : ",commitmentTimelock);
+                console.log("deposit.createdAt + commitmentTimelock : ",deposit.createdAt + commitmentTimelock);
+                console.log("block.timestamp : ",block.timestamp);
+                // require(
+                //     deposit.activationTime + deposit.timelockValidity <= block.timestamp,
+                //     "3 days timelock has not passed yet"
+                // );
+                /*  CHARGE PRECLOSURE FEES */
+                uint256 PreClosurefees = ((LibCommon.diamondStorage().depositPreClosureFees) * _amount) / 10000;
+                require(_amount > PreClosurefees, "PreClosurefees is greater than amount");
+                /// DEDUCTS PRECLOSURE IF TIMELOCK IS GOING ON
+                _amount = _amount - PreClosurefees;
+                require(_amount > 0, "Amount Post pre Fees cannot be 0 ");
+                // NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
+            }
         }
-        /// CONNECTS THE MARKET BELOW
-        ds.token = IBEP20(LibCommon._connectMarket(_market));
-        require(_amount >= 0, "ERROR: You cannot transfer less than 0 amount");
 
-        /// CHECKS FOR TIMELOCK + buffer time of 3 days
-        // if (deposit.activationTime + deposit.timelockValidity <= block.timestamp) {
-        //     /*  CHARGE PRECLOSURE FEES */
-        //     uint256 PreClosurefees = ((LibCommon.diamondStorage().depositPreClosureFees) * _amount) / 10000;
-        //     require(_amount > PreClosurefees, "PreClosurefees is greater than amount");
-        //     /// DEDUCTS PRECLOSURE IF TIMELOCK IS GOING ON
-        //     _amount = _amount - PreClosurefees;
-        //     require(_amount > 0, "Amount Post pre Fees cannot be 0 ");
-        /// NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
-        // }
-
+        require(
+                    deposit.activationTime + deposit.timelockValidity <= block.timestamp,
+                    "3 days timelock has not passed yet"
+                );
         /* NOW IT DEDUCTS DEPOSIT WITHDRAW FEE */
         fees = ((LibCommon.diamondStorage().depositWithdrawalFees) * _amount) / 10000;
         require(_amount > fees, "Fees is greater than amount");
         _amount = _amount - fees;
         require(_amount > 0, "Amount Post Fees cannot be 0 ");
+        console.log("Fees deducted");
         ds.token.transfer(msg.sender, _amount);
         /// NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
         deposit.amount -= initialAmount;
-        console.log(" deposit.amount is : ", deposit.amount);
         savingsAccount.deposits[deposit.id - 1].amount -= initialAmount;
 
         activeDeposits.amount[deposit.id - 1] -= initialAmount;
@@ -244,7 +259,7 @@ contract Deposit is Pausable, IDeposit {
         deposit.market = _market;
         deposit.commitment = _commitment;
         deposit.amount = _amount;
-        deposit.lastUpdate = block.timestamp;
+        deposit.createdAt = block.timestamp;
 
         if (_commitment != LibCommon._getCommitment(0, 0)) {
             yield.id = id;
@@ -254,7 +269,7 @@ contract Deposit is Pausable, IDeposit {
             yield.accruedYield = 0;
             deposit.isTimelockApplicable = true;
             deposit.isTimelockActivated = false;
-            deposit.timelockValidity = 86400;
+            deposit.timelockValidity = 259200;
             deposit.activationTime = 0;
         } else {
             yield.id = id;
@@ -324,10 +339,12 @@ contract Deposit is Pausable, IDeposit {
         accruedYield(_account, _market, _commitment);
 
         deposit.amount += _amount;
-        deposit.lastUpdate = block.timestamp;
+        deposit.createdAt = block.timestamp;
+        deposit.activationTime = block.timestamp;
+        deposit.isTimelockActivated = false;
 
         savingsAccount.deposits[num].amount += _amount;
-        savingsAccount.deposits[num].lastUpdate = block.timestamp;
+        savingsAccount.deposits[num].createdAt = block.timestamp;
 
         savingsAccount.yield[num].oldLengthAccruedYield = yield.oldLengthAccruedYield;
         savingsAccount.yield[num].oldTime = yield.oldTime;
@@ -364,13 +381,12 @@ contract Deposit is Pausable, IDeposit {
         accruedYield(_account, _market, _commitment);
 
         deposit.amount += yield.accruedYield;
-        deposit.lastUpdate = block.timestamp;
+
 
         /// RESETTING THE YIELD.
         yield.accruedYield = 0;
 
         savingsAccount.deposits[deposit.id - 1].amount = deposit.amount;
-        savingsAccount.deposits[deposit.id - 1].lastUpdate = block.timestamp;
         savingsAccount.yield[deposit.id - 1].accruedYield = 0;
     }
 

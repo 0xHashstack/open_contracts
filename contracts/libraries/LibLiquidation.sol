@@ -48,7 +48,6 @@ library LibLiquidation {
         CollateralRecords memory collateral,
         uint8 debtCategory
     ) private view returns (bool) {
-        console.log("validate loan liquidation ====");
         uint256 loanCurrentAmount = loanState.actualLoanAmount;
         uint256 collateralCurrentAmount;
         if (loanState.loanMarket != loanState.currentMarket) {
@@ -192,7 +191,7 @@ library LibLiquidation {
         delete loan.commitment;
         delete loan.amount;
         delete loan.isSwapped;
-        delete loan.lastUpdate;
+        delete loan.createdAt;
 
         return loanAmount;
     }

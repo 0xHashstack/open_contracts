@@ -24,13 +24,6 @@ async function deployDiamond() {
   mkdirSync("abi/backend", { recursive: true });
 
   console.log(`upgradeAdmin ${upgradeAdmin.address}`);
-  //   fs.writeFile('/Users/tripp/Desktop/Hashstack/Newer/Open-contracts/env.js',upgradeAdmin.address, function(err) {
-  //     if(err) {
-  //         return console.log(err);
-  //     }
-
-  //     console.log("The file was saved!");
-  // }); ;
 
   /// DEPLOY DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
@@ -418,12 +411,14 @@ async function addMarkets(array) {
 
   /// SET FEES IN COMPTROLLER
   console.log("Implementing fees in Comptroller");
-  await comptroller.updateLoanIssuanceFees("10");
+  await comptroller.updateLoanIssuanceFees("10"); // Set fee to 0.1%
   console.log("updateWithdrawalFees is set");
   await comptroller.updateLoanClosureFees("5"); // set fee to 0.05%
   console.log("updateWithdrawalFees is set");
   await comptroller.updateDepositPreclosureFees("36"); // Set fee to 0.36%
   console.log("updateDepositPreclosureFees is set");
+  await comptroller.updateCollateralPreclosureFees("36"); // Set fee to 0.36%
+  console.log("updateCollateralPreclosureFees is set");
   await comptroller.updateWithdrawalFees("10"); // Set fee to 0.1%
   console.log("updateWithdrawalFees is set");
   await comptroller.updateCollateralReleaseFees("10"); // set fee to 0.1%

@@ -206,8 +206,8 @@ describe("testing Loans", async () => {
       const loanInterest = await loan.getLoanInterest(accounts[1].address, 1);
       expect(BigNumber.from(loanInterest)).to.gt(BigNumber.from(0));
     });
-
-    it("Repay Loan", async () => {
+    /// skipping rn as we are not creating this type of loan as of now, would resume this later
+    it.skip("Repay Loan", async () => {
       const repayAmount = 90000000000;
       const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
 
@@ -215,6 +215,19 @@ describe("testing Loans", async () => {
       await expect(loan2.connect(accounts[1]).repayLoan(symbolUsdt, comit_NONE, repayAmount)).emit(loan2, "LoanRepaid");
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.lt(BigNumber.from(reserveBalance));
+    });
+
+    it.skip("Repay Loan Fixed ", async () => {
+      const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
+      const repayAmount = 90000000000;
+
+      await bepUsdt.connect(accounts[1]).approve(diamondAddress, repayAmount);
+      await expect(loan2.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, repayAmount)).emit(
+        loan2,
+        "LoanRepaid",
+      );
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.gt(BigNumber.from(reserveBalance));
     });
   });
 
@@ -257,7 +270,7 @@ describe("testing Loans", async () => {
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(BigNumber.from(reserveBalance));
     });
 
-    it("Btc New Loan (Cross Market)", async () => {
+    it("Btc New Loan (Same Market)", async () => {
       const loanAmount = 17000000; // 0.15 Btc
       const collateralAmount = 20000000; // 0.2 BTC
 
@@ -335,8 +348,8 @@ describe("testing Loans", async () => {
       const reserveBalance = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       const reserveBal = BigNumber.from(await bepCake.balanceOf(diamondAddress));
       let loanData = await loan1.getLoans(accounts[1].address);
-      LoanAmount = BigNumber.from(loanData.loanAmount[0]);
-      CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[0]);
+      LoanAmount = BigNumber.from(loanData.loanAmount[1]);
+      CurrentLoan = BigNumber.from(loanData.loanCurrentAmount[1]);
       fees = CurrentLoan.mul(5).div(10000);
 
       await expect(loan.connect(accounts[1]).swapToLoan(symbolBtc, comit_ONEMONTH)).emit(loan, "MarketSwapped");
@@ -381,6 +394,77 @@ describe("testing Loans", async () => {
       );
 
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.gte(BigNumber.from(reserveBalance));
+    });
+    it.skip("Withdraw Collateral Btc only fee", async () => {
+      // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+
+      let loanData = await loan1.getLoans(accounts[1].address);
+
+      collateralAmount = BigNumber.from(loanData.collateralAmount[0]);
+
+      const preclosureFees = BigNumber.from(collateralAmount).mul(36).div(10000);
+
+      collateralAmount == collateralAmount - preclosureFees;
+
+      const fees = BigNumber.from(collateralAmount).mul(10).div(10000);
+
+      const currentProvider = waffle.provider;
+
+      const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
+
+      // await loan.connect(accounts[1]).withdrawCollateral(symbolBtc, comit_ONEMONTH);
+
+      expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance,
+      );
+
+      const timeInSeconds = 30 * 86400 + 20;
+      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+      await currentProvider.send("evm_mine");
+      await expect(loan.connect(accounts[1]).withdrawCollateral(symbolBtc, comit_ONEMONTH)).emit(
+        loan,
+        "WithdrawCollateral",
+      );
+
+      expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance
+          .sub(BigNumber.from(collateralAmount))
+          .add(BigNumber.from(fees)) /*.add(BigNumber.from(preclosureFees))*/,
+      );
+    });
+    it("Withdraw Collateral Btc fees + preclosure", async () => {
+      // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+
+      let loanData = await loan1.getLoans(accounts[1].address);
+      console.log("loanData ",loanData);
+      
+      collateralAmount = BigNumber.from(loanData.collateralAmount[1]);
+      console.log("collateralAmount ",collateralAmount);
+      
+      const preclosureFees = BigNumber.from(collateralAmount).mul(36).div(10000);
+      console.log("preclosureFees ",preclosureFees);
+      
+      const fees = BigNumber.from(collateralAmount).sub(preclosureFees).mul(10).div(10000);
+      console.log("fees ",fees);
+
+      const currentProvider = waffle.provider;
+
+      const reserveBalance = BigNumber.from(await bepBtc.balanceOf(diamondAddress));
+
+      const timeInSeconds = 3 * 86400 + 20;
+      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+      await currentProvider.send("evm_mine");
+      await expect(loan.connect(accounts[1]).withdrawCollateral(symbolBtc, comit_ONEMONTH)).emit(
+        loan,
+        "WithdrawCollateral",
+      );
+
+      expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance
+          .sub(BigNumber.from(collateralAmount))
+          .add(BigNumber.from(fees))
+          .add(BigNumber.from(preclosureFees)),
+      );
     });
   });
 
@@ -762,6 +846,83 @@ describe("testing Loans", async () => {
       );
 
       expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.gte(BigNumber.from(reserveBalance));
+    });
+
+    it.skip("Withdraw Collateral USDT", async () => {
+      // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+
+      let loanData = await loan1.getLoans(accounts[1].address);
+
+      collateralAmount = BigNumber.from(loanData.collateralAmount[0]);
+
+      const preclosureFees = BigNumber.from(collateralAmount).mul(36).div(10000);
+
+      collateralAmount == collateralAmount - preclosureFees;
+
+      const fees = BigNumber.from(collateralAmount).mul(10).div(10000);
+
+      const currentProvider = waffle.provider;
+
+      const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
+
+      await loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH);
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance,
+      );
+
+      const timeInSeconds = 30 * 86400 + 20;
+      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+      await currentProvider.send("evm_mine");
+      await expect(deposit.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH)).emit(
+        loan,
+        "WithdrawCollateral",
+      );
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance
+          .sub(BigNumber.from(collateralAmount))
+          .add(BigNumber.from(fees))
+          .add(BigNumber.from(preclosureFees)),
+      );
+    });
+    it.skip("Withdraw Collateral USDT", async () => {
+      // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
+
+      let loanData = await loan1.getLoans(accounts[1].address);
+
+      collateralAmount = BigNumber.from(loanData.collateralAmount[0]);
+
+      const preclosureFees = BigNumber.from(collateralAmount).mul(36).div(10000);
+
+      collateralAmount == collateralAmount - preclosureFees;
+
+      const fees = BigNumber.from(collateralAmount).mul(10).div(10000);
+
+      const currentProvider = waffle.provider;
+
+      const reserveBalance = BigNumber.from(await bepUsdt.balanceOf(diamondAddress));
+
+      await loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH);
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance,
+      );
+
+      const timeInSeconds = 30 * 86400 + 20;
+      await currentProvider.send("evm_increaseTime", [timeInSeconds]);
+      await currentProvider.send("evm_mine");
+      await expect(deposit.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH)).emit(
+        loan,
+        "WithdrawCollateral",
+      );
+
+      expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress)), "Reserve Balance unequal").to.equal(
+        reserveBalance
+          .sub(BigNumber.from(collateralAmount))
+          .add(BigNumber.from(fees))
+          .add(BigNumber.from(preclosureFees)),
+      );
     });
 
     it("Pause Loan:", async () => {

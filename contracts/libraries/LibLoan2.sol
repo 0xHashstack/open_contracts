@@ -88,14 +88,12 @@ library LibLoan2 {
 
             /// UPDATING LoanRecords
             loan.isSwapped = false;
-            loan.lastUpdate = block.timestamp;
 
             /// UPDATING LoanState
             loanState.state = STATE.REPAID;
 
             /// UPDATING RECORDS IN LOANACCOUNT
             loanAccount.loans[loan.id - 1].isSwapped = false;
-            loanAccount.loans[loan.id - 1].lastUpdate = block.timestamp;
 
             loanAccount.loanState[loan.id - 1].state = STATE.REPAID;
             loanAccount.collaterals[loan.id - 1].activationTime = block.timestamp;
@@ -177,7 +175,7 @@ library LibLoan2 {
             /// LOAN RECORDS
             delete loan.id;
             delete loan.isSwapped;
-            delete loan.lastUpdate;
+            delete loan.createdAt;
         }
         return _repayAmount;
     }
@@ -208,7 +206,7 @@ library LibLoan2 {
                 LibSwap._getMarketAddress(collateral.market),
                 deductibleInterest.accruedInterest
             );
-
+        /// COLLATERAL GETTING SWAPPED INTO LOAN
         _repayAmount += LibSwap._swap(collateral.market, loan.market, _collateralAmount, 2);
         LibReserve._updateReservesLoan(collateral.market, _collateralAmount, 1);
         

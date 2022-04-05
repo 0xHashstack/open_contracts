@@ -95,7 +95,6 @@ contract MockBep20 is Context {
     }
 
     function approve(address _spender, uint256 _value) external nonReentrant returns (bool success) {
-        console.log("approve amount is %s", _value);
         _checkPauseState();
         _approve(_spender, _value);
 
