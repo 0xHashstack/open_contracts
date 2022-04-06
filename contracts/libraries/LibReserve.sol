@@ -9,11 +9,6 @@ library LibReserve {
         return ds.marketReservesDeposit[_loanMarket];
     }
 
-    function _utilisedReservesDeposit(bytes32 _loanMarket) internal view returns (uint256) {
-        AppStorageOpen storage ds = LibCommon.diamondStorage();
-        return ds.marketUtilisationDeposit[_loanMarket];
-    }
-
     function _avblReservesLoan(bytes32 _loanMarket) internal view returns (uint256) {
         AppStorageOpen storage ds = LibCommon.diamondStorage();
         return ds.marketReservesLoan[_loanMarket];
@@ -28,21 +23,17 @@ library LibReserve {
         return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
     }
 
-    function _marketUtilisation(bytes32 _market) internal view returns (uint256) {
-        return _utilisedReservesLoan(_market);
-    }
-
     function _avblMarketReserves(bytes32 _market) internal view returns (uint256) {
         IBEP20 token = IBEP20(LibCommon._connectMarket(_market));
         uint256 balance = token.balanceOf(address(this));
 
-        require((_marketReserves(_market) - _marketUtilisation(_market)) >= 0, "ERROR: Mathematical error");
-        require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
+        require((_marketReserves(_market) - _utilisedReservesLoan(_market)) >= 0, "ERROR: Mathematical error");
+        require(balance >= (_marketReserves(_market) - _utilisedReservesLoan(_market)), "ERROR: Reserve imbalance");
 
-        if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {
+        if (balance > (_marketReserves(_market) - _utilisedReservesLoan(_market))) {
             return balance;
         }
-        return (_marketReserves(_market) - _marketUtilisation(_market));
+        return (_marketReserves(_market) - _utilisedReservesLoan(_market));
     }
 
     function _updateReservesLoan(

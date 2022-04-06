@@ -16,8 +16,6 @@ interface IReserve {
 
     function avblReservesDeposit(bytes32 _market) external view returns (uint256);
 
-    function utilisedReservesDeposit(bytes32 _market) external view returns (uint256);
-
     function pauseReserve() external;
 
     function unpauseReserve() external;

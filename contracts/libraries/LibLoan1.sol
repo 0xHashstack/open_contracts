@@ -12,7 +12,7 @@ library LibLoan1 {
         bytes32 _collateralMarket,
         uint256 _collateralAmount
     ) internal returns (uint256 loanId) {
-        require(LibReserve._avblMarketReserves(_loanMarket) >= _loanAmount, "ERROR: Borrow amount exceeds reserves");
+        require((LibReserve._avblReservesDeposit(_loanMarket) - LibReserve._utilisedReservesLoan(_loanMarket)) >= _loanAmount, "ERROR: Borrow amount exceeds reserves");
         _preLoanRequestProcess(_loanMarket, _loanAmount, _collateralMarket, _collateralAmount);
 
         AppStorageOpen storage ds = LibCommon.diamondStorage();
@@ -65,7 +65,7 @@ library LibLoan1 {
         /// UPDATING ACTIVELOANS RECORDS
         activeLoans.loanMarket.push(_loanMarket);
         activeLoans.loanCommitment.push(_commitment);
-        activeLoans.loanAmount.push(_loanAmount);
+        activeLoans.loanAmount.push(loan.amount);
         activeLoans.collateralMarket.push(_collateralMarket);
         activeLoans.collateralAmount.push(_collateralAmount);
         activeLoans.isSwapped.push(false);
@@ -84,7 +84,7 @@ library LibLoan1 {
         /// UPDATING LoanState
         loanState.id = loan.id;
         loanState.loanMarket = _loanMarket;
-        loanState.actualLoanAmount = _loanAmount;
+        loanState.actualLoanAmount = loan.amount;
         loanState.currentMarket = _loanMarket;
         loanState.currentAmount = _loanAmount;
         loanState.state = STATE.ACTIVE;

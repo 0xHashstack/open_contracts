@@ -447,6 +447,9 @@ async function addMarkets(array) {
       "REACT_APP_FAUCET_ADDRESS = " +
       faucet.address +
       "\r\n" +
+      "REACT_APP_T_BTC_ADDRESS = " +
+      tBtcAddress +
+      "\r\n" +
       "REACT_APP_T_USDC_ADDRESS = " +
       tUsdcAddress +
       "\r\n" +
