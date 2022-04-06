@@ -43,7 +43,7 @@ struct DepositRecords {
     uint256 createdAt;
     bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
     bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-    uint256 timelockValidity; // timelock duration
+    uint256 timelockValidity;
     uint256 activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
 }
 
@@ -161,6 +161,7 @@ struct AppStorageOpen {
     bytes32[] depositCommitment;
     bytes32[] borrowCommitment;
     uint256 reserveFactor;
+    uint256 timelockValidity; // timelock duration
     uint256 loanIssuanceFees;
     uint256 loanClosureFees;
     uint256 loanPreClosureFees;

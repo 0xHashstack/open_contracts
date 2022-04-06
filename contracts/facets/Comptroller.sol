@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import { AppStorageOpen, APR, APY, LibCommon, LibComptroller } from "../libraries/LibComptroller.sol";
+import { AppStorageOpen,DepositRecords, APR, APY, LibCommon, LibComptroller } from "../libraries/LibComptroller.sol";
 import { LibReserve } from "../libraries/LibReserve.sol";
 import { Pausable } from "../util/Pausable.sol";
 import { IComptroller } from "../interfaces/IComptroller.sol";
@@ -23,6 +23,12 @@ contract Comptroller is Pausable, IComptroller {
         address indexed admin,
         uint256 oldFees,
         uint256 indexed newFees,
+        uint256 indexed timestamp
+    );
+    event TimelockValidityDeposit(
+        address indexed admin,
+        uint256 oldTime,
+        uint256 indexed newTime,
         uint256 indexed timestamp
     );
     event LoanClosureFeesUpdated(
@@ -161,6 +167,16 @@ contract Comptroller is Pausable, IComptroller {
     function setBorrowCommitment(bytes32 _commitment, uint256 _days) external override nonReentrant authComptroller {
         LibComptroller._setBorrowCommitment(_commitment, _days);
         emit CommitmentAdded(msg.sender, _commitment, _days, block.timestamp);
+    }
+    function setTimelockValidityDeposit(uint256 time) external override nonReentrant authComptroller returns (bool) {
+        AppStorageOpen storage ds = LibCommon.diamondStorage();
+        uint256 oldTime = ds.timelockValidity;
+        ds.timelockValidity = time;
+        emit TimelockValidityDeposit(msg.sender, oldTime, ds.timelockValidity, block.timestamp);
+        return true;
+    }
+    function getTimelockValidityDeposit() external override view returns (uint256) {
+        return LibCommon.diamondStorage().timelockValidity;
     }
 
     function updateLoanIssuanceFees(uint256 fees) external override nonReentrant authComptroller returns (bool) {

@@ -31,6 +31,10 @@ library LibCommon {
         return ds.indMarketData[_loanMarket].decimals;
     }
 
+   function _getTimelockValidityDeposit(/*bytes32 market, bytes32 commitment*/) internal view returns (uint256) {
+        return diamondStorage().timelockValidity;
+    }
+
     function _minAmountCheck(bytes32 _loanMarket, uint256 _amount) internal view {
         AppStorageOpen storage ds = diamondStorage();
         MarketData memory marketData = ds.indMarketData[_loanMarket];

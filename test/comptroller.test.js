@@ -244,6 +244,11 @@ describe("testing Comptroller", async () => {
       expect(apy).to.equal(2);
     });
 
+    it("set TimelockValidity Deposit", async () => {
+      await expect(comptroller.connect(accounts[1]).setTimelockValidityDeposit(86400)).to.be.reverted;
+      await expect(comptroller.setTimelockValidityDeposit(86400)).emit(comptroller, "TimelockValidityDeposit");
+    });
+
     it("Set Loan Issuance Fee", async () => {
       await expect(comptroller.connect(accounts[1]).updateLoanIssuanceFees(10)).to.be.reverted;
       await expect(comptroller.updateLoanIssuanceFees(10)).emit(comptroller, "LoanIssuanceFeesUpdated");

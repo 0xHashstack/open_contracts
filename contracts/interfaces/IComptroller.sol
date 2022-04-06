@@ -40,9 +40,13 @@ interface IComptroller {
 
     function getCommitment(uint256 index_, uint256 depositorborrow) external view returns (bytes32);
 
+    function getTimelockValidityDeposit() external view returns (uint256);
+
     function setDepositCommitment(bytes32 _commitment, uint256 _days) external;
 
     function setBorrowCommitment(bytes32 _commitment, uint256 _days) external;
+
+    function setTimelockValidityDeposit(uint256 time) external returns (bool success);
 
     function updateLoanIssuanceFees(uint256 fees) external returns (bool success);
 

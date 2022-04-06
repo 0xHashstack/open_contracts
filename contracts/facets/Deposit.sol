@@ -7,6 +7,7 @@ import { IDeposit } from "../interfaces/IDeposit.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 
+
 import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit {
@@ -170,10 +171,10 @@ contract Deposit is Pausable, IDeposit {
             }
             // CHECKS FOR TIMELOCK + buffer time of 3 days
             if (deposit.createdAt + commitmentTimelock >= block.timestamp) {
-                console.log("deposit.createdAt : ",deposit.createdAt);
-                console.log("commitmentTimelock : ",commitmentTimelock);
-                console.log("deposit.createdAt + commitmentTimelock : ",deposit.createdAt + commitmentTimelock);
-                console.log("block.timestamp : ",block.timestamp);
+                // console.log("deposit.createdAt : ",deposit.createdAt);
+                // console.log("commitmentTimelock : ",commitmentTimelock);
+                // console.log("deposit.createdAt + commitmentTimelock : ",deposit.createdAt + commitmentTimelock);
+                // console.log("block.timestamp : ",block.timestamp);
                 // require(
                 //     deposit.activationTime + deposit.timelockValidity <= block.timestamp,
                 //     "3 days timelock has not passed yet"
@@ -197,7 +198,7 @@ contract Deposit is Pausable, IDeposit {
         require(_amount > fees, "Fees is greater than amount");
         _amount = _amount - fees;
         require(_amount > 0, "Amount Post Fees cannot be 0 ");
-        console.log("Fees deducted");
+        // console.log("Fees deducted");
         ds.token.transfer(msg.sender, _amount);
         /// NEED NOT TRANSFER FEES TO PROTOCOL AS IT ALREADY STAYS HERE
         deposit.amount -= initialAmount;
@@ -269,7 +270,8 @@ contract Deposit is Pausable, IDeposit {
             yield.accruedYield = 0;
             deposit.isTimelockApplicable = true;
             deposit.isTimelockActivated = false;
-            deposit.timelockValidity = 259200;
+            deposit.timelockValidity = LibCommon._getTimelockValidityDeposit();
+            console.log("timelockValidity : ",deposit.timelockValidity);
             deposit.activationTime = 0;
         } else {
             yield.id = id;

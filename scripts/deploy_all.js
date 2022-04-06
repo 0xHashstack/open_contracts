@@ -428,7 +428,12 @@ async function addMarkets(array) {
   // await comptroller.updateReserveFactor();
   // console.log("updateReserveFactor is set");
   console.log("Fees implemented in Comptroller");
-
+  
+  /// SETTING UP Timelock
+  await comptroller.setTimelockValidityDeposit("259200"); // Set time to 86400
+  console.log("TimelockValidityDeposit is set");
+  console.log("Time which has been set : ",await comptroller.getTimelockValidityDeposit()); 
+  
   console.log("ALL ENV USED IN UI");
 
   console.log("REACT_APP_DIAMOND_ADDRESS = ", diamond.address);
