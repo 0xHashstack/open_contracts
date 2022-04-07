@@ -7,7 +7,6 @@ import { IDeposit } from "../interfaces/IDeposit.sol";
 import { IAccessRegistry } from "../interfaces/IAccessRegistry.sol";
 import { IBEP20 } from "../util/IBEP20.sol";
 
-
 import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit {
@@ -190,9 +189,9 @@ contract Deposit is Pausable, IDeposit {
         }
 
         require(
-                    deposit.activationTime + deposit.timelockValidity <= block.timestamp,
-                    "3 days timelock has not passed yet"
-                );
+            deposit.activationTime + deposit.timelockValidity <= block.timestamp,
+            "3 days timelock has not passed yet"
+        );
         /* NOW IT DEDUCTS DEPOSIT WITHDRAW FEE */
         fees = ((LibCommon.diamondStorage().depositWithdrawalFees) * _amount) / 10000;
         require(_amount > fees, "Fees is greater than amount");
@@ -271,7 +270,7 @@ contract Deposit is Pausable, IDeposit {
             deposit.isTimelockApplicable = true;
             deposit.isTimelockActivated = false;
             deposit.timelockValidity = LibCommon._getTimelockValidityDeposit();
-            console.log("timelockValidity : ",deposit.timelockValidity);
+            console.log("timelockValidity : ", deposit.timelockValidity);
             deposit.activationTime = 0;
         } else {
             yield.id = id;
@@ -383,7 +382,6 @@ contract Deposit is Pausable, IDeposit {
         accruedYield(_account, _market, _commitment);
 
         deposit.amount += yield.accruedYield;
-
 
         /// RESETTING THE YIELD.
         yield.accruedYield = 0;

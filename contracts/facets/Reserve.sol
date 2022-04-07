@@ -34,15 +34,11 @@ contract Reserve is Pausable, IReserve {
     }
 
     function marketUtilisation(bytes32 _market) external view override returns (uint256) {
-        return LibReserve._marketUtilisation(_market);
+        return LibReserve._utilisedReservesLoan(_market);
     }
 
     function avblReservesDeposit(bytes32 _market) external view override returns (uint256) {
         return LibReserve._avblReservesDeposit(_market);
-    }
-
-    function utilisedReservesDeposit(bytes32 _market) external view override returns (uint256) {
-        return LibReserve._utilisedReservesDeposit(_market);
     }
 
     modifier authReserve() {

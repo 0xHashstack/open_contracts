@@ -98,7 +98,7 @@ describe("testing Loans", async () => {
 
       let loanData = await loan1.getLoans(accounts[1].address);
       const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-      await expect(loanData.loanAmount[0]).to.eq(loanAmountPostFees);
+      await expect(loanData.loanCurrentAmount[0]).to.eq(loanAmountPostFees);
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
@@ -436,16 +436,16 @@ describe("testing Loans", async () => {
       // const withdrawAmount = 50000000000; // 500 8-0's 500 USDT
 
       let loanData = await loan1.getLoans(accounts[1].address);
-      console.log("loanData ",loanData);
-      
+      console.log("loanData ", loanData);
+
       collateralAmount = BigNumber.from(loanData.collateralAmount[1]);
-      console.log("collateralAmount ",collateralAmount);
-      
+      console.log("collateralAmount ", collateralAmount);
+
       const preclosureFees = BigNumber.from(collateralAmount).mul(36).div(10000);
-      console.log("preclosureFees ",preclosureFees);
-      
+      console.log("preclosureFees ", preclosureFees);
+
       const fees = BigNumber.from(collateralAmount).sub(preclosureFees).mul(10).div(10000);
-      console.log("fees ",fees);
+      console.log("fees ", fees);
 
       const currentProvider = waffle.provider;
 
@@ -522,7 +522,7 @@ describe("testing Loans", async () => {
       let loanData = await loan1.getLoans(accounts[1].address);
 
       const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-      await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
+      await expect(loanData.loanCurrentAmount[1]).to.eq(loanAmountPostFees);
 
       expect(BigNumber.from(await bepBtc.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
@@ -675,7 +675,7 @@ describe("testing Loans", async () => {
       let loanData = await loan1.getLoans(accounts[1].address);
 
       const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-      await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
+      await expect(loanData.loanCurrentAmount[1]).to.eq(loanAmountPostFees);
 
       expect(BigNumber.from(await bepUsdt.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
@@ -767,7 +767,7 @@ describe("testing Loans", async () => {
       let loanData = await loan1.getLoans(accounts[1].address);
 
       const loanAmountPostFees = loanAmount - loanFees; // 0.17 Btc
-      await expect(loanData.loanAmount[1]).to.eq(loanAmountPostFees);
+      await expect(loanData.loanCurrentAmount[1]).to.eq(loanAmountPostFees);
 
       expect(BigNumber.from(await bepWbnb.balanceOf(diamondAddress))).to.equal(
         reserveBalance.add(BigNumber.from(collateralAmount)),
