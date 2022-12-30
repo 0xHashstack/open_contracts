@@ -32,7 +32,7 @@
     "@pancakeswap/pancake-swap-lib": "0.0.4",
     "dotenv": "^10.0.0",
     "eth-crypto": "^2.1.0",
-    "hardhat": "^2.6.7",
+    "hardhat": "^2.12.5",
     "hardhat-contract-sizer": "^2.1.1",
     "solc": "^0.8.1",
     "solidity-coverage": "^0.7.20",
